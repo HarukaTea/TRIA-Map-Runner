@@ -1,0 +1,4 @@
+
+# fix luau not linted issue
+*.luau linguist-language=lua
+*.luau diff=lua

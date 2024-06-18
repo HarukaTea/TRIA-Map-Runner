@@ -1,0 +1,44 @@
+{
+    "name": "Halcyon",
+    "tree": {
+        "$className": "DataModel",
+
+        "ReplicatedFirst": {
+            "Preload": {
+                "$path": "src/Preload.client.luau"
+            }
+        },
+        "ReplicatedStorage": {
+            "Modules": {
+                "$className": "Folder",
+                "$path": "src/modules"
+            }
+        },
+        "ServerScriptService": {
+            "$path": "src/server"
+        },
+        "StarterPlayer": {
+            "StarterPlayerScripts": {
+                "$path": "src/client"
+            },
+            "StarterCharacterScripts": {
+                "$path": "src/character"
+            },
+            "$properties": {
+                "CharacterWalkSpeed": 20,
+                "CharacterUseJumpPower": true
+            }
+        },
+
+        "MaterialService": {
+            "$properties": {
+                "Use2022Materials": false
+            }
+        },
+        "StarterGui": {
+            "$properties": {
+                "ScreenOrientation": "LandscapeSensor"
+            }
+        }
+    }
+}
