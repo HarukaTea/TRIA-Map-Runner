@@ -11,7 +11,7 @@ local char = script.Parent.Parent :: Model
 
 local lastJumped = tick()
 
-char.Humanoid.Touched:Connect(function(hit: BasePart)
+char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit
         and hit:GetAttribute("_action") == "Orb"
         and tick() - lastJumped > 0.1 then

@@ -4,9 +4,8 @@ local RepS = game:GetService("ReplicatedStorage")
 
 local Warp = require(RepS.Modules.Packages.Warp)
 
-local events = {
+return {
     CreateHint = Warp("CreateHint"),
-    ChangeMusic = Warp("ChangeMusic")
+    ChangeMusic = Warp("ChangeMusic"),
+    ChangeLighting = Warp("ChangeLighting")
 }
-
-return events

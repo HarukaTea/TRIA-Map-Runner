@@ -18,32 +18,36 @@ local Texts = {
     Lights = "Self-Light",
     Shadows = "Shadows",
     Shaders = "Shaders",
-    SkipBtns = "Skip Btns",
+    SkipBtns = "Auto Btns",
     InfAir = "Inf Air",
+    ForceSpeed = "Force Speed",
+    ForceJump = "Force Jump"
 }
 
 local function ToggleOption(id: string, self: table) : Frame
-    return Components.Frame({
+    local scope = self.scope :: table
+
+    return Components.Frame(scope, {
         Name = "ToggleOption",
         Size = fromScale(1, 0.12),
 
         [Children] = {
-            Fusion.New("UIAspectRatioConstraint")({ AspectRatio = 6.449 }),
-            Components.TextLabel({
+            Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 6.449 }),
+            Components.TextLabel(scope, {
                 Name = "Title",
                 Size = fromScale(0.6, 1),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Text = Texts[id],
 
                 [Children] = {
-                    Fusion.New("UIPadding")({
+                    Fusion.New(scope, "UIPadding")({
                         PaddingBottom = udNew(0.1, 0),
                         PaddingTop = udNew(0.1, 0),
                         PaddingLeft = udNew(0.03, 0)
                     })
                 }
             }),
-            Components.Frame({
+            Components.Frame(scope, {
                 Name = "Toggle",
                 AnchorPoint = v2New(0, 0.5),
                 Position = fromScale(0.65, 0.5),
@@ -52,8 +56,8 @@ local function ToggleOption(id: string, self: table) : Frame
                 BackgroundTransparency = 0.5,
 
                 [Children] = {
-                    Components.RoundUICorner(),
-                    Components.HoverImageButton({
+                    Components.RoundUICorner(scope),
+                    Components.HoverImageButton(scope, {
                         Name = id,
                         ZIndex = 3,
 
@@ -61,19 +65,19 @@ local function ToggleOption(id: string, self: table) : Frame
                             self.inputs[id]:set(not Fusion.peek(self.inputs[id]))
                         end
                     }),
-                    Components.Frame({
+                    Components.Frame(scope, {
                         AnchorPoint = v2New(),
                         Size = fromScale(0.5, 1),
                         BackgroundTransparency = 0,
 
-                        BackgroundColor3 = Fusion.Tween(Fusion.Computed(function(use)
+                        BackgroundColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
                             return if not use(self.inputs[id]) then fromRGB(255, 85, 127) else fromRGB(76, 152, 113)
                         end), newTweenInfo(0.2)),
-                        Position = Fusion.Tween(Fusion.Computed(function(use)
+                        Position = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
                             return if use(self.inputs[id]) then fromScale(0.5, 0) else fromScale(0, 0)
                         end), newTweenInfo(0.2)),
 
-                        [Children] = { Components.RoundUICorner() }
+                        [Children] = { Components.RoundUICorner(scope) }
                     })
                 }
             })

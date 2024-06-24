@@ -5,7 +5,9 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local SoundService = game:GetService("SoundService")
 
+local BezierLib = require(ReplicatedStorage.Modules.Packages.BezierLib)
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
@@ -50,6 +52,9 @@ local function setupLighting()
     local lightingSettings = setting.Lighting :: Configuration
 
     Lighting:ClearAllChildren()
+    ReplicatedStorage.Package.Unloads.WaterBlur:Clone().Parent = Lighting
+    ReplicatedStorage.Package.Unloads.WaterColor:Clone().Parent = Lighting
+
     for _, child: Instance in lightingSettings:GetChildren() do
         child.Parent = Lighting
     end
@@ -75,6 +80,97 @@ local function setupVariants()
         variant:Destroy()
     end
 end
+local function setupButtons()
+    local buttons = mapModel.Special:FindFirstChild("Button") :: Folder
+    if not buttons then return end
+
+    local events = Instance.new("Folder")
+    events.Name = "ButtonEvents"
+    events.Parent = mapModel
+
+    local buttonColorSettings = mapModel.Settings.Button :: Folder
+    local default = buttonColorSettings.Default :: Configuration
+    local group = buttonColorSettings.Group :: Configuration
+    local pathChild = buttonColorSettings.PathChild :: Configuration
+
+    for _, button: Model in buttons:GetChildren() do
+        if button:IsA("Model") and string.find(button.Name, "_Button") then
+            if not button:FindFirstChild("Hitbox") then continue end
+
+            local index = string.sub(button.Name, 8)
+            local realIndex = tonumber(index)
+
+            local color = default:GetAttribute("InactiveColor") :: Color3
+            if button:GetAttribute("Group") then
+                if realIndex and realIndex == 1 then
+                    color = group:GetAttribute("ActiveColor") :: Color3
+
+                elseif realIndex and realIndex ~= 1 then
+                    color = group:GetAttribute("InactiveColor") :: Color3
+                end
+            else
+                if realIndex and realIndex == 1 then
+                    color = default:GetAttribute("ActiveColor") :: Color3
+
+                elseif realIndex and realIndex ~= 1 then
+                    color = default:GetAttribute("InactiveColor") :: Color3
+
+                elseif not realIndex then
+                    color = pathChild:GetAttribute("InactiveColor") :: Color3
+                end
+            end
+
+            if realIndex == nil then
+                --- path buttons
+                print("Path button")
+            else
+                local event = Instance.new("BindableEvent")
+                event.Name = "Button"..index
+                event.Parent = events
+            end
+
+            local marker = ReplicatedStorage.Package.Unloads.ButtonMarker:Clone() :: BillboardGui
+            marker.Corners.ImageColor3 = color
+            marker.Parent = button
+
+            button.Hitbox.Touched:Connect(function(hit: BasePart)
+                if hit and hit.Parent and hit.Parent:FindFirstChildOfClass("Humanoid") then
+                    if button:GetAttribute("Hit") then return end
+
+                    button:SetAttribute("Hit", true)
+                    workspace.Sounds.SFXs.BtnPressed:Play()
+
+                    Events.CreateHint:FireAll("Button #"..index.." Pressed by "..plr.DisplayName)
+
+                    button:Destroy()
+                end
+            end)
+        end
+    end
+end
+local function setupZipline()
+    for _, child: Instance in mapModel:GetDescendants() do
+        if child.Name == "Zipline" and child:IsA("Model") then
+            local configuration = child:FindFirstChildOfClass("Configuration")
+
+            for _, descendant: BasePart in child:GetChildren() do
+                if descendant:IsA("BasePart") then
+                    descendant.Material = configuration:GetAttribute("Material")
+                    descendant.Color = configuration:GetAttribute("Color")
+
+                    for attr: string, val: any in configuration:GetAttributes() do
+                        descendant:SetAttribute(attr, val)
+                    end
+                end
+            end
+            for attr: string, val: any in configuration:GetAttributes() do
+                child:SetAttribute(attr, val)
+            end
+
+            BezierLib:Run(child)
+        end
+    end
+end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
     if not soundSettings then soundSettings = setting.Main :: Configuration end
@@ -84,9 +180,8 @@ local function setupSound() : string
     sound.SoundId = "rbxassetid://"..soundSettings:GetAttribute("Music") or ""
     sound.Volume = soundSettings:GetAttribute("Volume") or soundSettings:GetAttribute("MusicVolume") or 0
     sound.Looped = true
-
+    sound.SoundGroup = SoundService.Underwater
     sound.Parent = mapModel
-    sound:Play()
 
     return soundSettings:GetAttribute("Music")
 end
@@ -112,13 +207,27 @@ local function setupMain()
         setupMap()
         setupLighting()
         setupVariants()
+        setupButtons()
+        setupZipline()
 
         --- starting
-        task.wait(2)
         local soundId = setupSound()
+        local timeout = 8
+
+        repeat
+            task.wait(2)
+            timeout -= 2
+            Events.CreateHint:FireAll("Waiting for map to load, please wait...", nil, 1.5)
+        until timeout < 0 or mapModel.MapMusic.IsLoaded == true
+
+        Events.CreateHint:FireAll("Load completed! Get ready...3..2..1...", nil, 3)
+
+        task.wait(3)
+        mapModel.MapMusic:Play()
+        workspace.Sounds.Lobby:Stop()
+        plr.Character.PrimaryPart.Anchored = false
 
         local mainSettings = setting.Main :: Configuration
-
         local mapName = mainSettings:GetAttribute("Name") or "?"
         local difficulty = mainSettings:GetAttribute("Difficulty") or "Unrated"
         local creator = mainSettings:GetAttribute("Creator") or "?"
@@ -142,8 +251,20 @@ local function setupMain()
 
         setupScripts()
 
+        --// wait for finish
+        Spawn(function()
+            task.wait(mainSettings:GetAttribute("MaxTime") or 120)
+
+            Events.CreateHint:FireAll("Round Ended...")
+            workspace.Map:Destroy()
+            workspace.Sounds.Lobby:Play()
+        end)
+
     end):Catch(function(err)
         Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
+        while task.wait(6) do
+            Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
+        end
 
         warn(err)
     end)

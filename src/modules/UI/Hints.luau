@@ -38,13 +38,14 @@ return function(plr: Player)
 					Fusion.New(scope, "UIListLayout")({
 						Padding = udNew(0, 5),
 						HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                        VerticalAlignment = Enum.VerticalAlignment.Bottom
+                        VerticalAlignment = Enum.VerticalAlignment.Bottom,
+						SortOrder = Enum.SortOrder.LayoutOrder
 					}),
 
 					Fusion.ForValues(scope, hintList, function(_, localScope, info: table)
 						return Components.TextLabel(localScope, {
 							Name = "Hint",
-							Size = ud2New(1, 0, 0, 27),
+							Size = ud2New(1, 0, 0, 24),
 							Text = info.Text,
 							FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
 							TextColor3 = info.Color,
@@ -58,13 +59,16 @@ return function(plr: Player)
 	})
 
 	--// Connections
-	local function _createHint(text: string, color: Color3 | string, duration: number)
+	local function _createHint(text: string, color: Color3 | string, duration: number?)
 		local uniqueId = HttpService:GenerateGUID(false)
+
+		if typeof(color) == "string" then color = Color3.fromRGB(255, 255, 255) end
+
 		local info = {
 			Id = uniqueId,
 			Text = text or "",
 			Color = color or fromRGB(255, 255, 255),
-			Duration = duration or 2
+			Duration = duration or 5
 		}
 
 		local new = Fusion.peek(hintList)
@@ -72,7 +76,7 @@ return function(plr: Player)
 
 		hintList:set(new)
 
-		wait(duration)
+		wait(info.Duration)
 		local future = Fusion.peek(hintList)
 		if future[uniqueId] then future[uniqueId] = nil end
 

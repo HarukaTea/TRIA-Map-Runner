@@ -10,6 +10,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 ]]
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
+local External = require(Package.External)
 
 local function whichScopeLivesLonger(
 	scopeA: Types.Scope<any>,
@@ -19,7 +20,8 @@ local function whichScopeLivesLonger(
 	-- scope must live longer than the inner scope (assuming idiomatic scopes).
 	-- So, we will search the scopes recursively until we find one of them, at
 	-- which point we know they must have been found inside the other scope.
-	local openSet, nextOpenSet = {scopeA, scopeB}, {}
+	local openSet: {Types.Scope<any>} = {scopeA, scopeB}
+	local nextOpenSet: {Types.Scope<any>} = {}
 	local openSetSize, nextOpenSetSize = 2, 0
 	local closedSet = {}
 	while openSetSize > 0 do
@@ -34,9 +36,9 @@ local function whichScopeLivesLonger(
 					local inScope = inScope :: {any}
 					if inScope[1] ~= nil and closedSet[scope] == nil then
 						nextOpenSetSize += 1
-						nextOpenSet[nextOpenSetSize] = inScope
+						nextOpenSet[nextOpenSetSize] = inScope :: Types.Scope<any>
 					end
-				end
+				end 
 			end
 		end
 		table.clear(openSet)
@@ -52,7 +54,9 @@ local function whichLivesLonger(
 	scopeB: Types.Scope<any>,
 	b: any
 ): "definitely-a" | "definitely-b" | "unsure"
-	if scopeA == scopeB then
+	if External.isTimeCritical() then
+		return "unsure"
+	elseif scopeA == scopeB then
 		local scopeA: {any} = scopeA
 		for index = #scopeA, 1, -1 do
 			local value = scopeA[index]

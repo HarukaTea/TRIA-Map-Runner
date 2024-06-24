@@ -8,7 +8,8 @@ local Spawn = require(RepS.Modules.Packages.Spawn)
 local plr = Players.LocalPlayer
 
 local uiModules = {
-    RepS.Modules.UI.Hints
+    RepS.Modules.UI.Hints,
+    RepS.Modules.UI.HarukaPanel
 }
 for _, module: ModuleScript in uiModules do
     Spawn(function() require(module)(plr) end)

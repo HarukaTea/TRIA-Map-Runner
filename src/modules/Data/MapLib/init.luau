@@ -26,7 +26,7 @@ MapLib.RoundEnding = Signal.new()
 
 --[[
     This method can be used to send an alert, these alerts can be customized by color and duration.
-    ``````luau
+    ``````lua
     MapLib:Alert("Hello world!", Color3.new(255, 255, 255), 3)
     ``````
 ]]
@@ -43,7 +43,7 @@ end
     This method can be used to change the current music playing in a map,
     this also replicates to people spectating.
 
-    ``````luau
+    ``````lua
     MapLib:ChangeMusic(1234567890, 0.5, 0)
     ``````
 ]]
@@ -57,9 +57,10 @@ end
 
 --[[
     This method can be used to run functions once a specific button has been pressed.
-    ``````
+
+    ``````lua
     MapLib:GetButtonEvent(1):Connect(function(player: Player?)
-        print("Button #1 was pressed by "..player.Name..")
+        print("Button #1 was pressed by "..player.Name)
     end)
     ``````
 ]]
@@ -67,14 +68,15 @@ function MapLib:GetButtonEvent(buttonId: number | string)
     if RS:IsServer() then
         buttonId = if type(buttonId) == "number" then "Button"..buttonId else buttonId
 
-        local event = workspace.ButtonEvents:FindFirstChild(buttonId) :: BindableEvent
+        local event = workspace.Map.ButtonEvents:FindFirstChild(buttonId) :: BindableEvent
         return event.Event
     end
 end
 
 --[[
     This method returns a table containing players currently in a map.
-    ``````
+
+    ``````lua
     local players = MapLib:GetPlayers()
 
     for _, player in pairs(players) do
@@ -88,7 +90,8 @@ end
 
 --[[
     Used to move `PVInstances`
-    ``````
+
+    ``````lua
     MapLib:Move(map.MovingPart1, Vector3.new(12, 0, 0), 3)
     ``````
 ]]
@@ -97,10 +100,12 @@ function MapLib:Move(moveable: PVInstance, movement: Vector3, duration: number?)
         MapLib:_Move(moveable, movement, duration, false)
     end)
 end
+MapLib.MovePart = MapLib.Move
 
 --[[
     Used to move `PVInstances`, but relatively, respect its rotation
-    ``````
+
+    ``````lua
     MapLib:MoveRelative(map.MovingPart1, Vector3.new(12, 0, 0), 3)
     ``````
 ]]
@@ -109,12 +114,13 @@ function MapLib:MoveRelative(moveable: PVInstance, movement: Vector3, duration: 
         MapLib:_Move(moveable, movement, duration, true)
     end)
 end
+MapLib.MovePartLocal = MapLib.MoveRelative
 
 --[[
     This method can be used to change the state of a luquid,
     There are 3 default types you can choose, which are `water`, `acid` and `lava`
 
-    ``````
+    ``````lua
     MapLib:SetLiquidType(map.Liquid1, "water")
     ``````
 ]]
@@ -129,10 +135,22 @@ function MapLib:Survive()
     --// TODO
 end
 
+--[[
+    This method is used to get any features listed in the features list.
+]]
 function MapLib:GetFeature(feature: string)
     if not feature then return end
+    if not RepS.Modules.Data.MapLib:FindFirstChild(feature) then
+        if RS:IsClient() then
+            Signals.CreateHint:Fire("No feature named "..feature.."!", "yellow", 5)
 
-    --// TODO
+        elseif RS:IsServer() then
+            Events.CreateHint:FireAll("No feature named "..feature.."!", "yellow", 5)
+        end
+        return
+    end
+
+    return require(RepS.Modules.Data.MapLib[feature])
 end
 
 --// Private

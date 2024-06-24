@@ -18,7 +18,7 @@ local function innerScope<T>(
 	local new = deriveScope(existing, ...)
 	table.insert(existing, new)
 	table.insert(
-		new,
+		new, 
 		function()
 			local index = table.find(existing, new)
 			if index ~= nil then

@@ -41,11 +41,10 @@ local function onSelected()
 
 	if char then
 		local humanoid = char:WaitForChild("Humanoid")
-        local HRP = humanoid.RootPart
         local camera = workspace.CurrentCamera
 
         selected = true
-        HRP.Anchored = true
+        char.PrimaryPart.Anchored = true
         humanoid.PlatformStand = true
 
 		lastUpdate = tick()
@@ -55,14 +54,14 @@ local function onSelected()
 			local delta = tick() - lastUpdate
 			local look = (camera.Focus.Position - camera.CFrame.Position).Unit :: Vector3
 			local move = _getNextMovement(delta)
-			local pos = HRP.Position
+			local pos = char.PrimaryPart.Position
 
-			HRP.CFrame = cfNew(pos, pos + look) * move
+			char.PrimaryPart.CFrame = cfNew(pos, pos + look) * move
 			lastUpdate = tick()
 		end
 
-		HRP.Anchored = false
-		HRP.Velocity = v3New()
+		char.PrimaryPart.Anchored = false
+		char.PrimaryPart.Velocity = v3New()
 		humanoid.PlatformStand = false
 	end
 end

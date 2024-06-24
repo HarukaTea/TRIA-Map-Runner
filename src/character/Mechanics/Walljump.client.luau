@@ -1,7 +1,6 @@
 --!nocheck
 
 local KSP = game:GetService("KeyframeSequenceProvider")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -11,8 +10,6 @@ local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
 local char = script.Parent.Parent :: Model
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
-local HRP = humanoid.RootPart
-local plr = Players.LocalPlayer
 
 local animation = Instance.new("Animation")
 animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.Keyframes.WallHang)
@@ -20,13 +17,13 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.K
 local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
 
-humanoid.Touched:Connect(function()
+char.Humanoid.RootPart.Touched:Connect(function()
     local isJumping = humanoid:GetStateEnabled(Enum.HumanoidStateType.Jumping)
     local state = humanoid:GetState()
 
     local stateType = Enum.HumanoidStateType
     if isJumping and (state == stateType.Jumping or state == stateType.Freefall) then
-        local ray = Ray.new(HRP.Position, HRP.CFrame.LookVector * 2)
+        local ray = Ray.new(char.PrimaryPart.Position, char.PrimaryPart.CFrame.LookVector * 2)
         local hit, pos, normal = workspace:FindPartOnRay(ray, char)
 
         if hit
@@ -40,9 +37,8 @@ humanoid.Touched:Connect(function()
             end
 
             humanoid.AutoRotate = false
-
-            HRP.Anchored = true
-            HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + normal)
+            char.PrimaryPart.Anchored = true
+            char.PrimaryPart.CFrame = CFrame.new(char.PrimaryPart.Position, char.PrimaryPart.Position + normal)
 
             walljumpAnim:Play()
             workspace.Sounds.SFXs.Walljump:Play()
@@ -59,14 +55,14 @@ humanoid.Touched:Connect(function()
             lastJumped = tick()
 
             humanoid.AutoRotate = true
-            HRP.Anchored = false
+            char.PrimaryPart.Anchored = false
 
             walljumpAnim:Stop()
 
             if jumped then
                 local jumpPower = humanoid.JumpPower
 
-                HRP.AssemblyLinearVelocity = Vector3.new(
+                char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
                     normal.X * jumpPower,
                     jumpPower + normal.Y * jumpPower,
                     normal.Z * jumpPower

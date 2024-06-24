@@ -7,7 +7,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 	Stores common type information used internally.
 
 	These types may be used internally so Fusion code can type-check, but
-	should never be exposed to public users, as these definitions are fair game
+	should any be exposed to public users, as these definitions are fair game
 	for breaking changes.
 ]]
 
@@ -44,7 +44,7 @@ export type Value<T, S = T> = Types.Value<T, S> & {
 -- A state object whose value is derived from other objects using a callback.
 export type Computed<T, S> = Types.Computed<T> & {
 	scope: Types.Scope<S>?,
-	_oldDependencySet: {[Types.Dependency]: any},
+	_oldDependencySet: {},
 	_processor: (Types.Use, Types.Scope<S>) -> T,
 	_value: T,
 	_innerScope: Types.Scope<S>?

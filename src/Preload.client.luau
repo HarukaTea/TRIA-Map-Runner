@@ -6,3 +6,4 @@ RF:RemoveDefaultLoadingScreen()
 
 SG:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
 SG:SetCoreGuiEnabled(Enum.CoreGuiType.Health, true)
+SG:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)

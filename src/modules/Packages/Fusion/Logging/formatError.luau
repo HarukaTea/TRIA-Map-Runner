@@ -24,7 +24,7 @@ local function formatError(
 	local trace: string? = if typeof(errorOrTrace) == "table" then errorOrTrace.trace else errorOrTrace
 	local messageText = messages[messageID]
 	if messageText == nil then
-		messageID = "anyMessage"
+		messageID = "antMessage"
 		messageText = messages[messageID]
 	end
 	messageText = messageText:format(...)

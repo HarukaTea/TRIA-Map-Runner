@@ -39,6 +39,7 @@ local function _cancelSlide(isForce: boolean?)
 end
 local function _slide()
     if not canSlide then return end
+    if not char:GetAttribute("AllowSlide") then return end
 
     canSlide = false
 

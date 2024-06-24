@@ -6,11 +6,11 @@ local Signals = require(RepS.Modules.Data.Signals)
 
 local char = script.Parent.Parent :: Model
 
-char.Humanoid.Touched:Connect(function(hit: BasePart)
+char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "Teleport" then
 
         if not hit:FindFirstChild("Destination") then
-            Signals.CreateHint:Fires("Can't find destination part! Did you forget that?", nil, 6)
+            Signals.CreateHint:Fire("Can't find destination part! Did you forget that?", nil, 6)
             return
         end
 

@@ -3,6 +3,11 @@
     "tree": {
         "$className": "DataModel",
 
+        "Workspace": {
+            "$properties": {
+                "StreamingEnabled": false
+            }
+        },
         "ReplicatedFirst": {
             "Preload": {
                 "$path": "src/Preload.client.luau"
@@ -16,6 +21,11 @@
         },
         "ServerScriptService": {
             "$path": "src/server"
+        },
+        "ServerStorage": {
+            "Resources": {
+                "$path": "src/resources"
+            }
         },
         "StarterPlayer": {
             "StarterPlayerScripts": {
