@@ -9,6 +9,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
+local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
 
 local mapModel: Model = nil
 local setting: Configuration = nil
@@ -18,6 +19,17 @@ repeat task.wait() until Players:FindFirstChildOfClass("Player")
 local plr = Players:FindFirstChildOfClass("Player")
 repeat task.wait() until plr.Character or plr.CharacterAdded:Wait()
 
+local function setupMapLib()
+    --// Map libs
+    local mapLibRF = Instance.new("BindableFunction")
+    mapLibRF.Name = "GetMapLib"
+    mapLibRF.Parent = game
+    mapLibRF.OnInvoke = function()
+        return function ()
+            return require(ReplicatedStorage.Modules.Data.MapLib)
+        end
+    end
+end
 local function setupMap()
     mapModel = Instance.new("Model")
     mapModel.Name = "Map"
@@ -45,6 +57,24 @@ local function setupLighting()
         Lighting[attr] = val
     end
 end
+local function setupVariants()
+    local variantFolder = mapModel.Special:FindFirstChild("Variant") :: Folder
+    if not variantFolder then return end
+
+    local variants = {}
+    for _, child: Instance in variantFolder:GetChildren() do
+        if child:IsA("Folder") then variants[#variants + 1] = child end
+    end
+
+    if #variants < 1 then return end
+    local randomVariant = math.random(1, #variants)
+
+    for index, variant: Folder in variants do
+        if index == randomVariant then continue end
+
+        variant:Destroy()
+    end
+end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
     if not soundSettings then soundSettings = setting.Main :: Configuration end
@@ -60,10 +90,28 @@ local function setupSound() : string
 
     return soundSettings:GetAttribute("Music")
 end
+local function setupScripts()
+    local mapScript = mapModel:FindFirstChild("MapScript") :: Script
+    local mapLocalScript = mapModel:FindFirstChild("LocalMapScript") :: LocalScript
+    local effectScript = mapModel:FindFirstChild("EffectScript") :: LocalScript
+
+    if not mapScript or not mapLocalScript or not effectScript then
+        Events.CreateHint:FireAll("Map scripts not found!", nil, 6)
+        return
+    end
+
+    mapScript.Disabled = false
+
+    local mapLocalScriptClone = mapLocalScript:Clone()
+    mapLocalScriptClone.Disabled = false
+    mapLocalScriptClone.Parent = plr.Character
+end
 local function setupMain()
     Promise.new(function()
+        setupMapLib()
         setupMap()
         setupLighting()
+        setupVariants()
 
         --- starting
         task.wait(2)
@@ -77,21 +125,25 @@ local function setupMain()
 
         workspace.Sounds.SFXs.MapStart:Play()
 
-        Events.CreateHint:Fire(plr, `{mapName} by {creator}`, 3, MapDataBook.DifficultyColors[difficulty])
+        Events.CreateHint:FireAll(`{mapName} by {creator}`, MapDataBook.DifficultyColors[difficulty], 3)
 
-        task.wait(2)
-        Promise.new(function()
-            local productInfo = MarketplaceService:GetProductInfo(soundId)
-            if productInfo then
-                Events.CreateHint:Fire(plr, `Music: {productInfo.Name}`, 4, Color3.fromHex('#e74c3c'))
-            end
+        Spawn(function()
+            task.wait(2)
+            Promise.new(function()
+                local productInfo = MarketplaceService:GetProductInfo(soundId)
+                if productInfo then
+                    Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromHex('#e74c3c'), 4)
+                end
 
-        end):Catch(function(err)
-            warn(err)
+            end):Catch(function(err)
+                warn(err)
+            end)
         end)
 
+        setupScripts()
+
     end):Catch(function(err)
-        Events.CreateHint:Fire(plr, "Map setup failed, fatal error happened", 6)
+        Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
 
         warn(err)
     end)

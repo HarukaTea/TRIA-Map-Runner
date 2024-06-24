@@ -1,5 +1,6 @@
 --!nocheck
 
+local KSP = game:GetService("KeyframeSequenceProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
@@ -7,16 +8,23 @@ local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
 local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent :: Model
-local animations = ReplicatedStorage.Package.Animations :: Folder
+local animations = ReplicatedStorage.Package.Keyframes :: Folder
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
 
+local function _createAnimation(keyframe: KeyframeSequence) : Animation
+	local anim = Instance.new("Animation")
+	anim.AnimationId = KSP:RegisterKeyframeSequence(keyframe)
+
+	return anim
+end
+
 local ANIMS = {
-	Idle = animator:LoadAnimation(animations.Idle),
-	Freefall = animator:LoadAnimation(animations.Freefall),
-	Jumping = animator:LoadAnimation(animations.Jumping),
-	Running = animator:LoadAnimation(animations.Running),
-	Seated = animator:LoadAnimation(animations.Seated),
-	Climbing = animator:LoadAnimation(animations.Climbing),
+	Idle = animator:LoadAnimation(_createAnimation(animations.Idle)),
+	Freefall = animator:LoadAnimation(_createAnimation(animations.Falling)),
+	Jumping = animator:LoadAnimation(_createAnimation(animations.Jump)),
+	Running = animator:LoadAnimation(_createAnimation(animations.Walk)),
+	Seated = animator:LoadAnimation(_createAnimation(animations.Sit)),
+	Climbing = animator:LoadAnimation(_createAnimation(animations.Climbing)),
 }
 local oldAnim: AnimationTrack
 

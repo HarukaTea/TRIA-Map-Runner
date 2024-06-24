@@ -7,7 +7,6 @@ local Components = require(RepS.Modules.UI.Vanilla)
 local Events = require(RepS.Modules.Data.Events)
 local Fusion = require(RepS.Modules.Packages.Fusion)
 local Signals = require(RepS.Modules.Data.Signals)
-local Spawn = require(RepS.Modules.Packages.Spawn)
 
 local Children = Fusion.Children
 
@@ -21,7 +20,6 @@ return function(plr: Player)
 	local hintList = Fusion.Value(scope, {})
 
 	local char = plr.Character or plr.CharacterAdded:Wait()
-	local twiceHalfTween = TweenInfo.new(0.3)
 
 	Components.ScreenGui(scope, {
 		Name = "Hints",
@@ -44,31 +42,13 @@ return function(plr: Player)
 					}),
 
 					Fusion.ForValues(scope, hintList, function(_, localScope, info: table)
-						local trans = Fusion.Value(localScope, 0)
-						Spawn(function()
-							wait(info.Duration)
-							trans:set(1, true)
-
-							wait(0.3)
-							local now = Fusion.peek(hintList)
-							if now[info.Id] then now[info.Id] = nil end
-
-							hintList:set(now)
-						end)
-
 						return Components.TextLabel(localScope, {
 							Name = "Hint",
 							Size = ud2New(1, 0, 0, 27),
 							Text = info.Text,
 							FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
 							TextColor3 = info.Color,
-
-							TextTransparency = Fusion.Tween(localScope, Fusion.Computed(localScope, function(use)
-								return use(trans)
-							end), twiceHalfTween),
-							TextStrokeTransparency = Fusion.Tween(localScope, Fusion.Computed(localScope, function(use)
-								return use(trans)
-							end), twiceHalfTween),
+							TextStrokeTransparency = 0
 						})
 					end)
 				},
@@ -78,7 +58,7 @@ return function(plr: Player)
 	})
 
 	--// Connections
-	local function _createHint(text: string, duration: number, color: Color3?)
+	local function _createHint(text: string, color: Color3 | string, duration: number)
 		local uniqueId = HttpService:GenerateGUID(false)
 		local info = {
 			Id = uniqueId,
@@ -91,6 +71,12 @@ return function(plr: Player)
 		new[uniqueId] = info
 
 		hintList:set(new)
+
+		wait(duration)
+		local future = Fusion.peek(hintList)
+		if future[uniqueId] then future[uniqueId] = nil end
+
+		hintList:set(future)
 	end
 	Events.CreateHint:Connect(_createHint)
 	Signals.CreateHint:Connect(_createHint)
