@@ -14,8 +14,13 @@ local plr = Players:GetPlayerFromCharacter(char)
 
 local function setup()
     char.PrimaryPart = char.Humanoid.RootPart
+
     char.Humanoid.BreakJointsOnDeath = false
-    char:PivotTo(spawnLocation.CFrame)
+    char.Humanoid.WalkSpeed = 20
+    char.Humanoid.JumpPower = 50
+
+    char:PivotTo(spawnLocation.CFrame * CFrame.new(0, 3, 0))
+
     char.PrimaryPart.Anchored = true
 
     for attr: string, val: any in CharTemplate do
@@ -39,6 +44,5 @@ setup()
 char.Humanoid.Died:Once(function()
     if not workspace:FindFirstChild("Map") then return end
 
-    workspace.Map:Destroy()
     workspace.Sounds.Lobby:Play()
 end)

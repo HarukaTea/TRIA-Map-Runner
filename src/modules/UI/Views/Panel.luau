@@ -30,7 +30,7 @@ local function Panel(self: table) : Frame
     local scope = self.scope :: table
 
     self.list = Value(scope, nil)
-    self.panelOpen = Value(scope, false)
+    self.panelOpen = Value(scope, true)
     self.absSize, self.absContentSize = Value(scope, 0), Value(scope, 0)
 
     self.inputs = {

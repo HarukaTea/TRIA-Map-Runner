@@ -5,13 +5,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
 local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
+
+local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent.Parent :: Model
 
 local lastJumped = tick()
 
-char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
+Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit
         and hit:GetAttribute("_action") == "Orb"
         and tick() - lastJumped > 0.1 then
@@ -69,4 +72,9 @@ char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
         bv.Parent = char.PrimaryPart
         Debris:AddItem(bv, 0.01)
     end
+end))
+
+--// Clear
+char.Humanoid.Died:Once(function()
+    Empty()
 end)

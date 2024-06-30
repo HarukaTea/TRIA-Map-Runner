@@ -1,11 +1,15 @@
 --!nocheck
 
-local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
+local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 local BezierLib = require(RepS.Modules.Packages.BezierLib)
+local Spawn = require(RepS.Modules.Packages.Spawn)
+
+local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent.Parent :: Model
 local humanoid = char.Humanoid :: Humanoid
@@ -17,7 +21,7 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.Zipl
 local ziplineAnim = animator:LoadAnimation(animation)
 local isRiding = false
 
-char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
+Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit.Parent
         and hit:IsA("BasePart")
         and hit.Name == "StartOrb"
@@ -76,33 +80,46 @@ char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 		bp.P = 10000
 		bp.Parent = char.PrimaryPart
 
-		local sparklePart = Instance.new("Part")
-		sparklePart.Name = "SparklePart"
-		sparklePart.Size = Vector3.new(2, 2, 2)
-		sparklePart.Anchored = true
-		sparklePart.CanCollide = false
-		sparklePart.CanTouch = false
-		sparklePart.CanQuery = false
-		sparklePart.Transparency = 1
-		sparklePart.Parent = char
-		local sparkle = Instance.new("Sparkles")
-		sparkle.SparkleColor = Color3.fromRGB(255, 180, 0)
-		sparkle.Parent = sparklePart
+		local sparklePart: BasePart = nil
+		if zipline:GetAttribute("Sparkle") then
+			sparklePart = Instance.new("Part")
+			sparklePart.Name = "SparklePart"
+			sparklePart.Size = Vector3.new(2, 2, 2)
+			sparklePart.Anchored = true
+			sparklePart.CanCollide = false
+			sparklePart.CanTouch = false
+			sparklePart.CanQuery = false
+			sparklePart.Transparency = 1
+			sparklePart.Parent = char
+
+			local sparkle = Instance.new("Sparkles")
+			sparkle.SparkleColor = Color3.fromRGB(255, 180, 0)
+			sparkle.Parent = sparklePart
+		end
+
 
 		local increment = (1 / math.floor(BezierLib:GetPointDstance(points) / BezierLib.Segment))
 		local length = (last.Position - first.Position).Magnitude
-		local rideTime = (0.01666 / (length / zipline:GetAttribute("Speed") * 1.1))
+		local rideTime = (0.01666 / (length / zipline:GetAttribute("Speed") * 1.12))
 
 		for i = 0, 1.025, increment do
 			table.insert(bezierPos, BezierLib:GetBezier(math.clamp(i, 0, 1), unpack(pointsPos)))
 		end
 
 		local num = 0
+		local jumped = false
+		Spawn(function()
+			if zipline:GetAttribute("Jumpable") then
+				UserInputService.JumpRequest:Wait()
+				jumped = true
+			end
+		end)
+
 		while RunService.Heartbeat:Wait() do
 			local t = tick()
 			local p = math.floor(#bezierPos * num)
 
-			if humanoid.Health > 0 and bezierPos[p + 2] then
+			if humanoid.Health > 0 and bezierPos[p + 2] and not jumped then
 				local nextP = p + 1
 				local lerp1 = (num - p / #bezierPos) / (nextP / #bezierPos - p / #bezierPos)
 				local lerp2 = bezierPos[nextP + 2] and bezierPos[p + 2]:Lerp(bezierPos[nextP + 2], lerp1)
@@ -113,9 +130,9 @@ char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 				)
 
 				char.PrimaryPart.CFrame = vel * CFrame.new(0, -2.57, 0)
-				char.PrimaryPart.Velocity = Vector3.zero
+				char.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
 				bp.Position = char.PrimaryPart.Position
-				sparklePart.CFrame = vel
+				if sparklePart then sparklePart.CFrame = vel end
 
 				num += rideTime * ((tick() - t + RunService.RenderStepped:Wait()) / 0.01666)
 				if (num >= 1) then break end
@@ -142,9 +159,13 @@ char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 
 		ziplineAnim:Stop()
 		bp:Destroy()
-		Debris:AddItem(sparkle, 2)
-		Debris:AddItem(sparklePart, 2)
+		if sparklePart then sparklePart:Destroy() end
 
 		isRiding = false
     end
+end))
+
+--// Clear
+char.Humanoid.Died:Once(function()
+    Empty()
 end)

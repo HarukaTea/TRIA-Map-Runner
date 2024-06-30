@@ -2,16 +2,19 @@
 
 local KSP = game:GetService("KeyframeSequenceProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
+local animations = ReplicatedStorage.Package.Animations :: Folder
 local char = script.Parent :: Model
-local animations = ReplicatedStorage.Package.Keyframes :: Folder
+local keyframes = ReplicatedStorage.Package.Keyframes :: Folder
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
 
-local function _createAnimation(keyframe: KeyframeSequence) : Animation
+-- create temp animation for studio to use
+local function _createTempAnimation(keyframe: KeyframeSequence) : Animation
 	local anim = Instance.new("Animation")
 	anim.AnimationId = KSP:RegisterKeyframeSequence(keyframe)
 
@@ -19,16 +22,15 @@ local function _createAnimation(keyframe: KeyframeSequence) : Animation
 end
 
 local ANIMS = {
-	Idle = animator:LoadAnimation(_createAnimation(animations.Idle)),
-	Freefall = animator:LoadAnimation(_createAnimation(animations.Falling)),
-	Jumping = animator:LoadAnimation(_createAnimation(animations.Jump)),
-	Running = animator:LoadAnimation(_createAnimation(animations.Walk)),
-	Seated = animator:LoadAnimation(_createAnimation(animations.Sit)),
-	Climbing = animator:LoadAnimation(_createAnimation(animations.Climbing)),
+	Idle = animator:LoadAnimation(animations.Idle),
+	Freefall = animator:LoadAnimation(_createTempAnimation(keyframes.Fall)),
+	Jumping = animator:LoadAnimation(_createTempAnimation(keyframes.Jump)),
+	Running = animator:LoadAnimation(_createTempAnimation(keyframes.Walk)),
+	Seated = animator:LoadAnimation(animations.Sit),
+	Climbing = animator:LoadAnimation(animations.Climb),
 }
 local oldAnim: AnimationTrack
 
---// Private
 
 local function startAnim(anim: AnimationTrack, transitionTime: number)
 	if oldAnim ~= anim then
@@ -39,15 +41,9 @@ local function startAnim(anim: AnimationTrack, transitionTime: number)
 	end
 end
 local localStateFunctions = {
-	[Enum.HumanoidStateType.Jumping] = function()
-		startAnim(ANIMS.Jumping, 0.1)
-	end,
-	[Enum.HumanoidStateType.Freefall] = function()
-		startAnim(ANIMS.Freefall, 0.1)
-	end,
-	[Enum.HumanoidStateType.Seated] = function()
-		startAnim(ANIMS.Seated, 0.5)
-	end,
+	[Enum.HumanoidStateType.Jumping] = false,
+	[Enum.HumanoidStateType.Freefall] = false,
+	[Enum.HumanoidStateType.Seated] = false
 }
 local stateFunctions = {
 	[Enum.HumanoidStateType.Jumping] = true,
@@ -59,6 +55,9 @@ local stateFunctions = {
 	[Enum.HumanoidStateType.Climbing] = true,
 	[Enum.HumanoidStateType.Running] = true
 }
+
+local jumpAnimTime = 0
+local isFreefalling = false
 
 --// Setup
 local function setup()
@@ -77,21 +76,52 @@ local function setup()
 	Add(humanoid.Running:Connect(function()
 		if humanoid.MoveDirection.Magnitude > 0 then
 			startAnim(ANIMS.Running, 0.1)
+			ANIMS.Running:AdjustSpeed(20 / 26)
 		else
 			startAnim(ANIMS.Idle, 0.1)
 		end
+
+		isFreefalling = false
 	end))
 	Add(humanoid.Climbing:Connect(function(vel)
 		if vel ~= 0 then
 			startAnim(ANIMS.Climbing, 0.1)
-			ANIMS.Climbing:AdjustSpeed(1)
+			ANIMS.Climbing:AdjustSpeed(vel / 12)
 		else
 			ANIMS.Climbing:AdjustSpeed(0)
 		end
+
+		isFreefalling = false
+	end))
+	Add(humanoid.Jumping:Connect(function()
+		jumpAnimTime = 0.3
+
+		startAnim(ANIMS.Jumping, 0.1)
+		isFreefalling = false
+	end))
+	Add(humanoid.FreeFalling:Connect(function()
+		if jumpAnimTime <= 0 then
+			startAnim(ANIMS.Freefall, 0.1)
+		end
+
+		isFreefalling = true
+	end))
+	Add(humanoid.Seated:Connect(function()
+		startAnim(ANIMS.Seated, 0.1)
+
+		isFreefalling = false
+	end))
+
+	Add(RunService.RenderStepped:Connect(function(dt)
+		if jumpAnimTime > 0 then jumpAnimTime -= dt end
+		if isFreefalling and jumpAnimTime <= 0 then startAnim(ANIMS.Freefall, 0.1) end
 	end))
 
 	local func = localStateFunctions[activeState]
-	if func then func() else startAnim(ANIMS.Idle, 0.1) end
+	if not func then
+		startAnim(ANIMS.Idle, 0.1)
+		isFreefalling = false
+	end
 end
 setup()
 

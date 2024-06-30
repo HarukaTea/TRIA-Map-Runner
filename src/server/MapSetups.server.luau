@@ -120,11 +120,12 @@ local function setupButtons()
                 end
             end
 
+            local event: BindableEvent
             if realIndex == nil then
                 --- path buttons
                 print("Path button")
             else
-                local event = Instance.new("BindableEvent")
+                event = Instance.new("BindableEvent")
                 event.Name = "Button"..index
                 event.Parent = events
             end
@@ -142,6 +143,7 @@ local function setupButtons()
 
                     Events.CreateHint:FireAll("Button #"..index.." Pressed by "..plr.DisplayName)
 
+                    event:Fire(Players:GetPlayerFromCharacter(hit.Parent))
                     button:Destroy()
                 end
             end)
@@ -200,6 +202,8 @@ local function setupScripts()
     local mapLocalScriptClone = mapLocalScript:Clone()
     mapLocalScriptClone.Disabled = false
     mapLocalScriptClone.Parent = plr.Character
+
+    mapModel:SetAttribute("ScriptsLoaded", true)
 end
 local function setupMain()
     Promise.new(function()
@@ -221,10 +225,12 @@ local function setupMain()
         until timeout < 0 or mapModel.MapMusic.IsLoaded == true
 
         Events.CreateHint:FireAll("Load completed! Get ready...3..2..1...", nil, 3)
+        mapModel:SetAttribute("IsLoaded", true)
 
         task.wait(3)
         mapModel.MapMusic:Play()
         workspace.Sounds.Lobby:Stop()
+
         plr.Character.PrimaryPart.Anchored = false
 
         local mainSettings = setting.Main :: Configuration
@@ -234,14 +240,18 @@ local function setupMain()
 
         workspace.Sounds.SFXs.MapStart:Play()
 
-        Events.CreateHint:FireAll(`{mapName} by {creator}`, MapDataBook.DifficultyColors[difficulty], 3)
+        Events.CreateHint:FireAll(
+            `{mapName} [{MapDataBook.DifficultyNames[difficulty]}] by {creator}`,
+            MapDataBook.DifficultyColors[difficulty],
+            3
+        )
 
         Spawn(function()
-            task.wait(2)
+            task.wait(5)
             Promise.new(function()
                 local productInfo = MarketplaceService:GetProductInfo(soundId)
                 if productInfo then
-                    Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromHex('#e74c3c'), 4)
+                    Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromRGB(125, 15, 79), 4)
                 end
 
             end):Catch(function(err)
@@ -256,7 +266,6 @@ local function setupMain()
             task.wait(mainSettings:GetAttribute("MaxTime") or 120)
 
             Events.CreateHint:FireAll("Round Ended...")
-            workspace.Map:Destroy()
             workspace.Sounds.Lobby:Play()
         end)
 

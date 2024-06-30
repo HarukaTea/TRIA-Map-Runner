@@ -131,8 +131,26 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
     liquid:SetAttribute("Type", liquidType)
 end
 
-function MapLib:Survive()
-    --// TODO
+--[[
+    This method can be used to make a player survive
+    the round without touching the ExitRegion.
+
+    ``````lua
+    local Players = game:GetService("Players")
+    local MapLib = game.GetMapLib:Invoke()()
+
+    script.Parent.Touched:Connect(function(other)
+        local player = Players:GetPlayerFromCharacter(other.Parent)
+        if player then
+            MapLib:Survive(player)
+        end
+    end)
+    ``````
+]]
+function MapLib:Survive(player: Player)
+    if not player.Character then return end
+
+    player.Character:SetAttribute("IsSurvived", true)
 end
 
 --[[

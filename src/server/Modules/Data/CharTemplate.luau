@@ -5,5 +5,7 @@ return {
     MaxOxygen = 100,
 
     AllowSlide = true,
-    AllowAirDive = false
+    AllowAirDive = false,
+
+    IsSurvived = false
 }

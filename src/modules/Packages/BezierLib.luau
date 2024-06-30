@@ -4,9 +4,6 @@ local BezierLib = {}
 
 BezierLib.Segment = 8.75
 
---[[
-	Create a bezier curve object
-]]
 function BezierLib:Run(parent: Instance)
 	local points = {}
 	for _, child in parent:GetChildren() do

@@ -4,6 +4,11 @@ local ContextActionService = game:GetService("ContextActionService")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local RepS = game:GetService("ReplicatedStorage")
+
+local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+
+local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent.Parent :: Model
 local humanoid = char.Humanoid :: Humanoid
@@ -23,7 +28,7 @@ local function __endPlatform()
         if child.Name == "SlideVel" then child:Destroy() end
     end
 end
-UserInputService.JumpRequest:Connect(__endPlatform)
+Add(UserInputService.JumpRequest:Connect(__endPlatform))
 
 local function _cancelSlide(isForce: boolean?)
     if canSlide then return end
@@ -73,3 +78,10 @@ local function slideHandler(_, inputState: Enum.UserInputState)
     end
 end
 ContextActionService:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
+
+--// Clear
+char.Humanoid.Died:Once(function()
+    ContextActionService:UnbindAction("Slide")
+
+    Empty()
+end)
