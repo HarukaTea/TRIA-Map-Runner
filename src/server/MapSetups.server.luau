@@ -5,6 +5,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local SoundService = game:GetService("SoundService")
 
 local BezierLib = require(ReplicatedStorage.Modules.Packages.BezierLib)
@@ -12,6 +13,8 @@ local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
 local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
+local Signals = require(ServerScriptService.Modules.Data.ServerSignals)
+local WaterLib = require(ReplicatedStorage.Modules.Data.WaterLib)
 
 local mapModel: Model = nil
 local setting: Configuration = nil
@@ -93,37 +96,48 @@ local function setupButtons()
     local group = buttonColorSettings.Group :: Configuration
     local pathChild = buttonColorSettings.PathChild :: Configuration
 
+    local btnIndex = 1
+
     for _, button: Model in buttons:GetChildren() do
         if button:IsA("Model") and string.find(button.Name, "_Button") then
             if not button:FindFirstChild("Hitbox") then continue end
+            if not button:FindFirstChild("Light") then continue end
 
             local index = string.sub(button.Name, 8)
             local realIndex = tonumber(index)
+            local realrealIndex = string.gsub(index, "%a", "")
 
-            local color = default:GetAttribute("InactiveColor") :: Color3
-            if button:GetAttribute("Group") then
-                if realIndex and realIndex == 1 then
-                    color = group:GetAttribute("ActiveColor") :: Color3
+            local buttonStates = {
+                Default = {
+                    Active = default:GetAttribute("ActiveColor") :: Color3,
+                    InActive = default:GetAttribute("InactiveColor") :: Color3,
+                    Activated = default:GetAttribute("ActivatedColor") :: Color3,
+                },
+                Group = {
+                    Active = group:GetAttribute("ActiveColor") :: Color3,
+                    InActive = group:GetAttribute("InactiveColor") :: Color3,
+                    Activated = group:GetAttribute("ActivatedColor") :: Color3,
+                },
+                PathChild = {
+                    Active = pathChild:GetAttribute("ActiveColor") :: Color3,
+                    InActive = pathChild:GetAttribute("InactiveColor") :: Color3,
+                    Activated = pathChild:GetAttribute("ActivatedColor") :: Color3,
+                }
+            }
 
-                elseif realIndex and realIndex ~= 1 then
-                    color = group:GetAttribute("InactiveColor") :: Color3
-                end
-            else
-                if realIndex and realIndex == 1 then
-                    color = default:GetAttribute("ActiveColor") :: Color3
-
-                elseif realIndex and realIndex ~= 1 then
-                    color = default:GetAttribute("InactiveColor") :: Color3
-
-                elseif not realIndex then
-                    color = pathChild:GetAttribute("InactiveColor") :: Color3
-                end
-            end
+            button:SetAttribute("Index", realrealIndex)
 
             local event: BindableEvent
             if realIndex == nil then
-                --- path buttons
-                print("Path button")
+                button:SetAttribute("PathChild", true)
+
+                if not events:FindFirstChild("Button"..realrealIndex) then
+                    event = Instance.new("BindableEvent")
+                    event.Name = "Button"..realrealIndex
+                    event.Parent = events
+                else
+                    event = events:FindFirstChild("Button"..realrealIndex)
+                end
             else
                 event = Instance.new("BindableEvent")
                 event.Name = "Button"..index
@@ -131,22 +145,123 @@ local function setupButtons()
             end
 
             local marker = ReplicatedStorage.Package.Unloads.ButtonMarker:Clone() :: BillboardGui
-            marker.Corners.ImageColor3 = color
             marker.Parent = button
+            if button:GetAttribute("Group") then
+                marker.Corners.ImageColor3 = buttonStates.Group.InActive
+            elseif button:GetAttribute("PathChild") then
+                marker.Corners.ImageColor3 = buttonStates.PathChild.InActive
+            else
+                marker.Corners.ImageColor3 = buttonStates.Default.InActive
+            end
+
+            if string.find(button.Name, "_Button1") then
+                if button:GetAttribute("Group") then
+                    marker.Corners.ImageColor3 = buttonStates.Group.Active
+                elseif button:GetAttribute("PathChild") then
+                    marker.Corners.ImageColor3 = buttonStates.PathChild.Active
+                else
+                    marker.Corners.ImageColor3 = buttonStates.Default.Active
+                end
+            end
 
             button.Hitbox.Touched:Connect(function(hit: BasePart)
-                if hit and hit.Parent and hit.Parent:FindFirstChildOfClass("Humanoid") then
+                if hit
+                    and hit.Parent
+                    and hit.Parent:FindFirstChildOfClass("Humanoid") then
+
                     if button:GetAttribute("Hit") then return end
+                    if button:GetAttribute("Index") ~= tostring(btnIndex) then
+                        Events.CreateHint:FireAll("Press previous buttons first!")
+                        return
+                    end
+
+                    if button:GetAttribute("Group") then
+                        --- nothing, cuz it's solo test
+                    end
+                    if button:GetAttribute("PathChild") then
+                        --- activate all buttons in the path
+                        for _, child: Model in buttons:GetChildren() do
+                            if child:IsA("Model") and string.find(child.Name, "_Button") then
+                                if child:GetAttribute("Index") == tostring(btnIndex) then
+                                    local nextMarker = child:FindFirstChild("ButtonMarker") :: BillboardGui
+
+                                    child.Light.Color = buttonStates.PathChild.Activated
+                                    child:SetAttribute("Hit", true)
+
+                                    nextMarker.Enabled = false
+                                end
+                            end
+                        end
+                    end
 
                     button:SetAttribute("Hit", true)
                     workspace.Sounds.SFXs.BtnPressed:Play()
+                    marker.Enabled = false
 
-                    Events.CreateHint:FireAll("Button #"..index.." Pressed by "..plr.DisplayName)
+                    if button:GetAttribute("Group") then
+                        button.Light.Color = buttonStates.Group.Activated
+                    elseif button:GetAttribute("PathChild") then
+                        button.Light.Color = buttonStates.PathChild.Activated
+                    else
+                        button.Light.Color = buttonStates.Default.Activated
+                    end
+
+                    Events.CreateHint:FireAll("Button #"..button:GetAttribute("Index").." Pressed by "..plr.DisplayName)
 
                     event:Fire(Players:GetPlayerFromCharacter(hit.Parent))
-                    button:Destroy()
+                    Signals.BtnPressed:Fire(realrealIndex)
+
+                    btnIndex += 1
+
+                    for _, child: Model in buttons:GetChildren() do
+                        if child:IsA("Model") and string.find(child.Name, "_Button") then
+                            if child:GetAttribute("Index") == tostring(btnIndex) then
+                                local nextMarker = child:FindFirstChild("ButtonMarker") :: BillboardGui
+
+                                if button:GetAttribute("Group") then
+                                    nextMarker.Corners.ImageColor3 = buttonStates.Group.Active
+                                elseif button:GetAttribute("PathChild") then
+                                    nextMarker.Corners.ImageColor3 = buttonStates.PathChild.Active
+                                else
+                                    nextMarker.Corners.ImageColor3 = buttonStates.Default.Active
+                                end
+
+                                if child:GetAttribute("Group") then
+                                    child.Light.Color = buttonStates.Group.Active
+                                elseif child:GetAttribute("PathChild") then
+                                    child.Light.Color = buttonStates.PathChild.Active
+                                else
+                                    child.Light.Color = buttonStates.Default.Active
+                                end
+                            end
+                        end
+                    end
                 end
             end)
+        end
+    end
+end
+local function setupButtonFuncs()
+    for _, child: Instance in mapModel:GetDescendants() do
+        if child:IsA("ObjectValue") then
+            if string.find(child.Name, "_Destroy") then
+                ServerStorage.Resources.Unloads.ButtonEvents.Fade:Clone().Parent = child
+
+            elseif string.find(child.Name, "_Fall") then
+                ServerStorage.Resources.Unloads.ButtonEvents.Fall:Clone().Parent = child
+
+            elseif string.find(child.Name, "_Show") then
+                ServerStorage.Resources.Unloads.ButtonEvents.Show:Clone().Parent = child
+
+            elseif string.find(child.Name, "_Hide") then
+                ServerStorage.Resources.Unloads.ButtonEvents.Hide:Clone().Parent = child
+
+            elseif string.find(child.Name, "_Explode") then
+                ServerStorage.Resources.Unloads.ButtonEvents.Explode:Clone().Parent = child
+            end
+
+        elseif child:IsA("Sound") and string.find(child.Name, "_Sound") then
+            ServerStorage.Resources.Unloads.ButtonEvents.Sound:Clone().Parent = child
         end
     end
 end
@@ -172,6 +287,21 @@ local function setupZipline()
             BezierLib:Run(child)
         end
     end
+end
+local function setupWaters()
+    local customAttrs = setting.Liquids :: Configuration
+
+    local function _setCustomWater(water: BasePart)
+        if water:GetAttribute("Type") == "custom" then
+            water:SetAttribute("OxygenDepletion", customAttrs.custom:GetAttribute("OxygenDepletion"))
+            water.Color = customAttrs.custom:GetAttribute("Color")
+        end
+    end
+
+    for _, water: BasePart in WaterLib._Waters do
+        _setCustomWater(water)
+    end
+    WaterLib._WaterAdded:Connect(_setCustomWater)
 end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
@@ -212,7 +342,9 @@ local function setupMain()
         setupLighting()
         setupVariants()
         setupButtons()
+        setupButtonFuncs()
         setupZipline()
+        setupWaters()
 
         --- starting
         local soundId = setupSound()
@@ -221,13 +353,11 @@ local function setupMain()
         repeat
             task.wait(2)
             timeout -= 2
-            Events.CreateHint:FireAll("Waiting for map to load, please wait...", nil, 1.5)
         until timeout < 0 or mapModel.MapMusic.IsLoaded == true
 
-        Events.CreateHint:FireAll("Load completed! Get ready...3..2..1...", nil, 3)
         mapModel:SetAttribute("IsLoaded", true)
 
-        task.wait(3)
+        task.wait(1.5)
         mapModel.MapMusic:Play()
         workspace.Sounds.Lobby:Stop()
 
@@ -271,8 +401,11 @@ local function setupMain()
 
     end):Catch(function(err)
         Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
+        warn(err)
+
         while task.wait(6) do
             Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
+            warn(err)
         end
 
         warn(err)

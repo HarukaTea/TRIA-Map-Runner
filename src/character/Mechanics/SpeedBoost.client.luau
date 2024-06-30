@@ -10,7 +10,7 @@ local char = script.Parent.Parent :: Model
 
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "WalkSpeed" then
-        char.Humanoid.WalkSpeed = hit:GetAttribute("WalkSpeed") or 20
+        char.Humanoid.WalkSpeed = hit:GetAttribute("WalkSpeed")
     end
 end))
 

@@ -19,6 +19,7 @@ HarukaPanel.__index = HarukaPanel
 return function (plr: Player)
     local self = setmetatable({}, HarukaPanel)
 
+    self.char = plr.Character or plr.CharacterAdded:Wait()
     self.plr = plr
     self.scope = Fusion.scoped({})
 
@@ -44,4 +45,10 @@ return function (plr: Player)
             })
         }
     })
+
+    --// Clear
+	local function onDead()
+		Fusion.doCleanup(scope)
+	end
+	self.char.Humanoid.Died:Once(onDead)
 end

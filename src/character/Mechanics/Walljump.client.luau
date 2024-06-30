@@ -90,9 +90,11 @@ Add(char.Humanoid.Touched:Connect(function()
             walljumpAnim:Stop()
 
             if jumped then
+                local momentum = hit:GetAttribute("Momentum") or 1
+
                 char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
                     normal.X * 50,
-                    50 + normal.Y * 50,
+                    50 * momentum + normal.Y * 50 * momentum,
                     normal.Z * 50
                 )
 

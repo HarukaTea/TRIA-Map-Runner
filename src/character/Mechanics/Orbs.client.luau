@@ -24,8 +24,8 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         local orb = hit.Parent :: Model
 
         local orbType = orb:GetAttribute("Type") :: string
-        local power = orb:GetAttribute("Power") or 300
-        local timeout = orb:GetAttribute("Timeout") or 1.5
+        local power = orb:GetAttribute("Power") :: number
+        local timeout = orb:GetAttribute("Timeout") :: number
 
         local bp = Instance.new("BodyPosition")
         bp.Name = "Blackhole"

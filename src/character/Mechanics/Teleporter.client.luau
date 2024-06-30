@@ -13,7 +13,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "Teleport" then
 
         if not hit:FindFirstChild("Destination") then
-            Signals.CreateHint:Fire("Can't find destination part! Did you forget that?", nil, 6)
+            Signals.CreateHint:Fire("Can not find destination part! Did you forget that?", nil, 6)
             return
         end
 

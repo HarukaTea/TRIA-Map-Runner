@@ -9,7 +9,8 @@ local plr = Players.LocalPlayer
 
 local uiModules = {
     RepS.Modules.UI.Hints,
-    RepS.Modules.UI.HarukaPanel
+    RepS.Modules.UI.HarukaPanel,
+    RepS.Modules.UI.RunnerStats
 }
 for _, module: ModuleScript in uiModules do
     Spawn(function() require(module)(plr) end)

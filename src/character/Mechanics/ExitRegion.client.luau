@@ -3,6 +3,7 @@
 local RepS = game:GetService("ReplicatedStorage")
 
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local WaterLib = require(RepS.Modules.Data.WaterLib)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -13,7 +14,7 @@ local map = MapLib.map
 
 local char = script.Parent.Parent :: Model
 
-Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
+Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit.Name == "ExitRegion" and not char:GetAttribute("IsSurvived") then
         char:SetAttribute("IsSurvived", true)
     end
@@ -24,23 +25,26 @@ Add(HarukaLib:Hydrate(char, {
             local exitBlocks = {}
 
             for _, child: Instance in map:GetDescendants() do
+                WaterLib:_BindWater(child)
+            end
+            for _, child: Instance in map:GetDescendants() do
                 if child:IsA("BasePart") and child.Name == "ExitBlock" then
                     exitBlocks[#exitBlocks + 1] = child
                 end
             end
-            for _, child: Instance in map:GetDescendants() do
-                if child:IsA("BasePart") and string.find(child.Name, "_Liquid") then
+            for _, child: Instance in WaterLib._Waters do
+                if child and child:GetAttribute("Type") ~= "water" then
                     MapLib:SetLiquidType(child, "water")
                 end
             end
+
+            workspace.Sounds.SFXs.Survived:Play()
+            MapLib:Alert("Survived", Color3.fromRGB(0, 255, 0), 4)
 
             task.wait(0.5)
             for _, block: BasePart in exitBlocks do
                 block.CanCollide = true
             end
-
-            workspace.Sounds.SFXs.Survived:Play()
-            MapLib:Alert("Survived", Color3.fromRGB(0, 255, 0), 4)
         end
     end
 }))

@@ -161,6 +161,14 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 		bp:Destroy()
 		if sparklePart then sparklePart:Destroy() end
 
+		if zipline:GetAttribute("Momentum") and jumped == false then
+			char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
+				lookVector.X * zipline:GetAttribute("Speed") * 1.12,
+				0,
+				lookVector.Z * zipline:GetAttribute("Speed") * 1.12
+			)
+		end
+
 		isRiding = false
     end
 end))
