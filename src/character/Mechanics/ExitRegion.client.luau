@@ -4,6 +4,7 @@ local RepS = game:GetService("ReplicatedStorage")
 
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 local WaterLib = require(RepS.Modules.Data.WaterLib)
+local Signals = require(RepS.Modules.Data.Signals)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -16,6 +17,19 @@ local char = script.Parent.Parent :: Model
 
 Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit.Name == "ExitRegion" and not char:GetAttribute("IsSurvived") then
+        local check = true
+
+        for _, button: Model in map.Special.Button:GetChildren() do
+            if button:IsA("Model") and string.find(button.Name, "_Button") then
+                if not button:GetAttribute("Hit") then check = false break end
+            end
+        end
+
+        if not check then
+            Signals.CreateHint:Fire("You need to press all the buttons first!", "yellow", 4)
+            return
+        end
+
         char:SetAttribute("IsSurvived", true)
     end
 end))

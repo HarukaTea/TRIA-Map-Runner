@@ -77,7 +77,7 @@ local function Panel(self: table) : Frame
         return tonumber(speed)
     end
     speedObserver:onChange(function()
-        self.plr.Character.Humanoid.WalkSpeed = _calSpeed(peek(inputs.Speed))
+        self.char.Humanoid.WalkSpeed = _calSpeed(peek(inputs.Speed))
     end)
 
     --// Force speed detector
@@ -88,8 +88,8 @@ local function Panel(self: table) : Frame
         if isForce then
             if forceSpeedConnection then forceSpeedConnection:Disconnect() end
 
-            forceSpeedConnection = self.plr.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                local humanoid = self.plr.Character.Humanoid :: Humanoid
+            forceSpeedConnection = self.char.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                local humanoid = self.char.Humanoid :: Humanoid
 
                 if humanoid.WalkSpeed < _calSpeed(peek(inputs.Speed)) then
                     humanoid.WalkSpeed = _calSpeed(peek(inputs.Speed))
@@ -108,7 +108,7 @@ local function Panel(self: table) : Frame
         return tonumber(jump)
     end
     jumpObserver:onChange(function()
-        self.plr.Character.Humanoid.JumpPower = _calJump(peek(inputs.Jump))
+        self.char.Humanoid.JumpPower = _calJump(peek(inputs.Jump))
     end)
 
     --// Force jump detector
@@ -119,8 +119,8 @@ local function Panel(self: table) : Frame
         if isForce then
             if forceJumpConnection then forceJumpConnection:Disconnect() end
 
-            forceJumpConnection = self.plr.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
-                local humanoid = self.plr.Character.Humanoid :: Humanoid
+            forceJumpConnection = self.char.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+                local humanoid = self.char.Humanoid :: Humanoid
 
                 if humanoid.JumpPower < _calJump(peek(inputs.Jump)) then
                     humanoid.JumpPower = _calJump(peek(inputs.Jump))
@@ -177,7 +177,7 @@ local function Panel(self: table) : Frame
 
     --// Self-light detector
     lightsObserver:onChange(function()
-        local char = self.plr.Character :: Model
+        local char = self.char :: Model
 
         if peek(inputs.Lights) then
             if char.PrimaryPart:FindFirstChild("SelfLight") then char.PrimaryPart.SelfLight:Destroy() end
@@ -293,7 +293,7 @@ local function Panel(self: table) : Frame
             end
 
             btn.Hitbox.Size = v3New(1, 1, 1) * 15.99
-            btn.Hitbox.CFrame = self.plr.Character.PrimaryPart.CFrame
+            btn.Hitbox.CFrame = self.char.PrimaryPart.CFrame
         end
     end
     skipBtnsObserver:onChange(function()
@@ -344,48 +344,13 @@ local function Panel(self: table) : Frame
         end
     end)
 
-    --// Spawn
-    self.plr.CharacterAdded:Connect(function(char: Model)
-        local speed, jump = _calSpeed(peek(inputs.Speed)), _calJump(peek(inputs.Jump))
-        local humanoid = self.plr.Character:WaitForChild("Humanoid") :: Humanoid
-
-        humanoid.WalkSpeed = speed
-        humanoid.JumpPower = jump
-        self.plr.Backpack.Noclip:SetAttribute("Speed", _calNoclipSpeed(peek(inputs.Noclip)))
-
-        if peek(inputs.Lights) then
-            local light = instanceNew("PointLight")
-            light.Range = 16
-            light.Name = "SelfLight"
-            light.Parent = char.PrimaryPart
-        end
-
-        if forceSpeedConnection then forceSpeedConnection:Disconnect() end
-        if forceJumpConnection then forceJumpConnection:Disconnect() end
-
-        if peek(inputs.ForceSpeed) then
-            forceSpeedConnection = self.plr.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                if humanoid.WalkSpeed < _calSpeed(peek(inputs.Speed)) then
-                    humanoid.WalkSpeed = _calSpeed(peek(inputs.Speed))
-                end
-            end)
-        end
-        if peek(inputs.ForceJump) then
-            forceJumpConnection = self.plr.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
-                if humanoid.JumpPower < _calJump(peek(inputs.Jump)) then
-                    humanoid.JumpPower = _calJump(peek(inputs.Jump))
-                end
-            end)
-        end
-    end)
-
     --// Checkpoints
     local function _addCheckPoint(_, inputState: Enum.UserInputState)
         if inputState ~= Enum.UserInputState.Begin then return end
 
         local cTable = Fusion.peek(self.checkPoints)
 
-        cTable[#cTable + 1] = self.plr.Character.PrimaryPart.CFrame
+        cTable[#cTable + 1] = self.char.PrimaryPart.CFrame
         self.checkPoints:set(cTable)
 
         MapLib:Alert("Checkpoint added!", "white", 3)

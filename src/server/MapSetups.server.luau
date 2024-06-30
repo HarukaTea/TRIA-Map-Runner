@@ -34,6 +34,20 @@ local function setupMapLib()
             return require(ReplicatedStorage.Modules.Data.MapLib)
         end
     end
+
+    --// Map libs old
+    local bindables = Instance.new("Folder")
+    bindables.Name = "Bindables"
+    bindables.Parent = ServerStorage
+
+    local mapLibRFOLD = Instance.new("BindableFunction")
+    mapLibRFOLD.Name = "GetMapLib"
+    mapLibRFOLD.Parent = bindables
+    mapLibRFOLD.OnInvoke = function()
+        return function ()
+            return require(ReplicatedStorage.Modules.Data.MapLib)
+        end
+    end
 end
 local function setupMap()
     mapModel = Instance.new("Model")
@@ -60,6 +74,12 @@ local function setupLighting()
 
     for _, child: Instance in lightingSettings:GetChildren() do
         child.Parent = Lighting
+
+        if child:IsA("Model") or child:IsA("Folder") then
+            for _, descendant: Instance in child:GetDescendants() do
+                descendant.Parent = Lighting
+            end
+        end
     end
     for attr: string, val: any in lightingSettings:GetAttributes() do
         Lighting[attr] = val
@@ -92,9 +112,9 @@ local function setupButtons()
     events.Parent = mapModel
 
     local buttonColorSettings = mapModel.Settings.Button :: Folder
-    local default = buttonColorSettings.Default :: Configuration
-    local group = buttonColorSettings.Group :: Configuration
-    local pathChild = buttonColorSettings.PathChild :: Configuration
+    local default = buttonColorSettings:FindFirstChild("Default") :: Configuration
+    local group = buttonColorSettings:FindFirstChild("Group")  :: Configuration
+    local pathChild = buttonColorSettings:FindFirstChild("PathChild")  :: Configuration
 
     local btnIndex = 1
 
@@ -107,23 +127,45 @@ local function setupButtons()
             local realIndex = tonumber(index)
             local realrealIndex = string.gsub(index, "%a", "")
 
-            local buttonStates = {
-                Default = {
-                    Active = default:GetAttribute("ActiveColor") :: Color3,
-                    InActive = default:GetAttribute("InactiveColor") :: Color3,
-                    Activated = default:GetAttribute("ActivatedColor") :: Color3,
-                },
-                Group = {
-                    Active = group:GetAttribute("ActiveColor") :: Color3,
-                    InActive = group:GetAttribute("InactiveColor") :: Color3,
-                    Activated = group:GetAttribute("ActivatedColor") :: Color3,
-                },
-                PathChild = {
-                    Active = pathChild:GetAttribute("ActiveColor") :: Color3,
-                    InActive = pathChild:GetAttribute("InactiveColor") :: Color3,
-                    Activated = pathChild:GetAttribute("ActivatedColor") :: Color3,
+            local buttonStates = nil
+            if not default or not group or not pathChild then
+                buttonStates = {
+                    Default = {
+                        Active = buttonColorSettings:GetAttribute("EnabledColor") :: Color3,
+                        InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
+                        Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
+                    },
+                    Group = {
+                        Active = buttonColorSettings:GetAttribute("EnabledGroupColor") :: Color3,
+                        InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
+                        Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
+                    },
+                    PathChild = {
+                        Active = buttonColorSettings:GetAttribute("EnabledColor") :: Color3,
+                        InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
+                        Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
+                    }
                 }
-            }
+            else
+                buttonStates = {
+                    Default = {
+                        Active = default:GetAttribute("ActiveColor") :: Color3,
+                        InActive = default:GetAttribute("InactiveColor") :: Color3,
+                        Activated = default:GetAttribute("ActivatedColor") :: Color3,
+                    },
+                    Group = {
+                        Active = group:GetAttribute("ActiveColor") :: Color3,
+                        InActive = group:GetAttribute("InactiveColor") :: Color3,
+                        Activated = group:GetAttribute("ActivatedColor") :: Color3,
+                    },
+                    PathChild = {
+                        Active = pathChild:GetAttribute("ActiveColor") :: Color3,
+                        InActive = pathChild:GetAttribute("InactiveColor") :: Color3,
+                        Activated = pathChild:GetAttribute("ActivatedColor") :: Color3,
+                    }
+                }
+            end
+
 
             button:SetAttribute("Index", realrealIndex)
 
@@ -320,18 +362,15 @@ end
 local function setupScripts()
     local mapScript = mapModel:FindFirstChild("MapScript") :: Script
     local mapLocalScript = mapModel:FindFirstChild("LocalMapScript") :: LocalScript
-    local effectScript = mapModel:FindFirstChild("EffectScript") :: LocalScript
 
-    if not mapScript or not mapLocalScript or not effectScript then
-        Events.CreateHint:FireAll("Map scripts not found!", nil, 6)
-        return
+    if mapScript then
+        mapScript.Disabled = false
     end
-
-    mapScript.Disabled = false
-
-    local mapLocalScriptClone = mapLocalScript:Clone()
-    mapLocalScriptClone.Disabled = false
-    mapLocalScriptClone.Parent = plr.Character
+    if mapLocalScript then
+        local mapLocalScriptClone = mapLocalScript:Clone()
+        mapLocalScriptClone.Disabled = false
+        mapLocalScriptClone.Parent = plr.Character
+    end
 
     mapModel:SetAttribute("ScriptsLoaded", true)
 end
@@ -348,11 +387,13 @@ local function setupMain()
 
         --- starting
         local soundId = setupSound()
-        local timeout = 8
+        local timeout = 10
+
+        task.wait(2)
 
         repeat
-            task.wait(2)
-            timeout -= 2
+            task.wait(1)
+            timeout -= 1
         until timeout < 0 or mapModel.MapMusic.IsLoaded == true
 
         mapModel:SetAttribute("IsLoaded", true)
@@ -375,10 +416,13 @@ local function setupMain()
             MapDataBook.DifficultyColors[difficulty],
             3
         )
+        plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
 
         Spawn(function()
             task.wait(5)
             Promise.new(function()
+                if soundId == "" or soundId == nil then return end
+
                 local productInfo = MarketplaceService:GetProductInfo(soundId)
                 if productInfo then
                     Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromRGB(125, 15, 79), 4)

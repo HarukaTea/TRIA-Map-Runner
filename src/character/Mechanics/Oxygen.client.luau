@@ -78,15 +78,18 @@ local oxygenThread = task.spawn(function()
 
                     if state == "water" then
                         oxygenDepletion = 1
+                        timePerLoss = 0.085
 
                     elseif state == "acid" then
-                        oxygenDepletion = 2
+                        oxygenDepletion = 1
+                        timePerLoss = 0.04
 
                     elseif state == "lava" then
                         char:SetAttribute("CurrentOxygen", 0)
 
                     elseif state == "custom" then
                         oxygenDepletion = currentWater:GetAttribute("OxygenDepletion")
+                        timePerLoss = 0.085
                     end
                 end
 

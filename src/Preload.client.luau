@@ -176,7 +176,7 @@ local function setupUI()
     --- apply info
     repeat task.wait() until workspace:WaitForChild("Map", 999)
 
-    local setting = workspace.Map.Settings :: Configuration
+    local setting = workspace.Map:WaitForChild("Settings") :: Configuration
     local mainSettings = setting.Main :: Configuration
     local mapNameConfig = mainSettings:GetAttribute("Name") or "?"
     local mapImageConfig = mainSettings:GetAttribute("Image") or ""

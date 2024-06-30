@@ -61,8 +61,25 @@ return function(plr: Player)
 	--// Connections
 	local function _createHint(text: string, color: Color3 | string, duration: number?)
 		local uniqueId = HttpService:GenerateGUID(false)
+		local colorList = {
+			RED = fromRGB(255, 0, 0),
+			GREEN = fromRGB(0, 255, 0),
+			BLUE = fromRGB(0, 0, 255),
+			YELLOW = fromRGB(255, 255, 0),
+			ORANGE = fromRGB(255, 165, 0),
+			PURPLE = fromRGB(128, 0, 128),
+			PINK = fromRGB(255, 192, 203),
+			WHITE = fromRGB(255, 255, 255),
+			BLACK = fromRGB(0, 0, 0),
+			GREY = fromRGB(128, 128, 128),
+			LIGHTGREY = fromRGB(192, 192, 192),
+			DARKGREY = fromRGB(64, 64, 64),
+			BROWN = fromRGB(165, 42, 42),
+		}
 
-		if typeof(color) == "string" then color = Color3.fromRGB(255, 255, 255) end
+		if typeof(color) == "string" then
+			color = colorList[string.upper(color)] or fromRGB(255, 255, 255)
+		end
 
 		local info = {
 			Id = uniqueId,

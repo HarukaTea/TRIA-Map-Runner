@@ -31,13 +31,13 @@ return function (plr: Player)
 
         [Children] = {
             Components.Frame(scope, {
-                Name = "BG",
+                Name = "Bottom",
                 AnchorPoint = v2New(0.5, 1),
                 Position = fromScale(0.5, 1),
                 Size = fromScale(1, 0.1),
 
                 [Children] = {
-                    Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 25.798 }),
+                    Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 25.111 }),
 
                     OpenButton(self),
                     Panel(self)
