@@ -15,7 +15,6 @@ local plr = Players:GetPlayerFromCharacter(char)
 local function setup()
     char.PrimaryPart = char.Humanoid.RootPart
 
-    char.Humanoid.BreakJointsOnDeath = false
     char.Humanoid.WalkSpeed = 20
     char.Humanoid.JumpPower = 50
 

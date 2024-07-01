@@ -75,7 +75,7 @@ Add(char.Humanoid.Touched:Connect(function()
                     or (char.PrimaryPart.Position - (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).Magnitude < 1.2
                     or hit.Size.Z < (char.PrimaryPart.Position - hit.Position).Magnitude
 
-            elseif hit:GetAttribute("_action") == "WallJump" then
+            elseif (hit:GetAttribute("_action") == "WallJump" or hit:FindFirstChild("_WallJump")) then
                 repeat RunService.RenderStepped:Wait()
                     until jumped
                     or tick() - start > (hit:GetAttribute("Timeout") or math.huge)
@@ -94,7 +94,7 @@ Add(char.Humanoid.Touched:Connect(function()
 
                 char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
                     normal.X * 50,
-                    50 * momentum + normal.Y * 50 * momentum,
+                    50 * momentum + normal.Y * 50,
                     normal.Z * 50
                 )
 

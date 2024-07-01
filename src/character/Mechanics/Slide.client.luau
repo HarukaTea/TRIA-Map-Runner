@@ -65,6 +65,13 @@ local function _slide()
         vel.Velocity = humanoid.MoveDirection * humanoid.WalkSpeed
         vel.Parent = char.PrimaryPart
 
+        if char:GetAttribute("AllowAirDive") then
+            local bf = Instance.new("BodyForce")
+            bf.Name = "SlideVel"
+            bf.Force = Vector3.new(0, -12000, 0)
+            bf.Parent = char.PrimaryPart
+        end
+
         task.wait(0.7)
         _cancelSlide(false)
     end)

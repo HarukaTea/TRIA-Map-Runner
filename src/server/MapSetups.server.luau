@@ -44,6 +44,8 @@ local function setupMapLib()
     mapLibRFOLD.Name = "GetMapLib"
     mapLibRFOLD.Parent = bindables
     mapLibRFOLD.OnInvoke = function()
+        Events.CreateHint:FireAll("This map is using the old maplib, read console for more info.", "red", 5)
+
         return function ()
             return require(ReplicatedStorage.Modules.Data.MapLib)
         end
@@ -74,12 +76,6 @@ local function setupLighting()
 
     for _, child: Instance in lightingSettings:GetChildren() do
         child.Parent = Lighting
-
-        if child:IsA("Model") or child:IsA("Folder") then
-            for _, descendant: Instance in child:GetDescendants() do
-                descendant.Parent = Lighting
-            end
-        end
     end
     for attr: string, val: any in lightingSettings:GetAttributes() do
         pcall(function() Lighting[attr] = val end)
@@ -353,6 +349,14 @@ local function setupWaters()
     end
     WaterLib._WaterAdded:Connect(_setCustomWater)
 end
+local function setupSkills()
+    local skillSettings = setting:FindFirstChild("Skills") :: Configuration
+
+    if not skillSettings then return end
+
+    plr.Character:SetAttribute("AllowAirDive", skillSettings:GetAttribute("AllowAirDive"))
+    plr.Character:SetAttribute("AllowSlide", skillSettings:GetAttribute("AllowSliding"))
+end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
     if not soundSettings then soundSettings = setting.Main :: Configuration end
@@ -394,12 +398,13 @@ local function setupMain()
         setupButtonFuncs()
         setupZipline()
         setupWaters()
+        setupSkills()
 
         --- starting
         local soundId = setupSound()
-        local timeout = 10
+        local timeout = 6
 
-        task.wait(2)
+        task.wait(1)
 
         repeat
             task.wait(1)
