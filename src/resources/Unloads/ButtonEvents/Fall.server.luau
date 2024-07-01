@@ -30,7 +30,7 @@ Signals.BtnPressed:Connect(function(btnIndex: string)
 		obj:BreakJoints()
 
 	elseif obj:IsA("Model") then
-		for _, child in obj:GetDescendants() do
+		for _, child: Instance in obj:GetDescendants() do
 			if objList[child.ClassName] then
 				obj.Anchored = false
 				obj:BreakJoints()

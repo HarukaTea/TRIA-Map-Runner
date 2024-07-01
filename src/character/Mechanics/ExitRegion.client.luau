@@ -26,7 +26,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
         end
 
         if not check then
-            Signals.CreateHint:Fire("You need to press all the buttons first!", "yellow", 4)
+            Signals.CreateHint:Fire("You need to press all buttons first!", "yellow", 4)
             return
         end
 
@@ -53,7 +53,7 @@ Add(HarukaLib:Hydrate(char, {
             end
 
             workspace.Sounds.SFXs.Survived:Play()
-            MapLib:Alert("Survived", Color3.fromRGB(0, 255, 0), 4)
+            MapLib:Alert("Survived", "green", 4)
 
             task.wait(0.5)
             for _, block: BasePart in exitBlocks do

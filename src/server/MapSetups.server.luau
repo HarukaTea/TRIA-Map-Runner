@@ -82,7 +82,7 @@ local function setupLighting()
         end
     end
     for attr: string, val: any in lightingSettings:GetAttributes() do
-        Lighting[attr] = val
+        pcall(function() Lighting[attr] = val end)
     end
 end
 local function setupVariants()
@@ -129,6 +129,8 @@ local function setupButtons()
 
             local buttonStates = nil
             if not default or not group or not pathChild then
+                warn("Using old map libs!")
+
                 buttonStates = {
                     Default = {
                         Active = buttonColorSettings:GetAttribute("EnabledColor") :: Color3,
@@ -331,12 +333,18 @@ local function setupZipline()
     end
 end
 local function setupWaters()
-    local customAttrs = setting.Liquids :: Configuration
+    local liquidSettings = setting.Liquids :: Configuration
 
     local function _setCustomWater(water: BasePart)
         if water:GetAttribute("Type") == "custom" then
-            water:SetAttribute("OxygenDepletion", customAttrs.custom:GetAttribute("OxygenDepletion"))
-            water.Color = customAttrs.custom:GetAttribute("Color")
+            local customAttr = liquidSettings:FindFirstChild("custom") :: Configuration
+            local customAttrOld = liquidSettings:FindFirstChild("Custom") :: Configuration
+
+            if not customAttr and not customAttrOld then return end
+            if customAttrOld and not customAttr then customAttr = customAttrOld end
+
+            water:SetAttribute("OxygenDepletion", customAttr:GetAttribute("OxygenDepletion"))
+            water.Color = customAttr:GetAttribute("Color")
         end
     end
 
@@ -376,6 +384,8 @@ local function setupScripts()
 end
 local function setupMain()
     Promise.new(function()
+        workspace.Sounds.Lobby:Play()
+
         setupMapLib()
         setupMap()
         setupLighting()
@@ -402,7 +412,7 @@ local function setupMain()
         mapModel.MapMusic:Play()
         workspace.Sounds.Lobby:Stop()
 
-        plr.Character.PrimaryPart.Anchored = false
+        mapModel:SetAttribute("IsStarted", true)
 
         local mainSettings = setting.Main :: Configuration
         local mapName = mainSettings:GetAttribute("Name") or "?"
@@ -417,6 +427,7 @@ local function setupMain()
             3
         )
         plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
+        plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
 
         Spawn(function()
             task.wait(5)
@@ -440,7 +451,9 @@ local function setupMain()
             task.wait(mainSettings:GetAttribute("MaxTime") or 120)
 
             Events.CreateHint:FireAll("Round Ended...")
-            workspace.Sounds.Lobby:Play()
+
+            task.wait(1)
+            plr.Character.Humanoid.Health = 0
         end)
 
     end):Catch(function(err)
@@ -451,8 +464,6 @@ local function setupMain()
             Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
             warn(err)
         end
-
-        warn(err)
     end)
 end
 setupMain()

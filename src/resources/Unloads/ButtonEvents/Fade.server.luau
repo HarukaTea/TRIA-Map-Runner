@@ -29,7 +29,7 @@ Signals.BtnPressed:Connect(function(btnIndex: string)
 		obj:Destroy()
 
 	elseif obj:IsA("Model") then
-		for _, child in obj:GetDescendants() do
+		for _, child: Instance in obj:GetDescendants() do
 			if objList[child.ClassName] then child:Destroy() end
 		end
 	end

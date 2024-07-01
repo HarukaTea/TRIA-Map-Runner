@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Signal = require(RepS.Modules.Packages.Signal)
 local Spawn = require(RepS.Modules.Packages.Spawn)
@@ -101,6 +102,7 @@ function MapLib:Move(moveable: PVInstance, movement: Vector3, duration: number?)
     end)
 end
 MapLib.MovePart = MapLib.Move
+MapLib.MoveModel = MapLib.Move
 
 --[[
     Used to move `PVInstances`, but relatively, respect its rotation
@@ -115,6 +117,7 @@ function MapLib:MoveRelative(moveable: PVInstance, movement: Vector3, duration: 
     end)
 end
 MapLib.MovePartLocal = MapLib.MoveRelative
+MapLib.MoveModelLocal = MapLib.MoveRelative
 
 --[[
     This method can be used to change the state of a luquid,
@@ -128,7 +131,34 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
     if not liquid then return end
     if not liquidType then return end
 
-    liquid:SetAttribute("Type", liquidType)
+    Spawn(function()
+        if liquidType == "custom" then
+            local liquidSettings = MapLib.map.Settings.Liquids :: Configuration | Folder
+            local customAttr = liquidSettings:FindFirstChild("custom") :: Configuration
+            local customAttrOld = liquidSettings:FindFirstChild("Custom") :: Configuration
+
+            if not customAttr and not customAttrOld then return end
+            if customAttrOld and not customAttr then customAttr = customAttrOld end
+
+            TweenService:Create(liquid, TweenInfo.new(1), { Color = customAttr:GetAttribute("Color") }):Play()
+
+            Spawn(function()
+                task.wait(1)
+                liquid:SetAttribute("OxygenDepletion", customAttr:GetAttribute("OxygenDepletion"))
+            end)
+        else
+            local liquidColors = {
+                water = Color3.fromRGB(33, 84, 185),
+                acid = Color3.fromRGB(0, 255, 0),
+                lava = Color3.fromRGB(255, 0, 0),
+            }
+
+            TweenService:Create(liquid, TweenInfo.new(1), { Color = liquidColors[liquidType] }):Play()
+        end
+
+        task.wait(1)
+        liquid:SetAttribute("Type", liquidType)
+    end)
 end
 
 --[[

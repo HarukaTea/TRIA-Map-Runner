@@ -8,6 +8,8 @@ local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent.Parent :: Model
 
+repeat task.wait() until workspace:WaitForChild("Map", 999)
+
 local isSwimming = false
 local currentWater: BasePart = nil
 
@@ -15,6 +17,8 @@ local splashCD = 0
 local maxOxygen = 100
 local timePerLoss = 0.085
 local oxygenDepletion = 1
+
+local defaultOxygen = workspace.Map.Settings.Main:GetAttribute("DefaultOxygen") :: number
 
 Add(char.Head.Touched:Connect(function(hit: BasePart)
     if hit:IsA("BasePart") and (string.find(hit.Name, "_Liquid") or string.find(hit.Name, "_Gas")) then
@@ -88,7 +92,7 @@ local oxygenThread = task.spawn(function()
                         char:SetAttribute("CurrentOxygen", 0)
 
                     elseif state == "custom" then
-                        oxygenDepletion = currentWater:GetAttribute("OxygenDepletion")
+                        oxygenDepletion = currentWater:GetAttribute("OxygenDepletion") or 1
                         timePerLoss = 0.085
                     end
                 end
@@ -96,10 +100,10 @@ local oxygenThread = task.spawn(function()
                 decreaseAir()
 
             elseif not isSwimming then
-                if char:GetAttribute("MaxOxygen") == 300 then
+                if char:GetAttribute("MaxOxygen") > (defaultOxygen or 100) then
                     continue
 
-                elseif maxOxygen == 100 then
+                elseif maxOxygen <= defaultOxygen then
                     increaseAir()
                 end
             end

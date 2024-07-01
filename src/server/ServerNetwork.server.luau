@@ -18,17 +18,13 @@ local function changeLighting(
     end
 
     for property: string, value: any in properties do
-        pcall(function()
-            Lighting[property] = value
-        end)
+        pcall(function() Lighting[property] = value end)
     end
     for effect: string, info: table in postEffects do
         if not Lighting:FindFirstChild(effect) then continue end
 
         for property: string, value: any in info do
-            pcall(function()
-                Lighting[effect][property] = value
-            end)
+            pcall(function() Lighting[effect][property] = value end)
         end
     end
 end

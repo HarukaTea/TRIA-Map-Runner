@@ -27,8 +27,6 @@ local function setup()
         char:SetAttribute(attr, val)
     end
 
-    workspace.Sounds.Lobby:Play()
-
     --// Give noclip
     local noclip = Instance.new("HopperBin")
     noclip.Name = "Noclip"
@@ -36,13 +34,9 @@ local function setup()
     SS.Resources.Unloads.NoclipControl:Clone().Parent = noclip
 
     noclip.Parent = plr.Backpack
+
+    repeat task.wait() until workspace.Map:GetAttribute("IsStarted")
+
+    char.PrimaryPart.Anchored = false
 end
 setup()
-
-
---// Clear
-char.Humanoid.Died:Once(function()
-    if not workspace:FindFirstChild("Map") then return end
-
-    workspace.Sounds.Lobby:Play()
-end)
