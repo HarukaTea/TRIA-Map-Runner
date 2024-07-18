@@ -10,13 +10,11 @@ local char = script.Parent.Parent :: Model
 
 Add(char.Humanoid.Jumping:Connect(function(isJumping: boolean)
     if isJumping then
-        local vel = char.PrimaryPart.AssemblyLinearVelocity
+        local vel = char.PrimaryPart.Velocity
 
-        char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(vel.X, char.Humanoid.JumpPower * 1.1, vel.Z)
+        char.PrimaryPart.Velocity = Vector3.new(vel.X, char.Humanoid.JumpPower * 1.1, vel.Z)
     end
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

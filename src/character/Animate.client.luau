@@ -40,21 +40,6 @@ local function startAnim(anim: AnimationTrack, transitionTime: number)
 		oldAnim = anim
 	end
 end
-local localStateFunctions = {
-	[Enum.HumanoidStateType.Jumping] = false,
-	[Enum.HumanoidStateType.Freefall] = false,
-	[Enum.HumanoidStateType.Seated] = false
-}
-local stateFunctions = {
-	[Enum.HumanoidStateType.Jumping] = true,
-	[Enum.HumanoidStateType.Freefall] = true,
-	[Enum.HumanoidStateType.Swimming] = true,
-	[Enum.HumanoidStateType.GettingUp] = true,
-	[Enum.HumanoidStateType.Landed] = true,
-	[Enum.HumanoidStateType.Dead] = true,
-	[Enum.HumanoidStateType.Climbing] = true,
-	[Enum.HumanoidStateType.Running] = true
-}
 
 local jumpAnimTime = 0
 local isFreefalling = false
@@ -62,17 +47,7 @@ local isFreefalling = false
 --// Setup
 local function setup()
 	local humanoid = char.Humanoid :: Humanoid
-	local activeState = humanoid:GetState()
 
-	Add(humanoid.StateChanged:Connect(function(_, state)
-		activeState = state
-
-		local localFunc = localStateFunctions[activeState]
-		if localFunc then localFunc() return end
-
-		local func = stateFunctions[activeState]
-		if not func then startAnim() end
-	end))
 	Add(humanoid.Running:Connect(function()
 		if humanoid.MoveDirection.Magnitude > 0 then
 			startAnim(ANIMS.Running, 0.1)
@@ -117,11 +92,10 @@ local function setup()
 		if isFreefalling and jumpAnimTime <= 0 then startAnim(ANIMS.Freefall, 0.1) end
 	end))
 
-	local func = localStateFunctions[activeState]
-	if not func then
-		startAnim(ANIMS.Idle, 0.1)
-		isFreefalling = false
-	end
+	startAnim(ANIMS.Idle, 0.1)
+	isFreefalling = false
+
+	char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
 end
 setup()
 

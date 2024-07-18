@@ -11,12 +11,13 @@ local task = nil -- Disable usage of Roblox's task scheduler
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
 local External = require(Package.External)
-local Observer = require(Package.Graph.Observer)
+local Observer = require(Package.State.Observer)
 local peek = require(Package.State.peek)
-local castToState = require(Package.State.castToState)
+local isState = require(Package.State.isState)
 local doCleanup = require(Package.Memory.doCleanup)
+local scopePool = require(Package.Memory.scopePool)
 
-type Set<T> = {[T]: any}
+type Set<T> = {[T]: unknown}
 
 -- Experimental flag: name children based on the key used in the [Children] table
 local EXPERIMENTAL_AUTO_NAMING = false
@@ -27,16 +28,16 @@ return {
 	stage = "descendants",
 	apply = function(
 		self: Types.SpecialKey,
-		scope: Types.Scope<any>,
-		value: any,
+		scope: Types.Scope<unknown>,
+		value: unknown,
 		applyTo: Instance
 	)
 		local newParented: Set<Instance> = {}
 		local oldParented: Set<Instance> = {}
 	
 		-- save scopes for state object observers
-		local newScopes: {[Types.StateObject<any>]: Types.Scope<any>} = {}
-		local oldScopes: {[Types.StateObject<any>]: Types.Scope<any>} = {}
+		local newScopes: {[Types.StateObject<unknown>]: Types.Scope<unknown>} = {}
+		local oldScopes: {[Types.StateObject<unknown>]: Types.Scope<unknown>} = {}
 	
 		-- Rescans this key's value to find new instances to parent and state objects
 		-- to observe for changes; then unparents instances no longer found and
@@ -44,9 +45,11 @@ return {
 		local function updateChildren()
 			oldParented, newParented = newParented, oldParented
 			oldScopes, newScopes = newScopes, oldScopes
+			table.clear(newParented)
+			table.clear(newScopes)
 	
 			local function processChild(
-				child: any,
+				child: unknown,
 				autoName: string?
 			)
 				local childType = typeof(child)
@@ -71,9 +74,9 @@ return {
 						child.Name = autoName
 					end
 	
-				elseif castToState(child) then
+				elseif isState(child) then
 					-- case 2; state object
-					local child = child :: Types.StateObject<any>
+					local child = child :: Types.StateObject<unknown>
 	
 					local value = peek(child)
 					-- allow nil to represent the absence of a child
@@ -96,7 +99,7 @@ return {
 	
 				elseif childType == "table" then
 					-- case 3; table of objects
-					local child = child :: {[any]: any}
+					local child = child :: {[unknown]: unknown}
 	
 					for key, subChild in pairs(child) do
 						local keyType = typeof(key)
@@ -128,13 +131,12 @@ return {
 			for oldInstance in pairs(oldParented) do
 				oldInstance.Parent = nil
 			end
-			table.clear(oldParented)
 	
 			-- disconnect observers which weren't reused
 			for oldState, childScope in pairs(oldScopes) do
 				doCleanup(childScope)
+				scopePool.clearAndGive(childScope)
 			end
-			table.clear(oldScopes)
 		end
 	
 		table.insert(scope, function()

@@ -12,7 +12,7 @@ local Package = script.Parent.Parent
 local Oklab = require(Package.Colour.Oklab)
 
 local function unpackType(
-	value: any,
+	value: unknown,
 	typeString: string
 ): {number}
 	if typeString == "number" then

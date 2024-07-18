@@ -10,13 +10,11 @@ local task = nil -- Disable usage of Roblox's task scheduler
 
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
--- Memory
-local checkLifetime = require(Package.Memory.checkLifetime)
--- Graph
-local Observer = require(Package.Graph.Observer)
--- State
-local castToState = require(Package.State.castToState)
+local External = require(Package.External)
+local isState = require(Package.State.isState)
+local Observer = require(Package.State.Observer)
 local peek = require(Package.State.peek)
+local whichLivesLonger = require(Package.Memory.whichLivesLonger)
 
 local keyCache: {[string]: Types.SpecialKey} = {}
 
@@ -31,17 +29,17 @@ local function Attribute(
 			stage = "self",
 			apply = function(
 				self: Types.SpecialKey,
-				scope: Types.Scope<any>,
-				value: any,
+				scope: Types.Scope<unknown>,
+				value: unknown,
 				applyTo: Instance
 			)
-				if castToState(value) then
-					local value = value :: Types.StateObject<any>
-					checkLifetime.bOutlivesA(
-						scope, applyTo,
-						value.scope, value.oldestTask,
-						checkLifetime.formatters.boundAttribute, attributeName
-					)
+				if isState(value) then
+					local value = value :: Types.StateObject<unknown>
+					if value.scope == nil then
+						External.logError("useAfterDestroy", nil, `The {value.kind} object, bound to [Attribute "{attributeName}"],`, `the {applyTo.ClassName} instance`)
+					elseif whichLivesLonger(scope, applyTo, value.scope, value.oldestTask) == "definitely-a" then
+						External.logWarn("possiblyOutlives", `The {value.kind} object, bound to [Attribute "{attributeName}"],`, `the {applyTo.ClassName} instance`)
+					end
 					Observer(scope, value :: any):onBind(function()
 						applyTo:SetAttribute(attributeName, peek(value))
 					end)

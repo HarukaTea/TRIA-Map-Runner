@@ -73,7 +73,7 @@ local function increaseAir()
     end
 end
 
-local oxygenThread = task.spawn(function()
+Add(task.spawn(function()
     while task.wait(timePerLoss) do
         if char.Humanoid.Health > 0 then
             if isSwimming then
@@ -115,11 +115,7 @@ local oxygenThread = task.spawn(function()
             break
         end
     end
-end)
+end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    if oxygenThread then task.cancel(oxygenThread) end
-
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

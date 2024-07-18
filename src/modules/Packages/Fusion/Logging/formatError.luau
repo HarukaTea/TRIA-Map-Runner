@@ -17,14 +17,14 @@ local function formatError(
 	externalProvider: Types.ExternalProvider?,
 	messageID: string,
 	errorOrTrace: Types.Error | string | nil,
-	...: any
+	...: unknown
 ): string
 	local originalMessageID = messageID
 	local error: Types.Error? = if typeof(errorOrTrace) == "table" then errorOrTrace else nil
 	local trace: string? = if typeof(errorOrTrace) == "table" then errorOrTrace.trace else errorOrTrace
 	local messageText = messages[messageID]
 	if messageText == nil then
-		messageID = "antMessage"
+		messageID = "unknownMessage"
 		messageText = messages[messageID]
 	end
 	messageText = messageText:format(...)

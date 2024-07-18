@@ -12,18 +12,18 @@ local External = require(Package.External)
 
 local function merge(
 	overwrite: "none" | "first" | "all",
-	into: {[any]: any},
-	from: {[any]: any}?,
-	...: {[any]: any}
-): {[any]: any}
+	into: {[unknown]: unknown},
+	from: {[unknown]: unknown}?,
+	...: {[unknown]: unknown}
+): {[unknown]: unknown}
 	if from == nil then
 		return into
 	else
 		for key, value in from do
-			if into[key] == nil then
-				into[key] = value
-			elseif overwrite == "none" then
+			if into[key] ~= nil and overwrite == "none" then
 				External.logError("mergeConflict", nil, tostring(key))
+			else
+				into[key] = value
 			end
 		end
 		return merge(if overwrite == "first" then "none" else overwrite, into, ...)

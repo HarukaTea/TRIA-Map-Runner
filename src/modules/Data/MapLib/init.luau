@@ -1,20 +1,23 @@
 --!nocheck
 
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
 local Signal = require(RepS.Modules.Packages.Signal)
 local Spawn = require(RepS.Modules.Packages.Spawn)
+local Promise = require(RepS.Modules.Packages.Promise)
 
 local Events, Signals = nil, nil
 if RS:IsServer() then
-    Events = require(game:GetService("ServerScriptService").Modules.Data.ServerEvents)
-    Signals = nil
+    Events = require(ServerScriptService.Modules.Data.ServerEvents)
+    Signals = require(ServerScriptService.Modules.Data.ServerSignals)
 
 elseif RS:IsClient() then
-    Events = nil
+    Events = require(RepS.Modules.Data.Events)
     Signals = require(RepS.Modules.Data.Signals)
 end
 
@@ -49,11 +52,33 @@ end
     ``````
 ]]
 function MapLib:ChangeMusic(musicId: number, volume: number?, startTick: number?)
-    local music = workspace.Map.MapMusic :: Sound
+    volume = volume or 0.5
+    startTick = startTick or 0
 
-    music.SoundId = tonumber(musicId) or ""
-    music.Volume = volume or 0.5
-    music.TimePosition = startTick or 0
+    if RS:IsClient() then
+        Events.ChangeMusic:Fire(musicId, volume, startTick)
+
+    elseif RS:IsServer() then
+        local music = workspace.Map.MapMusic :: Sound
+
+        music.SoundId = if tonumber(musicId) then "rbxassetid://"..musicId else musicId
+        music.Volume = volume
+        music.TimePosition = startTick
+
+        music:Play()
+
+        Promise.new(function()
+            if musicId == "" or musicId == nil then return end
+
+            local productInfo = MarketplaceService:GetProductInfo(musicId)
+            if productInfo then
+                Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromRGB(125, 15, 79), 4)
+            end
+
+        end):Catch(function(err)
+            warn(err)
+        end)
+    end
 end
 
 --[[

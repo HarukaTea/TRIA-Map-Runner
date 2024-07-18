@@ -1,4 +1,4 @@
---!strict
+--!nocheck
 
 local RunService = game:GetService("RunService")
 
@@ -11,6 +11,4 @@ elseif not script:FindFirstChild("Reliable") then
 	repeat task.wait() until script:FindFirstChild("Reliable")
 end
 
-return {
-	Reliable = script.Reliable
-}
+return script.Reliable

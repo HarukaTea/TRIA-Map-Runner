@@ -11,10 +11,8 @@ local task = nil -- Disable usage of Roblox's task scheduler
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
 local External = require(Package.External)
--- Memory
-local checkLifetime = require(Package.Memory.checkLifetime)
--- State
-local castToState = require(Package.State.castToState)
+local isState = require(Package.State.isState)
+local whichLivesLonger = require(Package.Memory.whichLivesLonger)
 
 local keyCache: {[string]: Types.SpecialKey} = {}
 
@@ -29,26 +27,26 @@ local function AttributeOut(
 			stage = "observer",
 			apply = function(
 				self: Types.SpecialKey,
-				scope: Types.Scope<any>,
-				value: any,
+				scope: Types.Scope<unknown>,
+				value: unknown,
 				applyTo: Instance
 			)
 				local event = applyTo:GetAttributeChangedSignal(attributeName)
 	
-				if not castToState(value) then
+				if not isState(value) then
 					External.logError("invalidAttributeOutType")
 				end
-				local value = value :: Types.StateObject<any>
+				local value = value :: Types.StateObject<unknown>
 				if value.kind ~= "Value" then
 					External.logError("invalidAttributeOutType")
 				end
-				local value = value :: Types.Value<any, any>
-				checkLifetime.bOutlivesA(
-					scope, applyTo,
-					value.scope, value.oldestTask,
-					checkLifetime.formatters.attributeOutputsTo, attributeName
-				)
-
+				local value = value :: Types.Value<unknown>
+				
+				if value.scope == nil then
+					External.logError("useAfterDestroy", nil, `The Value object, which [AttributeOut "{attributeName}"] outputs to,`, `the {applyTo.ClassName} instance`)
+				elseif whichLivesLonger(scope, applyTo, value.scope, value.oldestTask) == "definitely-a" then
+					External.logWarn("possiblyOutlives", `The Value object, which [AttributeOut "{attributeName}"] outputs to,`, `the {applyTo.ClassName} instance`)
+				end
 				value:set((applyTo :: any):GetAttribute(attributeName))
 				table.insert(scope, event:Connect(function()	
 					value:set((applyTo :: any):GetAttribute(attributeName))

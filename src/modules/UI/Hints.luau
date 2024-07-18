@@ -49,7 +49,8 @@ return function(plr: Player)
 							Text = info.Text,
 							FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
 							TextColor3 = info.Color,
-							TextStrokeTransparency = 0
+							TextStrokeTransparency = 0,
+							LayoutOrder = info.DisplayOrder,
 						})
 					end)
 				},
@@ -59,6 +60,7 @@ return function(plr: Player)
 	})
 
 	--// Connections
+	local displayOrder = 0
 	local function _createHint(text: string, color: Color3 | string, duration: number?)
 		local uniqueId = HttpService:GenerateGUID(false)
 		local colorList = {
@@ -85,8 +87,11 @@ return function(plr: Player)
 			Id = uniqueId,
 			Text = text or "",
 			Color = color or fromRGB(255, 255, 255),
-			Duration = duration or 5
+			Duration = duration or 5,
+			DisplayOrder = displayOrder
 		}
+		displayOrder += 1
+		if displayOrder >= math.huge - 1 then displayOrder = 0 end
 
 		local new = Fusion.peek(hintList)
 		new[uniqueId] = info

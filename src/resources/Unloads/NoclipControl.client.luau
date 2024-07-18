@@ -61,7 +61,7 @@ local function onSelected()
 		end
 
 		char.PrimaryPart.Anchored = false
-		char.PrimaryPart.AssemblyLinearVelocity = v3New()
+		char.PrimaryPart.Velocity = v3New()
 		humanoid.PlatformStand = false
 	end
 end

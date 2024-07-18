@@ -16,8 +16,6 @@ local task = nil -- Disable usage of Roblox's task scheduler
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
 local External = require(Package.External)
-local scopePool = require(Package.Memory.scopePool)
-local poisonScope = require(Package.Memory.poisonScope)
 
 local alreadyDestroying: {[Types.Task]: true} = {}
 
@@ -42,33 +40,26 @@ local function doCleanup(
 		task()
 
 	elseif typeof(task) == "table" then
-		local task = (task :: any) :: {Destroy: (...any) -> (...any)?, destroy: (...any) -> (...any)?}
+		local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)?, destroy: (...unknown) -> (...unknown)?}
 
 		-- case 4: destroy() function
 		if typeof(task.destroy) == "function" then
-			local task = (task :: any) :: {destroy: (...any) -> (...any)}
+			local task = (task :: any) :: {destroy: (...unknown) -> (...unknown)}
 			task:destroy()
 
 		-- case 5: Destroy() function
 		elseif typeof(task.Destroy) == "function" then
-			local task = (task :: any) :: {Destroy: (...any) -> (...any)}
+			local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)}
 			task:Destroy()
 
-		-- case 6: table of tasks with an array part
+		-- case 6: array of tasks
 		elseif task[1] ~= nil then
 			local task = task :: {Types.Task}
-
 			-- It is important to iterate backwards through the table, since
 			-- objects are added in order of construction.
 			for index = #task, 1, -1 do
 				doCleanup(task[index])
 				task[index] = nil
-			end
-
-			if External.isTimeCritical() then
-				scopePool.giveIfEmpty(task)
-			else
-				poisonScope(task, "`doCleanup()` was previously called on this scope. Ensure you are not reusing scopes after cleanup.")
 			end
 		end
 	end

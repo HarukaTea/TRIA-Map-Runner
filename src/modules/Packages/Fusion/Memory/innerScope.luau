@@ -13,7 +13,7 @@ local deriveScope = require(Package.Memory.deriveScope)
 
 local function innerScope<T>(
 	existing: Types.Scope<T>,
-	...: {[any]: any}
+	...: {[unknown]: unknown}
 ): any
 	local new = deriveScope(existing, ...)
 	table.insert(existing, new)

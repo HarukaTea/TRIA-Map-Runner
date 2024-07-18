@@ -357,7 +357,7 @@ local function Panel(self: table) : Frame
     end
     CAS:BindAction("HarukaPanelAddCheckpoint", _addCheckPoint, false, Enum.KeyCode.X)
 
-    return Components.Frame(scope, {
+    self.list = Fusion.Value(scope, Components.Frame(scope, {
         Name = "PanelBG",
         Position = fromScale(0.915, -2.8),
         BackgroundTransparency = 0.2,
@@ -389,7 +389,6 @@ local function Panel(self: table) : Frame
                 [OnChange("AbsoluteSize")] = function(size)
                     self.absSize:set(size.Y)
                 end,
-                [Fusion.Ref] = self.list,
 
                 [Children] = {
                     Fusion.New(scope, "UIListLayout")({
@@ -430,7 +429,9 @@ local function Panel(self: table) : Frame
                 }
             })
         }
-    })
+    }))
+
+    return self.list
 end
 
 return Panel

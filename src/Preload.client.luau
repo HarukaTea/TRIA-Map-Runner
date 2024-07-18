@@ -13,7 +13,6 @@ local function initGame()
     RF:RemoveDefaultLoadingScreen()
 
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
-    SG:SetCoreGuiEnabled(Enum.CoreGuiType.Health, true)
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 end
 initGame()
@@ -166,7 +165,7 @@ local function setupUI()
 
     local uIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
     uIAspectRatioConstraint.Name = "UIAspectRatioConstraint"
-    uIAspectRatioConstraint.AspectRatio = 25.1
+    uIAspectRatioConstraint.AspectRatio = 25.627
     uIAspectRatioConstraint.Parent = bottom
 
     bottom.Parent = loadingScreen

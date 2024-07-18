@@ -21,12 +21,20 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.Zipl
 local ziplineAnim = animator:LoadAnimation(animation)
 local isRiding = false
 
-Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
+local touchCD = false
+Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit.Parent
         and hit:IsA("BasePart")
         and hit.Name == "StartOrb"
         and hit.Parent:IsA("Model")
         and hit.Parent.Name == "Zipline" then
+
+		if touchCD then return end
+		touchCD = true
+		Spawn(function()
+			task.wait(0.5)
+			touchCD = false
+		end)
 
 		if isRiding then return end
 		isRiding = true
@@ -93,7 +101,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 			sparklePart.Parent = char
 
 			local sparkle = Instance.new("Sparkles")
-			sparkle.SparkleColor = Color3.fromRGB(255, 180, 0)
+			sparkle.SparkleColor = Color3.new(1, 1, 1)
 			sparkle.Parent = sparklePart
 		end
 
@@ -109,6 +117,8 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 		local num = 0
 		local jumped = false
 		Spawn(function()
+			repeat RunService.Heartbeat:Wait() until num > 0.01666
+
 			if zipline:GetAttribute("Jumpable") then
 				UserInputService.JumpRequest:Wait()
 				jumped = true
@@ -130,7 +140,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 				)
 
 				char.PrimaryPart.CFrame = vel * CFrame.new(0, -2.57, 0)
-				char.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
+				char.PrimaryPart.Velocity = Vector3.zero
 				bp.Position = char.PrimaryPart.Position
 				if sparklePart then sparklePart.CFrame = vel end
 
@@ -162,11 +172,13 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 		if sparklePart then sparklePart:Destroy() end
 
 		if zipline:GetAttribute("Momentum") and jumped == false then
-			char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
-				lookVector.X * zipline:GetAttribute("Speed") * 1.12,
-				0,
-				lookVector.Z * zipline:GetAttribute("Speed") * 1.12
-			)
+			local speed = zipline:GetAttribute("Speed") * 1.12 * 30
+
+			char.PrimaryPart:ApplyImpulse(Vector3.new(
+				lookVector.X * speed,
+				lookVector.Y * speed,
+				lookVector.Z * speed
+			))
 		end
 
 		isRiding = false
@@ -174,6 +186,4 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

@@ -17,7 +17,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
             return
         end
 
-        char:PivotTo(hit.Destination.CFrame)
+        char.PrimaryPart.CFrame = hit.Destination.CFrame
 
         if hit:GetAttribute("SetCameraFront") then
             local camera = workspace.CurrentCamera
@@ -28,6 +28,4 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

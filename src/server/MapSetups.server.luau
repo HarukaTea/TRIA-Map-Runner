@@ -402,7 +402,7 @@ local function setupMain()
 
         --- starting
         local soundId = setupSound()
-        local timeout = 6
+        local timeout = 3
 
         task.wait(1)
 

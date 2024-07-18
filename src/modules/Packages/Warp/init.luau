@@ -1,6 +1,4 @@
---!strict
---!native
---!optimize 2
+--!nocheck
 
 local RunService = game:GetService("RunService")
 

@@ -9,7 +9,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 ]]
 
 local function needsDestruction(
-	x: any
+	x: unknown
 ): boolean
 	return typeof(x) == "Instance"
 end

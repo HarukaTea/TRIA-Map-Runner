@@ -32,8 +32,8 @@ local function OnEvent(
 			stage = "observer",
 			apply = function(
 				self: Types.SpecialKey,
-				scope: Types.Scope<any>,
-				callback: any,
+				scope: Types.Scope<unknown>,
+				callback: unknown,
 				applyTo: Instance
 			)
 				local ok, event = pcall(getProperty_unsafe, applyTo, eventName)

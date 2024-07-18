@@ -2,8 +2,10 @@
     "robloxLsp.workspace.ignoreDir": [
         ".vscode",
         "**/_Index/**",
-
-        "src/modules/Packages/Warp/Util/Buffer.luau"
+    ],
+    "robloxLsp.diagnostics.disable": [
+        "undefined-type",
+        "redefined-type"
     ],
 
     "files.exclude": {

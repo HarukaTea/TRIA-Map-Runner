@@ -25,14 +25,14 @@ local function AttributeChange(
 			stage = "observer",
 			apply = function(
 				self: Types.SpecialKey,
-				scope: Types.Scope<any>,
-				value: any,
+				scope: Types.Scope<unknown>,
+				value: unknown,
 				applyTo: Instance
 			)
 				if typeof(value) ~= "function" then
 					External.logError("invalidAttributeChangeHandler", nil, attributeName)
 				end
-				local value = value :: (...any) -> (...any)
+				local value = value :: (...unknown) -> (...unknown)
 				local event = applyTo:GetAttributeChangedSignal(attributeName)
 				table.insert(scope, event:Connect(function()
 					value((applyTo :: any):GetAttribute(attributeName))

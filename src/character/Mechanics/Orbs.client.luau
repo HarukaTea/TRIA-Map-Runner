@@ -17,7 +17,7 @@ local lastJumped = tick()
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit
         and hit:GetAttribute("_action") == "Orb"
-        and tick() - lastJumped > 0.1 then
+        and tick() - lastJumped > 0.07 then
 
         if char.PrimaryPart:FindFirstChild("Blackhole") then return end -- fix duplicate
 
@@ -75,6 +75,4 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

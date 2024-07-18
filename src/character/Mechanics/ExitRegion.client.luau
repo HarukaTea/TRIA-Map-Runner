@@ -5,6 +5,7 @@ local RepS = game:GetService("ReplicatedStorage")
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 local WaterLib = require(RepS.Modules.Data.WaterLib)
 local Signals = require(RepS.Modules.Data.Signals)
+local Spawn = require(RepS.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -15,8 +16,17 @@ local map = MapLib.map
 
 local char = script.Parent.Parent :: Model
 
+local touchCD = false
 Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit.Name == "ExitRegion" and not char:GetAttribute("IsSurvived") then
+        if touchCD then return end
+
+        touchCD = true
+        Spawn(function()
+            task.wait(0.5)
+            touchCD = false
+        end)
+
         local check = true
 
         for _, button: Model in map.Special.Button:GetChildren() do
@@ -38,9 +48,6 @@ Add(HarukaLib:Hydrate(char, {
         if state then
             local exitBlocks = {}
 
-            for _, child: Instance in map:GetDescendants() do
-                WaterLib:_BindWater(child)
-            end
             for _, child: Instance in map:GetDescendants() do
                 if child:IsA("BasePart") and child.Name == "ExitBlock" then
                     exitBlocks[#exitBlocks + 1] = child
@@ -64,6 +71,4 @@ Add(HarukaLib:Hydrate(char, {
 }))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

@@ -14,7 +14,8 @@ export type UsedAs<T> = Types.UsedAs<T>
 export type Child = Types.Child
 export type Computed<T> = Types.Computed<T>
 export type Contextual<T> = Types.Contextual<T>
-export type GraphObject = Types.GraphObject
+export type Dependency = Types.Dependency
+export type Dependent = Types.Dependent
 export type For<KO, VO> = Types.For<KO, VO>
 export type Observer = Types.Observer
 export type PropertyTable = Types.PropertyTable
@@ -48,15 +49,13 @@ local Fusion: Types.Fusion = table.freeze {
 	doCleanup = require(script.Memory.doCleanup),
 	innerScope = require(script.Memory.innerScope),
 	scoped = require(script.Memory.scoped),
-	
-	-- Graph
-	Observer = require(script.Graph.Observer),
 
 	-- State
 	Computed = require(script.State.Computed),
 	ForKeys = require(script.State.ForKeys) :: Types.ForKeysConstructor,
 	ForPairs = require(script.State.ForPairs) :: Types.ForPairsConstructor,
 	ForValues = require(script.State.ForValues) :: Types.ForValuesConstructor,
+	Observer = require(script.State.Observer),
 	peek = require(script.State.peek),
 	Value = require(script.State.Value),
 
@@ -64,12 +63,12 @@ local Fusion: Types.Fusion = table.freeze {
 	Attribute = require(script.Instances.Attribute),
 	AttributeChange = require(script.Instances.AttributeChange),
 	AttributeOut = require(script.Instances.AttributeOut),
+	Child = require(script.Instances.Child),
 	Children = require(script.Instances.Children),
 	New = require(script.Instances.New),
 	OnChange = require(script.Instances.OnChange),
 	OnEvent = require(script.Instances.OnEvent),
 	Out = require(script.Instances.Out),
-	Ref = require(script.Instances.Ref),
 
 	-- Animation
 	Tween = require(script.Animation.Tween),

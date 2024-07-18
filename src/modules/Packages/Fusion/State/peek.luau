@@ -4,25 +4,20 @@
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
-	Extracts a value of type T from its input.
-
-	https://elttob.uk/Fusion/0.3/api-reference/state/members/peek/
+	A common interface for accessing the values of state objects or constants.
 ]]
 
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
+local InternalTypes = require(Package.InternalTypes)
 -- State
-local castToState = require(Package.State.castToState)
--- Graph
-local evaluate = require(Package.Graph.evaluate)
+local isState = require(Package.State.isState)
 
 local function peek<T>(
 	target: Types.UsedAs<T>
 ): T
-	local targetState = castToState(target)
-	if targetState ~= nil then
-		evaluate(targetState, false)
-		return targetState._EXTREMELY_DANGEROUS_usedAsValue :: T
+	if isState(target) then
+		return (target :: InternalTypes.StateObject<T>):_peek()
 	else
 		return target :: T
 	end

@@ -11,8 +11,8 @@ local task = nil -- Disable usage of Roblox's task scheduler
 ]]
 
 local function isSimilar(
-	a: any, 
-	b: any
+	a: unknown, 
+	b: unknown
 ): boolean
 	local typeA = typeof(a)
 	local isTable = typeA == "table"

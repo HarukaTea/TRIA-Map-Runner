@@ -62,8 +62,8 @@ function class:onBind(
 end
 
 local function Observer(
-	scope: Types.Scope<any>,
-	watching: any
+	scope: Types.Scope<unknown>,
+	watching: unknown
 ): Types.Observer
 	if watching == nil then
 		External.logError("scopeMissing", nil, "Observers", "myScope:Observer(watching)")
@@ -78,7 +78,7 @@ local function Observer(
 		_changeListeners = {}
 	}, CLASS_METATABLE)
 	local self = (self :: any) :: InternalTypes.Observer
-
+	
 	local destroy = function()
 		self.scope = nil
 		for dependency in pairs(self.dependencySet) do

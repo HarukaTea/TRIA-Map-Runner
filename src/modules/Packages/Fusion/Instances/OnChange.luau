@@ -25,8 +25,8 @@ local function OnChange(
 			stage = "observer",
 			apply = function(
 				self: Types.SpecialKey,
-				scope: Types.Scope<any>,
-				callback: any,
+				scope: Types.Scope<unknown>,
+				callback: unknown,
 				applyTo: Instance
 			)
 				local ok, event = pcall(applyTo.GetPropertyChangedSignal, applyTo, propertyName)
@@ -35,7 +35,7 @@ local function OnChange(
 				elseif typeof(callback) ~= "function" then
 					External.logError("invalidChangeHandler", nil, propertyName)
 				else
-					local callback = callback :: (...any) -> (...any)
+					local callback = callback :: (...unknown) -> (...unknown)
 					table.insert(scope, event:Connect(function()
 						callback((applyTo :: any)[propertyName])
 					end))

@@ -1,6 +1,4 @@
---!strict
---!native
---!optimize 2
+--!nocheck
 
 local Server = {}
 Server.__index = Server
@@ -23,7 +21,7 @@ function Server.new(Identifier: string, conf: table?)
 	self._conf = table.freeze(conf or {})
 	self.IsConnected = false
 
-	ServerProcess.add(self.id, Identifier, conf or { rateLimit = { maxEntrance = 200, interval = 2 } })
+	ServerProcess.add(self.id)
 	self._buffer:remove()
 
 	return self
@@ -55,6 +53,7 @@ function Server:FireAllInRange(range: number, from: Vector3, data: { any }, exce
 	end
 end
 
+
 function Server:Connect(callback: (plyer: Player, args: any) -> ()): string
 	local key = tostring(Key())
 	table.insert(self.fn, key)
@@ -63,24 +62,6 @@ function Server:Connect(callback: (plyer: Player, args: any) -> ()): string
 	return key
 end
 
-function Server:Once(callback: (plyer: Player, args: any) -> ()): string
-	local key = tostring(Key())
-	table.insert(self.fn, key)
-	self.IsConnected = #self.fn > 0
-	ServerProcess.addCallback(self.id, key, function(...)
-		self:Disconnect(key)
-		task.spawn(callback, ...)
-	end)
-	return key
-end
-
-function Server:Wait()
-	local thread: thread, t = coroutine.running(), os.clock()
-	self:Once(function()
-		task.spawn(thread, os.clock()-t)
-	end)
-	return coroutine.yield()
-end
 
 function Server:DisconnectAll()
 	for _, key: string in self.fn do
@@ -93,6 +74,7 @@ function Server:Disconnect(key: string): boolean
 
 	table.remove(self.fn, table.find(self.fn, key))
 	self.IsConnected = #self.fn > 0
+
 	return table.find(self.fn, key) == nil
 end
 

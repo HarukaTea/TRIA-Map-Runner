@@ -1,6 +1,4 @@
---!strict
---!native
---!optimize 2
+--!nocheck
 
 local Client = {}
 Client.__index = Client
@@ -22,7 +20,7 @@ function Client.new(Identifier: string, conf: table)
 	self._conf = table.freeze(conf or {})
 	self.IsConnected = false
 
-	ClientProcess.add(self.id, Identifier, conf or { yieldWait = 10, logging = { store = false, opt = false } })
+	ClientProcess.add(self.id)
 	self._buffer:remove()
 
 	return self
@@ -34,30 +32,13 @@ end
 
 function Client:Connect(callback: (args: any) -> ()): string
 	local key = tostring(Key())
+
 	table.insert(self.fn, key)
 	self.IsConnected = #self.fn > 0
+
 	ClientProcess.addCallback(self.id, key, callback)
 
 	return key
-end
-
-function Client:Once(callback: (args: any) -> ()): string
-	local key = tostring(Key())
-	table.insert(self.fn, key)
-	self.IsConnected = #self.fn > 0
-	ClientProcess.addCallback(self.id, key, function(...)
-		self:Disconnect(key)
-		task.spawn(callback, ...)
-	end)
-	return key
-end
-
-function Client:Wait()
-	local thread: thread, t = coroutine.running(), os.clock()
-	self:Once(function()
-		task.spawn(thread, os.clock()-t)
-	end)
-	return coroutine.yield()
 end
 
 function Client:DisconnectAll()
@@ -71,7 +52,10 @@ function Client:Disconnect(key: string): boolean
 
 	table.remove(self.fn, table.find(self.fn, key))
 	self.IsConnected = #self.fn > 0
+
 	return table.find(self.fn, key) == nil
 end
+
+Client.Destroy = Client.DisconnectAll
 
 return Client.new

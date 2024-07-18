@@ -34,7 +34,7 @@ Add(char.Humanoid.Touched:Connect(function()
                 or hit:FindFirstChild("_WallJump")
                 or hit:GetAttribute("_action") == "WallRun"
             )
-            and tick() - lastJumped > 0.1 then
+            and tick() - lastJumped > 0.07 then
 
             if hit:GetAttribute("UseFrontOnly") then
                 local frontNormal = hit.CFrame.LookVector * 1
@@ -59,7 +59,7 @@ Add(char.Humanoid.Touched:Connect(function()
                 bv.Velocity = CFrame.new(char.PrimaryPart.Position, (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).LookVector * hit:GetAttribute("Speed")
                 bv.Parent = char.PrimaryPart
 
-                char.PrimaryPart.AssemblyLinearVelocity = CFrame.new(char.PrimaryPart.Position, (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).LookVector * hit:GetAttribute("Speed")
+                char.PrimaryPart.Velocity = CFrame.new(char.PrimaryPart.Position, (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).LookVector * hit:GetAttribute("Speed")
             end
 
             local start = tick()
@@ -92,7 +92,7 @@ Add(char.Humanoid.Touched:Connect(function()
             if jumped then
                 local momentum = hit:GetAttribute("Momentum") or 1
 
-                char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
+                char.PrimaryPart.Velocity = Vector3.new(
                     normal.X * 50,
                     50 * momentum + normal.Y * 50,
                     normal.Z * 50
@@ -100,7 +100,7 @@ Add(char.Humanoid.Touched:Connect(function()
 
                 walljumpAnim:Stop()
             else
-                char.PrimaryPart.AssemblyLinearVelocity = Vector3.new()
+                char.PrimaryPart.Velocity = Vector3.new()
                 walljumpAnim:Stop()
             end
         end
@@ -108,6 +108,4 @@ Add(char.Humanoid.Touched:Connect(function()
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)

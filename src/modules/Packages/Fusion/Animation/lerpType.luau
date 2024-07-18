@@ -13,10 +13,10 @@ local Package = script.Parent.Parent
 local Oklab = require(Package.Colour.Oklab)
 
 local function lerpType(
-	from: any, 
-	to: any, 
+	from: unknown, 
+	to: unknown, 
 	ratio: number
-): any
+): unknown
 	local typeString = typeof(from)
 
 	if typeof(to) == typeString then

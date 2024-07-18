@@ -1,13 +1,12 @@
 --!nocheck
 
+local LightingService = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local Events, Signals = nil, nil
+local Events = nil
 if RunService:IsClient() then
     Events = require(ReplicatedStorage.Modules.Data.Events)
-else
-    Signals = require(game:GetService("ServerScriptService").Modules.Data.ServerSignals)
 end
 
 local Lighting = {}
@@ -27,7 +26,16 @@ function Lighting:SetLighting(
     if RunService:IsClient() then
         Events.ChangeLighting:Fire(properties, postEffects)
     else
-        Signals.ChangeLighting:Fire(properties, postEffects)
+        for property: string, value: any in properties do
+            pcall(function() LightingService[property] = value end)
+        end
+        for effect: string, info: table in postEffects do
+            if not LightingService:FindFirstChild(effect) then continue end
+
+            for property: string, value: any in info do
+                pcall(function() LightingService[effect][property] = value end)
+            end
+        end
     end
 end
 

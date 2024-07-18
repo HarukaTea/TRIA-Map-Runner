@@ -60,7 +60,7 @@ local function swimIn()
 		char.Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
         char.Humanoid.HipHeight = -3
 
-        local rootVel = char.PrimaryPart.AssemblyLinearVelocity
+        local rootVel = char.PrimaryPart.Velocity
 
         local diveVel = Instance.new("BodyVelocity")
         diveVel.Name = "DiveVelocity"
@@ -99,10 +99,10 @@ local function swimOut()
             swimVel = nil
         end
 
-        local rootVel = char.PrimaryPart.AssemblyLinearVelocity
+        local rootVel = char.PrimaryPart.Velocity
 
         char.Humanoid.HipHeight = 0
-        char.PrimaryPart.AssemblyLinearVelocity = Vector3.new(
+        char.PrimaryPart.Velocity = Vector3.new(
             rootVel.X, char.Humanoid.JumpPower * 1.2, rootVel.Z
         )
 
@@ -139,7 +139,7 @@ Add(char.Humanoid.Changed:Connect(function()
         swimUp = false
     end
 end))
-Add(RunService.Heartbeat:Connect(function(dt)
+Add(RunService.Heartbeat:Connect(function()
     if isSwimming then
         local swimVelocity = 0
 

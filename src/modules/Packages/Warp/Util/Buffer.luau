@@ -1,9 +1,7 @@
---!strict
---!native
---!optimize 2
+--!nocheck
+
 local Buffer = {}
 Buffer.__index = Buffer
-
 
 local DedicatedBuffer = {}
 DedicatedBuffer.__index = DedicatedBuffer

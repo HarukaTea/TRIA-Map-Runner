@@ -15,6 +15,4 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 end))
 
 --// Clear
-char.Humanoid.Died:Once(function()
-    Empty()
-end)
+char.Humanoid.Died:Once(Empty)
