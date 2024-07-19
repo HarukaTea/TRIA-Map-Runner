@@ -2,7 +2,6 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Signals = require(RepS.Modules.Data.Signals)
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
@@ -12,10 +11,7 @@ local char = script.Parent.Parent :: Model
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "Teleport" then
 
-        if not hit:FindFirstChild("Destination") then
-            Signals.CreateHint:Fire("Can not find destination part! Did you forget that?", nil, 6)
-            return
-        end
+        if not hit:FindFirstChild("Destination") then return end
 
         char.PrimaryPart.CFrame = hit.Destination.CFrame
 

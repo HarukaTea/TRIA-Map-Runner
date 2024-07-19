@@ -54,7 +54,6 @@ end))
 --- air controls
 local function decreaseAir()
     splashCD = 2
-    timePerLoss = 0.085
 
     char:SetAttribute("CurrentOxygen", math.clamp(char:GetAttribute("CurrentOxygen") - oxygenDepletion, 0, maxOxygen))
 
@@ -92,7 +91,7 @@ Add(task.spawn(function()
                         char:SetAttribute("CurrentOxygen", 0)
 
                     elseif state == "custom" then
-                        oxygenDepletion = currentWater:GetAttribute("OxygenDepletion") or 1
+                        oxygenDepletion = (currentWater:GetAttribute("OxygenDepletion") or 1) / (1 / 0.085)
                         timePerLoss = 0.085
                     end
                 end

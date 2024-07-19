@@ -94,7 +94,7 @@ return function (plr: Player)
                                 ),
 
                                 Text = Fusion.Computed(scope, function(use: Fusion.Use)
-                                    return "Oxygen: "..use(oxygen)
+                                    return "Oxygen: "..math.floor(use(oxygen))
                                 end)
                             })
                         }

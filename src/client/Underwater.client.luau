@@ -29,6 +29,7 @@ RunService.RenderStepped:Connect(function()
     currentWater = HarukaLib:IsInRegion(workspace.CurrentCamera.CFrame.Position, WaterLib._Waters)
 
     local isInWater = if currentWater then true else false
+    if currentWater and string.find(currentWater.Name, "_Gas") then isInWater = false end
 
     Lighting.WaterBlur.Enabled = isInWater
     Lighting.WaterColor.Enabled = isInWater
