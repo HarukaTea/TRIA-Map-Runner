@@ -3,12 +3,8 @@
 local ContextActionService = game:GetService("ContextActionService")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local RepS = game:GetService("ReplicatedStorage")
-
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-
-local Add, Empty = HarukaLib.Bin()
 
 local char = script.Parent.Parent :: Model
 local humanoid = char.Humanoid :: Humanoid
@@ -19,66 +15,76 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.K
 
 local slideAnim = animator:LoadAnimation(animation)
 local canSlide = true
-local slideThread: thread = nil
 
-local function __endPlatform()
-    humanoid.PlatformStand = false
+local function _cancelSlide()
+    humanoid:MoveTo(char.PrimaryPart.Position)
+    humanoid.HipHeight = 0
 
-    for _, child: Instance in char.PrimaryPart:GetChildren() do
-        if child.Name == "SlideVel" then child:Destroy() end
-    end
+    canSlide = true
+    slideAnim:Stop()
 end
-Add(UserInputService.JumpRequest:Connect(__endPlatform))
+local function _slide()
+    if char:GetAttribute("AllowAirDive") then
+        if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+            local currentVel = char.PrimaryPart.Velocity
 
-local function _cancelSlide(isForce: boolean?)
-    if canSlide then return end
-    if isForce then
-        if slideThread then task.cancel(slideThread) end
+            char.PrimaryPart.Velocity = Vector3.new(
+                currentVel.X,
+                (-char.Humanoid.JumpPower) * 1.5,
+                currentVel.Z
+            )
+        end
+    end
+    while RunService.Heartbeat:Wait() do
+        if (humanoid:GetState() == Enum.HumanoidStateType.Running)
+            or (humanoid:GetState() == Enum.HumanoidStateType.RunningNoPhysics) then
+            break
+        end
+    end
+
+    humanoid.HipHeight = -1.5
+    slideAnim:Play()
+
+    local currentVel = char.PrimaryPart.Velocity
+    char.PrimaryPart.Velocity = Vector3.new(
+        currentVel.X,
+        -35,
+        currentVel.Z
+    )
+
+    local lastTick = tick()
+    local move = if humanoid.MoveDirection.Magnitude > 0 then humanoid.MoveDirection * 20
+        else char.PrimaryPart.CFrame.LookVector * 20
+
+    while canSlide == false do
+        RunService.RenderStepped:Wait()
+
+        humanoid:MoveTo(char.PrimaryPart.Position + move)
+        UserInputService.JumpRequest:Connect(function()
+            canSlide = true
+        end)
+        humanoid.Climbing:Connect(function()
+            canSlide = true
+        end)
+
+        if tick() - lastTick >= 1 then canSlide = true end
     end
 
     canSlide = true
-
-    slideAnim:Stop()
-
-    __endPlatform()
-end
-local function _slide()
-    if not canSlide then return end
-    if not char:GetAttribute("AllowSlide") then return end
-
-    canSlide = false
-
-    slideThread = task.spawn(function()
-        humanoid.PlatformStand = true
-        slideAnim:Play()
-
-        local gyro = Instance.new("BodyGyro")
-        gyro.Name = "SlideVel"
-        gyro.P = 50
-        gyro.MaxTorque = Vector3.new(1, 1, 1) * 10000
-        gyro.CFrame = CFrame.new(char.PrimaryPart.CFrame.LookVector)
-        gyro.Parent = char.PrimaryPart
-
-        local vel = Instance.new("BodyVelocity")
-        vel.Name = "SlideVel"
-        vel.MaxForce = Vector3.new(18500, 1000, 18500)
-        vel.Velocity = humanoid.MoveDirection * humanoid.WalkSpeed
-        vel.Parent = char.PrimaryPart
-
-        if char:GetAttribute("AllowAirDive") then
-            char.PrimaryPart:ApplyImpulse(Vector3.new(0, -900, 0))
-        end
-
-        task.wait(0.7)
-        _cancelSlide(false)
-    end)
+    _cancelSlide()
 end
 
 local function slideHandler(_, inputState: Enum.UserInputState)
-    if inputState == Enum.UserInputState.Begin then
+    if not char:GetAttribute("AllowSlide") then return end
+    if char:GetAttribute("IsSwimming") then return end
+
+    if canSlide == true and inputState == Enum.UserInputState.Begin then
+        canSlide = false
         _slide()
+
     elseif inputState == Enum.UserInputState.End then
-        _cancelSlide(true)
+        canSlide = true
+        _cancelSlide()
     end
 end
 ContextActionService:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
@@ -86,6 +92,4 @@ ContextActionService:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
 --// Clear
 char.Humanoid.Died:Once(function()
     ContextActionService:UnbindAction("Slide")
-
-    Empty()
 end)

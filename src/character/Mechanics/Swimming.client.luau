@@ -56,6 +56,7 @@ end
 local function swimIn()
 	if not isSwimming then
         isSwimming = true
+        char:SetAttribute("IsSwimming", true)
 
 		char.Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
         char.Humanoid.HipHeight = -3
@@ -93,6 +94,8 @@ local function swimOut()
 		isSwimming = false
         swimUp = false
         swimDown = false
+
+        char:SetAttribute("IsSwimming", false)
 
         if swimVel then
             swimVel:Destroy()

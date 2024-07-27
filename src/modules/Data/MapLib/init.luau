@@ -35,11 +35,15 @@ MapLib.RoundEnding = Signal.new()
     ``````
 ]]
 function MapLib:Alert(message: string, color: Color3 | string, duration: number?)
+    message = message or ""
+    color = color or "white"
+    duration = tostring(duration) or "3"
+
     if RS:IsClient() then
         Signals.CreateHint:Fire(message, color, duration)
 
     elseif RS:IsServer() then
-        Events.CreateHint:FireAll(message, color, duration)
+        Events.CreateHint.FireAll({ Hint = message, Color = color, Duration = duration })
     end
 end
 
@@ -52,11 +56,12 @@ end
     ``````
 ]]
 function MapLib:ChangeMusic(musicId: number, volume: number?, startTick: number?)
-    volume = volume or 0.5
-    startTick = startTick or 0
-
     if RS:IsClient() then
-        Events.ChangeMusic:Fire(musicId, volume, startTick)
+        musicId = tostring(musicId) or ""
+        volume = tostring(volume) or "0.5"
+        startTick = tostring(startTick) or "0"
+
+        Events.ChangeMusic.Fire({ MusicId = musicId, Volume = volume, StartTick = startTick })
 
     elseif RS:IsServer() then
         local music = workspace.Map.MapMusic :: Sound
@@ -68,11 +73,15 @@ function MapLib:ChangeMusic(musicId: number, volume: number?, startTick: number?
         music:Play()
 
         Promise.new(function()
+            task.wait(3)
             if musicId == "" or musicId == nil then return end
 
             local productInfo = MarketplaceService:GetProductInfo(musicId)
             if productInfo then
-                Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromRGB(125, 15, 79), 4)
+                Events.CreateHint.FireAll({
+                    Hint = `Music: {productInfo.Name}`,
+                    Color = Color3.fromRGB(125, 15, 79),
+                })
             end
 
         end):Catch(function(err)
@@ -213,15 +222,7 @@ end
 ]]
 function MapLib:GetFeature(feature: string)
     if not feature then return end
-    if not RepS.Modules.Data.MapLib:FindFirstChild(feature) then
-        if RS:IsClient() then
-            Signals.CreateHint:Fire("No feature named "..feature.."!", "yellow", 5)
-
-        elseif RS:IsServer() then
-            Events.CreateHint:FireAll("No feature named "..feature.."!", "yellow", 5)
-        end
-        return
-    end
+    if not RepS.Modules.Data.MapLib:FindFirstChild(feature) then return end
 
     return require(RepS.Modules.Data.MapLib[feature])
 end

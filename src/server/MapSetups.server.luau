@@ -8,7 +8,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local SoundService = game:GetService("SoundService")
 
-local BezierLib = require(ReplicatedStorage.Modules.Packages.BezierLib)
+local Bezier = require(ReplicatedStorage.Modules.Packages.Bezier)
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
@@ -44,7 +44,11 @@ local function setupMapLib()
     mapLibRFOLD.Name = "GetMapLib"
     mapLibRFOLD.Parent = bindables
     mapLibRFOLD.OnInvoke = function()
-        Events.CreateHint:FireAll("This map is using the old maplib, read console for more info.", "red", 5)
+        Events.CreateHint.FireAll({
+            Hint = "This map is using the old maplib, read console for more info.",
+            Color = "red",
+            Duration = "5"
+        })
 
         return function ()
             return require(ReplicatedStorage.Modules.Data.MapLib)
@@ -211,7 +215,10 @@ local function setupButtons()
 
                     if button:GetAttribute("Hit") then return end
                     if button:GetAttribute("Index") ~= tostring(btnIndex) then
-                        Events.CreateHint:FireAll("Press previous buttons first!")
+                        Events.CreateHint.FireAll({
+                            Hint = "Press previous buttons first!",
+                            Color = "white"
+                        })
                         return
                     end
 
@@ -246,7 +253,10 @@ local function setupButtons()
                         button.Light.Color = buttonStates.Default.Activated
                     end
 
-                    Events.CreateHint:FireAll("Button #"..button:GetAttribute("Index").." Pressed by "..plr.DisplayName)
+                    Events.CreateHint.FireAll({
+                        Hint = "Button #"..button:GetAttribute("Index").." Pressed by "..plr.DisplayName,
+                        Color = "white"
+                    })
 
                     event:Fire(Players:GetPlayerFromCharacter(hit.Parent))
                     Signals.BtnPressed:Fire(realrealIndex)
@@ -302,29 +312,6 @@ local function setupButtonFuncs()
 
         elseif child:IsA("Sound") and string.find(child.Name, "_Sound") then
             ServerStorage.Resources.Unloads.ButtonEvents.Sound:Clone().Parent = child
-        end
-    end
-end
-local function setupZipline()
-    for _, child: Instance in mapModel:GetDescendants() do
-        if child.Name == "Zipline" and child:IsA("Model") then
-            local configuration = child:FindFirstChildOfClass("Configuration")
-
-            for _, descendant: BasePart in child:GetChildren() do
-                if descendant:IsA("BasePart") then
-                    descendant.Material = configuration:GetAttribute("Material")
-                    descendant.Color = configuration:GetAttribute("Color")
-
-                    for attr: string, val: any in configuration:GetAttributes() do
-                        descendant:SetAttribute(attr, val)
-                    end
-                end
-            end
-            for attr: string, val: any in configuration:GetAttributes() do
-                child:SetAttribute(attr, val)
-            end
-
-            BezierLib:Run(child)
         end
     end
 end
@@ -387,88 +374,68 @@ local function setupScripts()
     mapModel:SetAttribute("ScriptsLoaded", true)
 end
 local function setupMain()
-    Promise.new(function()
-        workspace.Sounds.Lobby:Play()
+    workspace.Sounds.Lobby:Play()
 
-        setupMapLib()
-        setupMap()
-        setupLighting()
-        setupVariants()
-        setupButtons()
-        setupButtonFuncs()
-        setupZipline()
-        setupWaters()
-        setupSkills()
+    setupMapLib()
+    setupMap()
+    setupLighting()
+    setupVariants()
+    setupButtons()
+    setupButtonFuncs()
+    setupWaters()
+    setupSkills()
 
-        --- starting
-        local soundId = setupSound()
-        local timeout = 3
+    --- starting
+    local soundId = setupSound()
+    local timeout = 3
 
+    task.wait(1)
+
+    repeat
         task.wait(1)
+        timeout -= 1
+    until timeout < 0 or mapModel.MapMusic.IsLoaded == true
 
-        repeat
-            task.wait(1)
-            timeout -= 1
-        until timeout < 0 or mapModel.MapMusic.IsLoaded == true
+    mapModel:SetAttribute("IsLoaded", true)
 
-        mapModel:SetAttribute("IsLoaded", true)
+    task.wait(1.5)
+    mapModel.MapMusic:Play()
+    workspace.Sounds.Lobby:Stop()
 
-        task.wait(1.5)
-        mapModel.MapMusic:Play()
-        workspace.Sounds.Lobby:Stop()
+    mapModel:SetAttribute("IsStarted", true)
 
-        mapModel:SetAttribute("IsStarted", true)
+    local mainSettings = setting.Main :: Configuration
+    local mapName = mainSettings:GetAttribute("Name") or "?"
+    local difficulty = mainSettings:GetAttribute("Difficulty") or "Unrated"
+    local creator = mainSettings:GetAttribute("Creator") or "?"
 
-        local mainSettings = setting.Main :: Configuration
-        local mapName = mainSettings:GetAttribute("Name") or "?"
-        local difficulty = mainSettings:GetAttribute("Difficulty") or "Unrated"
-        local creator = mainSettings:GetAttribute("Creator") or "?"
+    workspace.Sounds.SFXs.MapStart:Play()
 
-        workspace.Sounds.SFXs.MapStart:Play()
+    Events.CreateHint.FireAll({
+        Hint = `{mapName} [{MapDataBook.DifficultyNames[difficulty]}] by {creator}`,
+        Color = MapDataBook.DifficultyColors[difficulty],
+    })
+    plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
+    plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
 
-        Events.CreateHint:FireAll(
-            `{mapName} [{MapDataBook.DifficultyNames[difficulty]}] by {creator}`,
-            MapDataBook.DifficultyColors[difficulty],
-            3
-        )
-        plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
-        plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
+    Spawn(function()
+        task.wait(5)
+        Promise.new(function()
+            if soundId == "" or soundId == nil then return end
 
-        Spawn(function()
-            task.wait(5)
-            Promise.new(function()
-                if soundId == "" or soundId == nil then return end
+            local productInfo = MarketplaceService:GetProductInfo(soundId)
+            if productInfo then
+                Events.CreateHint.FireAll({
+                    Hint = `Music: {productInfo.Name}`,
+                    Color = Color3.fromRGB(125, 15, 79)
+                })
+            end
 
-                local productInfo = MarketplaceService:GetProductInfo(soundId)
-                if productInfo then
-                    Events.CreateHint:FireAll(`Music: {productInfo.Name}`, Color3.fromRGB(125, 15, 79), 4)
-                end
-
-            end):Catch(function(err)
-                warn(err)
-            end)
-        end)
-
-        setupScripts()
-
-        --// wait for finish
-        Spawn(function()
-            task.wait(mainSettings:GetAttribute("MaxTime") or 120)
-
-            Events.CreateHint:FireAll("Round Ended...")
-
-            task.wait(1)
-            plr.Character.Humanoid.Health = 0
-        end)
-
-    end):Catch(function(err)
-        Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
-        warn(err)
-
-        while task.wait(6) do
-            Events.CreateHint:FireAll("Map setup failed, fatal error happened", nil, 6)
+        end):Catch(function(err)
             warn(err)
-        end
+        end)
     end)
+
+    setupScripts()
 end
 setupMain()

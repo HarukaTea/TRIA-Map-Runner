@@ -2,11 +2,6 @@
 
 local RunService = game:GetService("RunService")
 
-local Events = nil
-if RunService:IsServer() then
-    Events = require(game:GetService("ServerScriptService").Modules.Data.ServerEvents)
-end
-
 local Teleport = {}
 Teleport.__index = Teleport
 
@@ -47,9 +42,6 @@ function Teleport:Teleport(
                 end
             end
         end
-
-    elseif RunService:IsServer() then
-        Events.CreateHint:FireAll("Teleport feature isn't allowed in server!")
     end
 end
 

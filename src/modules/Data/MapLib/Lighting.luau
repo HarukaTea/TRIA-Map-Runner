@@ -24,7 +24,7 @@ function Lighting:SetLighting(
 )
 
     if RunService:IsClient() then
-        Events.ChangeLighting:Fire(properties, postEffects)
+        Events.ChangeLighting.Fire({ Properties = properties, PostEffects = postEffects })
     else
         for property: string, value: any in properties do
             pcall(function() LightingService[property] = value end)

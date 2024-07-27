@@ -28,11 +28,6 @@ function PlayerUI:LoadUI(ui: ScreenGui)
 
     if RS:IsClient() then
         ui:Clone().Parent = Players.LocalPlayer.PlayerGui
-
-    elseif RS:IsServer() then
-        local Events = require(game:GetService("ServerScriptService").Modules.Data.ServerEvents)
-
-        Events.CreateHint:FireAll("UI can not be loaded from Server!")
     end
 end
 

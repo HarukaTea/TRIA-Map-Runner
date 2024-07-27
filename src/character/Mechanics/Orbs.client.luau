@@ -27,6 +27,8 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         local power = orb:GetAttribute("Power") :: number
         local timeout = orb:GetAttribute("Timeout") :: number
 
+        if not orbType or not power or not timeout then return end --- check if orb is valid
+
         local bp = Instance.new("BodyPosition")
         bp.Name = "Blackhole"
         bp.D = 220

@@ -8,16 +8,16 @@ repeat task.wait() until workspace:WaitForChild("Map", 999)
 
 local MapLib = game.GetMapLib:Invoke()()
 
-local function changeLighting(
-    _,
-    properties: {[string]: any},
-    postEffects: {[string]: {[string]: any}}
-)
-    MapLib:GetFeature("Lighting"):SetLighting(properties, postEffects)
-end
-Events.ChangeLighting:Connect(changeLighting)
 
-local function changeMusic(_, musicId: string, volume: number, startTick: number)
+Events.ChangeLighting.SetCallback(function(_, data)
+    local properties, postEffects = data.Properties, data.PostEffects
+
+    MapLib:GetFeature("Lighting"):SetLighting(properties, postEffects)
+end)
+
+
+Events.ChangeMusic.SetCallback(function(_, data)
+    local musicId, volume, startTick = data.MusicId, data.Volume, data.StartTick
+
     MapLib:ChangeMusic(musicId, volume, startTick)
-end
-Events.ChangeMusic:Connect(changeMusic)
+end)

@@ -6,6 +6,7 @@ local UIS = game:GetService("UserInputService")
 local tool = script.Parent :: Tool
 local selected = false
 local lastUpdate = 0
+local plr = Players.LocalPlayer
 
 local wait = task.wait
 local v3New, xAxis, yAxis, zAxis = Vector3.new, Vector3.xAxis, Vector3.yAxis, Vector3.zAxis
@@ -37,11 +38,16 @@ local function _getNextMovement(deltaTime)
 end
 
 local function onSelected()
-	local char = Players.LocalPlayer.Character
+	local char = plr.Character
 
 	if char then
 		local humanoid = char:WaitForChild("Humanoid")
         local camera = workspace.CurrentCamera
+
+		local animTracks = humanoid.Animator:GetPlayingAnimationTracks()
+		for _, track: AnimationTrack in animTracks do track:Stop(0) end
+
+		char:SetAttribute("IsNocliping", true)
 
         selected = true
         char.PrimaryPart.Anchored = true
@@ -68,6 +74,8 @@ end
 
 local function onDeselected()
 	selected = false
+
+	if plr.Character then plr.Character:SetAttribute("IsNocliping", false) end
 end
 
 tool.Selected:Connect(onSelected)

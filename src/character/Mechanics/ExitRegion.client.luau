@@ -54,7 +54,7 @@ Add(HarukaLib:Hydrate(char, {
                 end
             end
             for _, child: Instance in WaterLib._Waters do
-                if child and child:GetAttribute("Type") ~= "water" then
+                if child and child:GetAttribute("Type") ~= "water" and not string.find(child.Name, "_Gas") then
                     MapLib:SetLiquidType(child, "water")
                 end
             end

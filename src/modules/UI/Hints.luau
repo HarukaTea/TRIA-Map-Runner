@@ -61,7 +61,7 @@ return function(plr: Player)
 
 	--// Connections
 	local displayOrder = 0
-	local function _createHint(text: string, color: Color3 | string, duration: number?)
+	local function _createHint(text: string, color: Color3 | string, duration: string?)
 		local uniqueId = HttpService:GenerateGUID(false)
 		local colorList = {
 			RED = fromRGB(255, 0, 0),
@@ -87,7 +87,7 @@ return function(plr: Player)
 			Id = uniqueId,
 			Text = text or "",
 			Color = color or fromRGB(255, 255, 255),
-			Duration = duration or 5,
+			Duration = tonumber(duration) or 5,
 			DisplayOrder = displayOrder
 		}
 		displayOrder += 1
@@ -104,14 +104,15 @@ return function(plr: Player)
 
 		hintList:set(future)
 	end
-	Events.CreateHint:Connect(_createHint)
-	Signals.CreateHint:Connect(_createHint)
+	table.insert(scope, Events.CreateHint.On(function(data)
+		local text, color, duration = data.Hint, data.Color, data.Duration
+
+		_createHint(text, color, duration)
+	end))
+	table.insert(scope, Signals.CreateHint:Connect(_createHint))
 
 	--// Clear
 	local function onDead()
-		Events.CreateHint:DisconnectAll()
-		Signals.CreateHint:DisconnectAll()
-
 		Fusion.doCleanup(scope)
 	end
 	char.Humanoid.Died:Once(onDead)
