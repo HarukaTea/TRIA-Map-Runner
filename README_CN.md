@@ -28,4 +28,4 @@
 4. 插入你的地图，记得 **UNGROUP**
 5. 按F5测试
 
-![Preview](docs/Preview_TRIA_Runner.png)
+![Preview](docs/Preview_TRIA_Runner2.png)
