@@ -2,55 +2,71 @@
 
 local CAS = game:GetService("ContextActionService")
 local Lighting = game:GetService("Lighting")
-local TestS = game:GetService("TestService")
 local RepS = game:GetService("ReplicatedStorage")
 
-local Components = require(RepS.Modules.UI.Vanilla)
-local Fusion = require(RepS.Modules.Packages.Fusion)
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 
-local ButtonOption = require(RepS.Modules.UI.Components.ButtonOption)
-local TypeOption = require(RepS.Modules.UI.Components.TypeOption)
-local ToggleOption = require(RepS.Modules.UI.Components.ToggleOption)
+local Fusion = require(RepS.Modules.Packages.Fusion)
+
+local Observer, peek = Fusion.Observer, Fusion.peek
 
 local MapLib = game.GetMapLib:Invoke()()
 
-local Children, OnChange, Value, Observer, Computed, peek =
-    Fusion.Children, Fusion.OnChange, Fusion.Value, Fusion.Observer, Fusion.Computed, Fusion.peek
-
-local fromScale, fromOffset = UDim2.fromScale, UDim2.fromOffset
-local udNew = UDim.new
 local sFind, match = string.find, string.match
 local clear, tFind = table.clear, table.find
 local wait = task.wait
 local instanceNew = Instance.new
 local v3New = Vector3.new
 
-local function Panel(self: table) : Frame
-    local scope = self.scope :: table
+return function (self: table)
+    self.scope = Fusion.scoped({})
+    local scope = self.scope :: Fusion.Scope
 
-    self.list = Value(scope, nil)
-    self.panelOpen = Value(scope, false)
-    self.absSize, self.absContentSize = Value(scope, 0), Value(scope, 0)
+    local function Value(val: any)
+		return Fusion.Value(self.scope, val)
+	end
+
+    self.panelOpen = Value(false)
 
     self.inputs = {
-        Speed = Value(scope, "20"),
-        ForceSpeed = Value(scope, false),
+        Speed = Value("20"),
+        ForceSpeed = Value(false),
 
-        Jump = Value(scope, "50"),
-        ForceJump = Value(scope, false),
+        Jump = Value("50"),
+        ForceJump = Value(false),
 
-        Noclip = Value(scope, "60"),
-        Waters = Value(scope, true),
-        Lights = Value(scope, false),
-        Shadows = Value(scope, true),
-        Shaders = Value(scope, true),
+        Noclip = Value("60"),
+        Waters = Value(true),
+        Lights = Value(false),
+        Shadows = Value(true),
+        Shaders = Value(true),
 
-        Buttons = Value(scope, "1"),
-        SkipBtns = Value(scope, false),
-        InfAir = Value(scope, false),
+        Buttons = Value("1"),
+        SkipBtns = Value(false),
+        InfAir = Value(false),
     }
-    self.checkPoints = Value(scope, {})
+    self.checkPoints = Value({})
+
+    --// Actions
+
+    local function _setPanelOpen(_, inputState: Enum.UserInputState)
+        if inputState ~= Enum.UserInputState.Begin then return end
+
+        self.panelOpen:set(not Fusion.peek(self.panelOpen))
+    end
+    CAS:BindAction("HarukaPanelSetOpen", _setPanelOpen, false, Enum.KeyCode.C)
+
+    local function _addCheckPoint(_, inputState: Enum.UserInputState)
+        if inputState ~= Enum.UserInputState.Begin then return end
+
+        local cTable = Fusion.peek(self.checkPoints)
+
+        cTable[#cTable + 1] = self.char.PrimaryPart.CFrame
+        self.checkPoints:set(cTable)
+
+        MapLib:Alert("Checkpoint added!", "white", 3)
+    end
+    CAS:BindAction("HarukaPanelAddCheckpoint", _addCheckPoint, false, Enum.KeyCode.X)
 
     --// Connections
     local inputs = self.inputs
@@ -148,7 +164,7 @@ local function Panel(self: table) : Frame
     local function _detectWater(water: BasePart)
         if sFind(water.Name, "_Liquid") or sFind(water.Name, "_Gas") then
             waterDetected[water] = water.Parent
-            water.Parent = TestS
+            water.Parent = RepS
         end
     end
     watersObserver:onChange(function()
@@ -183,7 +199,7 @@ local function Panel(self: table) : Frame
             if char.PrimaryPart:FindFirstChild("SelfLight") then char.PrimaryPart.SelfLight:Destroy() end
 
             local light = instanceNew("PointLight")
-            light.Range = 25
+            light.Range = 32
             light.Name = "SelfLight"
             light.Parent = char.PrimaryPart
 
@@ -193,7 +209,7 @@ local function Panel(self: table) : Frame
     end)
 
     --// Shadows detector
-    local oriStart, oriEnd = Value(scope, Lighting.FogStart), Value(scope, Lighting.FogEnd)
+    local oriStart, oriEnd = Value(Lighting.FogStart), Value(Lighting.FogEnd)
     HarukaLib:Hydrate(Lighting, {
         ["Prop-FogStart"] = function(newStart)
             if newStart ~= 1599 * 40 ^ 2 then oriStart:set(newStart) end
@@ -232,9 +248,7 @@ local function Panel(self: table) : Frame
                 shaders[#shaders + 1] = shader
             else
                 shaderConnections[shader] = shader:GetPropertyChangedSignal("Enabled"):Connect(function()
-                    if shader.Enabled then
-                        __isShader()
-                    end
+                    if shader.Enabled then  __isShader() end
                 end)
             end
         end
@@ -245,7 +259,7 @@ local function Panel(self: table) : Frame
             or shader:IsA("BlurEffect")
             or shader:IsA("DepthOfFieldEffect") then
 
-                __isShader()
+            __isShader()
         end
     end
     shadersObserver:onChange(function()
@@ -343,95 +357,4 @@ local function Panel(self: table) : Frame
             clear(changedWaters)
         end
     end)
-
-    --// Checkpoints
-    local function _addCheckPoint(_, inputState: Enum.UserInputState)
-        if inputState ~= Enum.UserInputState.Begin then return end
-
-        local cTable = Fusion.peek(self.checkPoints)
-
-        cTable[#cTable + 1] = self.char.PrimaryPart.CFrame
-        self.checkPoints:set(cTable)
-
-        MapLib:Alert("Checkpoint added!", "white", 3)
-    end
-    CAS:BindAction("HarukaPanelAddCheckpoint", _addCheckPoint, false, Enum.KeyCode.X)
-
-    self.list = Fusion.Value(scope, Components.Frame(scope, {
-        Name = "PanelBG",
-        Position = fromScale(0.915, -2.8),
-        BackgroundTransparency = 0.2,
-        Size = fromScale(0.15, 5),
-
-        Visible = Computed(scope, function(use)
-            return use(self.panelOpen)
-        end),
-
-        [Children] = {
-            Fusion.New(scope, "UICorner")({ CornerRadius = udNew(0.02, 0) }),
-            Components.ScrollingFrame(scope, {
-                Name = "Panel",
-                ClipsDescendants = true,
-                Size = fromScale(0.9, 0.9),
-                ScrollingDirection = Enum.ScrollingDirection.Y,
-
-                ScrollingEnabled = Computed(scope, function(use)
-                    return if use(self.absContentSize) > use(self.absSize) then true else false
-                end),
-                CanvasSize = Computed(scope, function(use)
-                    if use(self.absContentSize) > use(self.absSize) then
-                        return fromOffset(0, use(self.absContentSize))
-                    else
-                        return fromOffset(0, 0)
-                    end
-                end),
-
-                [OnChange("AbsoluteSize")] = function(size)
-                    self.absSize:set(size.Y)
-                end,
-
-                [Children] = {
-                    Fusion.New(scope, "UIListLayout")({
-                        Padding = udNew(0, 8),
-                        SortOrder = Enum.SortOrder.LayoutOrder,
-                        HorizontalAlignment = Enum.HorizontalAlignment.Center,
-
-                        [OnChange("AbsoluteContentSize")] = function(size)
-                            self.absContentSize:set(size.Y)
-                        end
-                    }),
-
-                    TypeOption("Speed", self),
-                    ToggleOption("ForceSpeed", self),
-
-                    TypeOption("Jump", self),
-                    ToggleOption("ForceJump", self),
-
-                    TypeOption("Noclip", self),
-
-                    ToggleOption("Waters", self),
-                    ToggleOption("Lights", self),
-                    ToggleOption("Shadows", self),
-                    ToggleOption("Shaders", self),
-
-                    TypeOption("Buttons", self),
-                    ToggleOption("SkipBtns", self),
-                    ButtonOption("ActivateAllBtns", self),
-
-                    ToggleOption("InfAir", self),
-
-                    ButtonOption("AddCheck", self),
-                    ButtonOption("ClearCheck", self),
-
-                    Fusion.ForValues(scope, self.checkPoints, function(_, localScope: table, checkPoint: CFrame)
-                        return ButtonOption("Checkpoint", self, checkPoint, localScope)
-                    end)
-                }
-            })
-        }
-    }))
-
-    return self.list
 end
-
-return Panel

@@ -4,7 +4,6 @@ local Players = game:GetService("Players")
 local RS = game:GetService("RunService")
 
 local PlayerUI = {}
-PlayerUI.__index = PlayerUI
 
 --[[
     This function can be used to load a ScreenGui from the map into the players PlayerGUI.
@@ -31,4 +30,4 @@ function PlayerUI:LoadUI(ui: ScreenGui)
     end
 end
 
-return table.freeze(setmetatable({}, PlayerUI))
+return PlayerUI

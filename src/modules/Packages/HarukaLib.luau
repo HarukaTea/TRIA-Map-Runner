@@ -1,11 +1,20 @@
 --!nocheck
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
-
 local HarukaLib = {}
+
+
+function HarukaLib:AddAttr(obj: Instance, attribute: string, val: number)
+	if obj:GetAttribute(attribute) == nil then obj:SetAttribute(attribute, 0) end
+
+	obj:SetAttribute(attribute, obj:GetAttribute(attribute) + val)
+end
+
+
+function HarukaLib:ClearAllAttributes(obj: Instance)
+	for attribute, _ in obj:GetAttributes() do obj:SetAttribute(attribute, nil) end
+end
 
 
 function HarukaLib:IsInRegion(position: Vector3, regions: table) : BasePart
@@ -37,6 +46,8 @@ function HarukaLib:Hydrate(obj: Instance, props: table)
 			local _, endPos = string.find(prop, "Attr")
 			local attr = string.sub(prop, endPos + 2)
 
+			func(obj:GetAttribute(attr))
+
 			Add(obj:GetAttributeChangedSignal(attr):Connect(function()
 				func(obj:GetAttribute(attr))
 			end))
@@ -44,6 +55,8 @@ function HarukaLib:Hydrate(obj: Instance, props: table)
 		elseif string.find(prop, "Prop") then
 			local _, endPos = string.find(prop, "Prop")
 			local propName = string.sub(prop, endPos + 2)
+
+			func(obj[propName])
 
 			Add(obj:GetPropertyChangedSignal(propName):Connect(function()
 				func(obj[propName])
@@ -53,6 +66,7 @@ function HarukaLib:Hydrate(obj: Instance, props: table)
 
 	return Empty
 end
+
 
 
 function HarukaLib.Bin()
@@ -66,7 +80,7 @@ function HarukaLib.Bin()
 			item:Disconnect()
 
 		elseif typeof(item) == "function" then
-			Spawn(item)
+			task.spawn(item)
 
 		elseif typeof(item) == "thread" then
 			if item then task.cancel(item) end

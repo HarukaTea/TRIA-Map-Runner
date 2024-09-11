@@ -1,10 +1,12 @@
+--!optimize 2
 --!nocheck
+--!native
 
 export type Connection<U...> = {
 	Connected: boolean,
 
 	Disconnect: (self: Connection<U...>) -> (),
-	Reconnect: (self: Connection<U...>) -> (),
+	Destroy: (self: Connection<U...>) -> (),
 }
 
 export type Signal<T...> = {
@@ -55,26 +57,7 @@ local function disconnect<U...>(self: Connection<U...>)
 		signal._head = next
 	end
 end
-
-local function reconnect<U...>(self: Connection<U...>)
-	if self.Connected then
-		return
-	end
-	self.Connected = true
-
-	local signal = self._signal
-	local head = signal._head
-	if head then
-		head._prev = self
-	end
-	signal._head = self
-
-	self._next = head
-	self._prev = false
-end
-
 Connection.Disconnect = disconnect
-Connection.Reconnect = reconnect
 
 --\\ Signal //--
 local Signal = {}
@@ -105,6 +88,11 @@ local function connect<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: 
 		head._prev = cn
 	end
 	self._head = cn
+
+	--// Allow for bin to collect garbage
+	cn.Destroy = function()
+		cn:Disconnect()
+	end
 
 	return cn
 end

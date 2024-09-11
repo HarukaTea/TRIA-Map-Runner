@@ -5,7 +5,6 @@ local RepS = game:GetService("ReplicatedStorage")
 local Signal = require(RepS.Modules.Packages.Signal)
 
 local WaterLib = {}
-WaterLib.__index = WaterLib
 
 WaterLib._WaterAdded = Signal.new()
 WaterLib._Waters = {}
@@ -23,14 +22,14 @@ function WaterLib:_UnbindWater(water: BasePart)
     end
 end
 
-workspace.DescendantAdded:Connect(function(descendant)
+workspace.DescendantAdded:Connect(function(descendant: Instance)
     WaterLib:_BindWater(descendant)
 end)
-workspace.DescendantRemoving:Connect(function(descendant)
+workspace.DescendantRemoving:Connect(function(descendant: Instance)
     WaterLib:_UnbindWater(descendant)
 end)
 for _, child: Instance in workspace:GetDescendants() do
     WaterLib:_BindWater(child)
 end
 
-return table.freeze(setmetatable({}, WaterLib))
+return WaterLib

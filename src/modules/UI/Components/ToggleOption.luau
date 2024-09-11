@@ -70,10 +70,10 @@ local function ToggleOption(id: string, self: table) : Frame
                         Size = fromScale(0.5, 1),
                         BackgroundTransparency = 0,
 
-                        BackgroundColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
+                        BackgroundColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
                             return if not use(self.inputs[id]) then fromRGB(255, 85, 127) else fromRGB(76, 152, 113)
                         end), newTweenInfo(0.2)),
-                        Position = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
+                        Position = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
                             return if use(self.inputs[id]) then fromScale(0.5, 0) else fromScale(0, 0)
                         end), newTweenInfo(0.2)),
 

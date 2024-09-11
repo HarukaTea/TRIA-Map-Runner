@@ -4,7 +4,6 @@ local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-local Spawn = require(RepS.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -25,8 +24,7 @@ local function _trussStartJump()
     char.PrimaryPart.Velocity = Vector3.new(currentVel.X, 0, currentVel.Z)
 
     if not humanoid:GetStateEnabled(climbingState) then
-        Spawn(function()
-            task.wait(0.2)
+        task.delay(0.2, function()
             if tick() - lastTick >= 0.2 then humanoid:SetStateEnabled(climbingState, true) end
         end)
     end

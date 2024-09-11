@@ -16,7 +16,6 @@ With this project, you can run your TRIA maps in Roblox Studio, and see how the 
 
 ### Known Issues
 
-- Unstable Wallrun, especially Momentum.
 - Map with old map kit (V1) may not work fine.
 
 ### How to use?

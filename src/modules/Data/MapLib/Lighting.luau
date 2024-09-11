@@ -10,7 +10,6 @@ if RunService:IsClient() then
 end
 
 local Lighting = {}
-Lighting.__index = Lighting
 
 --[[
     This function can to be used to change the lighting of a map mid round.
@@ -39,4 +38,4 @@ function Lighting:SetLighting(
     end
 end
 
-return table.freeze(setmetatable({}, Lighting))
+return Lighting

@@ -37,5 +37,10 @@ local function setup()
     repeat task.wait() until workspace.Map:GetAttribute("IsStarted")
 
     char.PrimaryPart.Anchored = false
+
+    char:SetAttribute("AllowAirDive", workspace.Map:GetAttribute("AllowAirDive"))
+    char:SetAttribute("AllowSlide", workspace.Map:GetAttribute("AllowSlide"))
+
+    char:SetAttribute("CharDataLoaded", true)
 end
 setup()

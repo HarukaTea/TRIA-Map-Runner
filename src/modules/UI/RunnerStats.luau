@@ -4,30 +4,29 @@ local RepS = game:GetService("ReplicatedStorage")
 
 local Components = require(RepS.Modules.UI.Vanilla)
 local Fusion = require(RepS.Modules.Packages.Fusion)
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+
+local Pinia = require(RepS.Modules.UI.Pinia.RunnerStatsPinia)
 
 local Children = Fusion.Children
+
+local RunnerStats = {}
+RunnerStats.__index = RunnerStats
 
 local v2New = Vector2.new
 local fromScale = UDim2.fromScale
 local fromRGB = Color3.fromRGB
 
 return function (plr: Player)
-    local scope = Fusion.scoped({}) :: Fusion.Scope
+    local self = setmetatable({}, RunnerStats)
 
-    local char = plr.Character or plr.CharacterAdded:Wait()
-    local oxygen = Fusion.Value(scope, 100)
-    local maxOxygen = Fusion.Value(scope, 100)
+    self.plr = plr
+    self.char = plr.Character or plr.CharacterAdded:Wait()
 
-    table.insert(scope, HarukaLib:Hydrate(char, {
-        ["Attr-CurrentOxygen"] = function(o2: number)
-            oxygen:set(o2)
-        end,
-        ["Attr-MaxOxygen"] = function(maxo2: number)
-            maxOxygen:set(maxo2)
-        end
-    }))
+    repeat task.wait() until self.char:GetAttribute("CharDataLoaded")
 
+    Pinia(self)
+
+    local scope = self.scope :: Fusion.Scope
     Components.ScreenGui(scope, {
         Name = "RunnerStats",
         Parent = plr.PlayerGui,
@@ -70,7 +69,7 @@ return function (plr: Player)
                                         BackgroundColor3 = fromRGB(255, 255, 255),
 
                                         Size = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
-                                            return fromScale(math.clamp(use(oxygen) / use(maxOxygen), 0, 1), 1)
+                                            return fromScale(math.clamp(use(self.oxygen) / use(self.maxOxygen), 0, 1), 1)
                                         end), TweenInfo.new(0.5)),
 
                                         [Children] = {
@@ -94,7 +93,7 @@ return function (plr: Player)
                                 ),
 
                                 Text = Fusion.Computed(scope, function(use: Fusion.Use)
-                                    return "Oxygen: "..math.floor(use(oxygen))
+                                    return "Oxygen: "..math.floor(use(self.oxygen))
                                 end)
                             })
                         }
@@ -123,5 +122,5 @@ return function (plr: Player)
 	local function onDead()
 		Fusion.doCleanup(scope)
 	end
-	char.Humanoid.Died:Once(onDead)
+	self.char.Humanoid.Died:Once(onDead)
 end

@@ -6,7 +6,6 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
-local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -46,7 +45,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         local jumped = false
         local now = tick()
 
-        Spawn(function()
+        task.spawn(function()
             UserInputService.JumpRequest:Wait()
 
             jumped = true

@@ -5,7 +5,8 @@
 
         "Workspace": {
             "$properties": {
-                "StreamingEnabled": false
+                "StreamingEnabled": false,
+                "SignalBehavior": "Immediate"
             }
         },
         "ReplicatedFirst": {

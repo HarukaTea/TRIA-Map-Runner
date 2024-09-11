@@ -24,8 +24,7 @@ local Texts = {
 local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope: table?) : TextButton
     if not scope then scope = self.scope end
 
-    local bgColor = Fusion.Value(scope, fromRGB(30, 30, 30))
-    local bgTextColor = Fusion.Value(scope, fromRGB(255, 255, 255))
+    local isSelecting = Fusion.Value(scope, false)
     local index = 0
     if checkPoint then index = tFind(Fusion.peek(self.checkPoints), checkPoint) end
 
@@ -33,19 +32,20 @@ local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope:
         Name = "ButtonOption",
         Size = fromScale(1, 0.12),
         Text = if id == "Checkpoint" then "Checkpoint "..index else Texts[id],
+        AutoButtonColor = false,
 
-        BackgroundColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
-            return use(bgColor)
+        BackgroundColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
+            return if use(isSelecting) then fromRGB(255, 255, 255) else fromRGB(30, 30, 30)
         end), newTweenInfo(0.3)),
-        TextColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use)
-            return use(bgTextColor)
+        TextColor3 = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
+            return if use(isSelecting) then fromRGB() else fromRGB(255, 255, 255)
         end), newTweenInfo(0.3)),
 
         [OnEvent("MouseButton1Click")] = function()
             if id == "AddCheck" then
                 local cTable = Fusion.peek(self.checkPoints)
 
-                cTable[#cTable + 1] = self.plr.Character.PrimaryPart.CFrame
+                cTable[#cTable + 1] = self.char.PrimaryPart.CFrame
                 self.checkPoints:set(cTable)
 
                 MapLib:Alert("Checkpoint added!", "white", 3)
@@ -54,7 +54,7 @@ local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope:
                 self.checkPoints:set({})
 
             elseif id == "Checkpoint" then
-                self.plr.Character.PrimaryPart.CFrame = checkPoint
+                self.char.PrimaryPart.CFrame = checkPoint
 
             elseif id == "ActivateAllBtns" then
                 for _, btn in workspace:GetDescendants() do
@@ -63,12 +63,10 @@ local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope:
             end
         end,
         [OnEvent("MouseEnter")] = function()
-            bgColor:set(fromRGB(255, 255, 255))
-            bgTextColor:set(fromRGB())
+            isSelecting:set(true)
         end,
         [OnEvent("MouseLeave")] = function()
-            bgColor:set(fromRGB(30, 30, 30))
-            bgTextColor:set(fromRGB(255, 255, 255))
+            isSelecting:set(false)
         end,
 
         [Fusion.Children] = {

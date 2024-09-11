@@ -1,53 +1,51 @@
 --!nocheck
 
-local CS = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local RepS = game:GetService("ReplicatedStorage")
 
+local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+
+local camera = workspace.CurrentCamera
 local plr = Players.LocalPlayer
+local plrGui = plr:FindFirstChildOfClass("PlayerGui")
 
-local v2New = Vector2.new
+local uiStrokes = {}
 
-local DESIGN_VP_SIZE = v2New(1172, 466)
+local DESIGN_VP_SIZE = Vector2.new(1172, 466.4)
 
+--// Private
+
+local function __getBox(vector: Vector2) : number
+	return math.min(vector.X, vector.Y)
+end
 local function _calScreenRatio() : number
-	local function __average(vector2: Vector2) : number
-		return (vector2.X + vector2.Y) / 2
-	end
-
-	return __average(workspace.CurrentCamera.ViewportSize) / __average(DESIGN_VP_SIZE)
+	return __getBox(camera.ViewportSize) / __getBox(DESIGN_VP_SIZE)
 end
 
-local function setup()
-	local uiStrokes = {}
+--// Connections
 
-	--// Connections
-	local function _strokeAdded(added: UIStroke)
+local function _strokeAdded(added: Instance)
+	if added:IsA("UIStroke") and not added:GetAttribute("AlreadyTransformed") then
 		uiStrokes[added] = added.Thickness
 
 		added.Thickness *= _calScreenRatio()
-	end
-	CS:GetInstanceAddedSignal("ScreenStroke"):Connect(_strokeAdded)
-
-	local function _uiAdded(added: Instance)
-		if added:IsA("UIStroke") then CS:AddTag(added, "ScreenStroke") end
-	end
-	plr.PlayerGui.DescendantAdded:Connect(_uiAdded)
-
-	local function _updateSize()
-		for i: UIStroke, thickness: number in uiStrokes do
-			if not i.Parent then
-				uiStrokes[i] = nil
-			else
-				i.Thickness = thickness * _calScreenRatio()
-			end
-		end
-	end
-	_updateSize()
-	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(_updateSize)
-
-	--// Setups
-	for _, element in plr.PlayerGui:GetDescendants() do
-		if element:IsA("UIStroke") then CS:AddTag(element, "ScreenStroke") end
+		added:SetAttribute("AlreadyTransformed", true)
 	end
 end
-setup()
+local function _updateSize()
+	for stroke: UIStroke, thickness: number in uiStrokes do
+		if not stroke.Parent then
+			uiStrokes[stroke] = nil
+		else
+			stroke.Thickness = thickness * _calScreenRatio()
+		end
+	end
+end
+HarukaLib.Clock(1, _updateSize)
+
+--// Setups
+for _, child: Instance in plrGui:GetDescendants() do
+	_strokeAdded(child)
+end
+
+plrGui.DescendantAdded:Connect(_strokeAdded)

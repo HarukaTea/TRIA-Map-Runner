@@ -7,7 +7,6 @@ local RunService = game:GetService("RunService")
 
 local Bezier = require(RepS.Modules.Packages.Bezier)
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-local Spawn = require(RepS.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -70,6 +69,7 @@ local function setupZipline()
             startOrb.CanCollide = false
             startOrb.CanQuery = false
             startOrb.Parent = child
+			Add(startOrb)
 
             local function _pointDistance()
                 local total = 0
@@ -94,6 +94,7 @@ local function setupZipline()
                 segment.CanQuery = false
                 segment.Material = child:GetAttribute("Material")
                 segment.Color = child:GetAttribute("Color")
+				Add(segment)
 
                 segments[count] = segment
                 table.insert(segmentPoints, curvePoints:CalculatePositionAt(i - increment))
@@ -139,8 +140,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 
 		if touchCD then return end
 		touchCD = true
-		Spawn(function()
-			task.wait(0.5)
+		task.delay(0.5, function()
 			touchCD = false
 		end)
 

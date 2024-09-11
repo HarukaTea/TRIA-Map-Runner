@@ -4,7 +4,6 @@ local Players = game:GetService("Players")
 local RS = game:GetService("RunService")
 
 local Skills = {}
-Skills.__index = Skills
 
 --[[
     This function can be used for toggling sliding on or off during a map.
@@ -50,4 +49,4 @@ function Skills:_Toggler(name: string, option: boolean)
     end
 end
 
-return table.freeze(setmetatable({}, Skills))
+return Skills

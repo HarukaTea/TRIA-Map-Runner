@@ -42,8 +42,8 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 
             local oxygenGiven = hit.Parent:GetAttribute("Oxygen") :: number
 
-            char:SetAttribute("MaxOxygen", oxygenGiven)
-            char:SetAttribute("CurrentOxygen", oxygenGiven)
+            HarukaLib:AddAttr(char, "MaxOxygen", oxygenGiven)
+            char:SetAttribute("CurrentOxygen", char:GetAttribute("MaxOxygen"))
 
             maxOxygen = oxygenGiven
 

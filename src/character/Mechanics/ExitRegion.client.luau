@@ -5,7 +5,6 @@ local RepS = game:GetService("ReplicatedStorage")
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 local WaterLib = require(RepS.Modules.Data.WaterLib)
 local Signals = require(RepS.Modules.Data.Signals)
-local Spawn = require(RepS.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -22,8 +21,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
         if touchCD then return end
 
         touchCD = true
-        Spawn(function()
-            task.wait(0.5)
+        task.delay(0.5, function()
             touchCD = false
         end)
 

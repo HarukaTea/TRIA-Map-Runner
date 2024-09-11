@@ -6,7 +6,6 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
-local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -31,9 +30,7 @@ Add(char.Humanoid.Touched:Connect(function()
 
         if hit
             and (hit:GetAttribute("_action") == "WallJump"
-                or hit:FindFirstChild("_WallJump")
-                or hit:GetAttribute("_action") == "WallRun"
-            )
+                or hit:FindFirstChild("_WallJump"))
             and tick() - lastJumped > 0.07 then
 
             if hit:GetAttribute("UseFrontOnly") then
@@ -46,61 +43,51 @@ Add(char.Humanoid.Touched:Connect(function()
             char.PrimaryPart.Anchored = true
             char.PrimaryPart.CFrame = CFrame.new(char.PrimaryPart.Position, char.PrimaryPart.Position + normal)
 
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = hit
+            weld.Part1 = char.PrimaryPart
+            weld.Parent = char.PrimaryPart
+
             walljumpAnim:Play()
             workspace.Sounds.SFXs.Walljump:Play()
 
-            --// wallrun
-            local bv: BodyVelocity = nil
-            if hit:GetAttribute("_action") == "WallRun" then
-                char.PrimaryPart.Anchored = false
-
-                bv = Instance.new("BodyVelocity")
-                bv.MaxForce = Vector3.one * 10000
-                bv.Velocity = CFrame.new(char.PrimaryPart.Position, (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).LookVector * hit:GetAttribute("Speed")
-                bv.Parent = char.PrimaryPart
-
-                char.PrimaryPart.Velocity = CFrame.new(char.PrimaryPart.Position, (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).LookVector * hit:GetAttribute("Speed")
-            end
-
             local start = tick()
             local jumped = false
-            Spawn(function()
+            task.spawn(function()
                 UserInputService.JumpRequest:Wait()
+
                 jumped = true
             end)
 
-            if hit:GetAttribute("_action") == "WallRun" then
-                repeat RunService.RenderStepped:Wait()
-                    until jumped
-                    or (char.PrimaryPart.Position - (hit.CFrame * CFrame.new(0, 0, -hit.Size.Z / 2)).Position).Magnitude < 1.2
-                    or hit.Size.Z < (char.PrimaryPart.Position - hit.Position).Magnitude
-
-            elseif (hit:GetAttribute("_action") == "WallJump" or hit:FindFirstChild("_WallJump")) then
-                repeat RunService.RenderStepped:Wait()
-                    until jumped
-                    or tick() - start > (hit:GetAttribute("Timeout") or math.huge)
-            end
+            repeat RunService.RenderStepped:Wait()
+                until jumped
+                or tick() - start > (hit:GetAttribute("Timeout") or math.huge)
 
             lastJumped = tick()
 
-            if bv then bv:Destroy() end
             humanoid.AutoRotate = true
             char.PrimaryPart.Anchored = false
 
             walljumpAnim:Stop()
 
             if jumped then
-                local momentum = hit:GetAttribute("Momentum") or 1
+                if weld then weld:Destroy() end
+
+                local jp = char.Humanoid.JumpPower :: number
 
                 char.PrimaryPart.Velocity = Vector3.new(
-                    normal.X * 50,
-                    50 * momentum + normal.Y * 50,
-                    normal.Z * 50
+                    normal.X * jp,
+                    jp + normal.Y * jp,
+                    normal.Z * jp
                 )
+
 
                 walljumpAnim:Stop()
             else
+                if weld then weld:Destroy() end
+
                 char.PrimaryPart.Velocity = Vector3.new()
+
                 walljumpAnim:Stop()
             end
         end

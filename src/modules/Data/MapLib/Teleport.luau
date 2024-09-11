@@ -3,7 +3,6 @@
 local RunService = game:GetService("RunService")
 
 local Teleport = {}
-Teleport.__index = Teleport
 
 --[[
     This function can be used to teleport players.
@@ -45,4 +44,4 @@ function Teleport:Teleport(
     end
 end
 
-return table.freeze(setmetatable({}, Teleport))
+return Teleport

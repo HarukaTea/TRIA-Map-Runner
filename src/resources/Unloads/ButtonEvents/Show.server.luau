@@ -32,8 +32,8 @@ Signals.BtnPressed:Connect(function(btnIndex: string)
 	elseif obj:IsA("Model") then
 		for _, child: Instance in obj:GetDescendants() do
 			if objList[child.ClassName] then
-				obj.CanCollide = true
-				obj.Transparency = 0
+				child.CanCollide = true
+				child.Transparency = 0
 			end
 		end
 	end

@@ -12,7 +12,6 @@ local Bezier = require(ReplicatedStorage.Modules.Packages.Bezier)
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
-local Spawn = require(ReplicatedStorage.Modules.Packages.Spawn)
 local Signals = require(ServerScriptService.Modules.Data.ServerSignals)
 local WaterLib = require(ReplicatedStorage.Modules.Data.WaterLib)
 
@@ -341,8 +340,8 @@ local function setupSkills()
 
     if not skillSettings then return end
 
-    plr.Character:SetAttribute("AllowAirDive", skillSettings:GetAttribute("AllowAirDive"))
-    plr.Character:SetAttribute("AllowSlide", skillSettings:GetAttribute("AllowSliding"))
+    mapModel:SetAttribute("AllowAirDive", skillSettings:GetAttribute("AllowAirDive"))
+    mapModel:SetAttribute("AllowSlide", skillSettings:GetAttribute("AllowSliding"))
 end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
@@ -418,8 +417,7 @@ local function setupMain()
     plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
     plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
 
-    Spawn(function()
-        task.wait(5)
+    task.delay(5, function()
         Promise.new(function()
             if soundId == "" or soundId == nil then return end
 
@@ -431,7 +429,7 @@ local function setupMain()
                 })
             end
 
-        end):Catch(function(err)
+        end):catch(function(err)
             warn(err)
         end)
     end)

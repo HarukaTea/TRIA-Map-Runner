@@ -3,7 +3,6 @@
 local PlayersService = game:GetService("Players")
 
 local Players = {}
-Players.__index = Players
 
 --[[
     This function can be used to get all players in the current round.
@@ -53,4 +52,4 @@ function Players:GetPlayersInRadius(position: Vector3, radius: number)
     return playersInRadius
 end
 
-return table.freeze(setmetatable({}, Players))
+return Players

@@ -3,15 +3,14 @@
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 
-local Spawn = require(RepS.Modules.Packages.Spawn)
-
 local plr = Players.LocalPlayer
 
-local uiModules = {
-    RepS.Modules.UI.Hints,
-    RepS.Modules.UI.HarukaPanel,
-    RepS.Modules.UI.RunnerStats
-}
-for _, module: ModuleScript in uiModules do
-    Spawn(function() require(module)(plr) end)
+local function setup()
+	for _, module: ModuleScript in RepS.Modules.UI:GetChildren() do
+		if not module:IsA("ModuleScript") then continue end
+		if module.Name == "Vanilla" then continue end
+
+		task.spawn(function() require(module)(plr) end)
+	end
 end
+setup()

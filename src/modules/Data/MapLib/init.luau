@@ -8,7 +8,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
 local Signal = require(RepS.Modules.Packages.Signal)
-local Spawn = require(RepS.Modules.Packages.Spawn)
 local Promise = require(RepS.Modules.Packages.Promise)
 
 local Events, Signals = nil, nil
@@ -22,7 +21,6 @@ elseif RS:IsClient() then
 end
 
 local MapLib = {}
-MapLib.__index = MapLib
 
 MapLib.map = workspace.Map
 MapLib.Map = workspace.Map
@@ -84,7 +82,7 @@ function MapLib:ChangeMusic(musicId: number, volume: number?, startTick: number?
                 })
             end
 
-        end):Catch(function(err)
+        end):catch(function(err)
             warn(err)
         end)
     end
@@ -131,7 +129,7 @@ end
     ``````
 ]]
 function MapLib:Move(moveable: PVInstance, movement: Vector3, duration: number?)
-    Spawn(function()
+    task.spawn(function()
         MapLib:_Move(moveable, movement, duration, false)
     end)
 end
@@ -146,7 +144,7 @@ MapLib.MoveModel = MapLib.Move
     ``````
 ]]
 function MapLib:MoveRelative(moveable: PVInstance, movement: Vector3, duration: number?)
-    Spawn(function()
+    task.spawn(function()
         MapLib:_Move(moveable, movement, duration, true)
     end)
 end
@@ -165,7 +163,7 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
     if not liquid then return end
     if not liquidType then return end
 
-    Spawn(function()
+    task.spawn(function()
         if liquidType == "custom" then
             local liquidSettings = MapLib.map.Settings.Liquids :: Configuration | Folder
             local customAttr = liquidSettings:FindFirstChild("custom") :: Configuration
@@ -176,8 +174,7 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
 
             TweenService:Create(liquid, TweenInfo.new(1), { Color = customAttr:GetAttribute("Color") }):Play()
 
-            Spawn(function()
-                task.wait(1)
+            task.delay(1, function()
                 liquid:SetAttribute("OxygenDepletion", customAttr:GetAttribute("OxygenDepletion"))
             end)
         else
@@ -256,4 +253,4 @@ function MapLib:_Move(moveable: PVInstance, movement: Vector3, duration: number?
 	end)
 end
 
-return table.freeze(setmetatable({}, MapLib))
+return MapLib

@@ -29,10 +29,8 @@ local Priority = {
 local function TypeOption(id: string, self: table) : Frame
     local scope = self.scope :: table
 
-    local bgColor = Value(scope, fromRGB(30, 30, 30))
-    local bgTextColor = Value(scope, fromRGB(255, 255, 255))
-    local bgColor2 = Value(scope, fromRGB(30, 30, 30))
-    local bgTextColor2 = Value(scope, fromRGB(255, 255, 255))
+    local isSelecting = Value(scope, false)
+    local isSelecting2 = Value(scope, false)
 
     return Components.Frame(scope, {
         Name = "TypeOption",
@@ -54,53 +52,35 @@ local function TypeOption(id: string, self: table) : Frame
                     })
                 }
             }),
-            Components.TextBox(scope, {
-                Name = "Input",
-                BackgroundTransparency = 0.5,
-                Position = fromScale(0.625, 0),
-                Size = fromScale(0.2, 1),
-                TextColor3 = fromRGB(178, 178, 178),
 
-                Text = Computed(scope, function(use)
-                    return use(self.inputs[id])
-                end),
-
-                [Fusion.Out("Text")] = self.inputs[id],
-
-                [Children] = { Components.RoundUICorner(scope) }
-            }),
             Components.TextButton(scope, {
                 Name = "Decrease",
                 BackgroundTransparency = 0.2,
                 Position = fromScale(0.455, 0),
                 Size = fromScale(0.15, 1),
                 Text = "<",
+                AutoButtonColor = false,
 
-                BackgroundColor3 = Tween(scope, Computed(scope, function(use)
-                    return use(bgColor)
+                BackgroundColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting) then fromRGB(255, 255, 255) else fromRGB(30, 30, 30)
                 end), newTweenInfo(0.3)),
-                TextColor3 = Tween(scope, Computed(scope, function(use)
-                    return use(bgTextColor)
+                TextColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting) then fromRGB() else fromRGB(255, 255, 255)
                 end), newTweenInfo(0.3)),
 
                 [OnEvent("MouseButton1Click")] = function()
-                    local currentVal = peek(self.inputs[id])
+                    local currentVal = tonumber(peek(self.inputs[id])) or Priority[id]
 
-                    if currentVal ~= "" and tonumber(currentVal) then
-                        self.inputs[id]:set(tonumber(currentVal) - Priority[id])
+                    currentVal -= Priority[id]
+                    if currentVal < 0 then currentVal = 0 end
 
-                        if tonumber(currentVal) - Priority[id] < 0 then
-                            self.inputs[id]:set(0)
-                        end
-                    end
+                    self.inputs[id]:set(currentVal)
                 end,
                 [OnEvent("MouseEnter")] = function()
-                    bgColor:set(fromRGB(255, 255, 255))
-                    bgTextColor:set(fromRGB())
+                    isSelecting:set(true)
                 end,
                 [OnEvent("MouseLeave")] = function()
-                    bgColor:set(fromRGB(30, 30, 30))
-                    bgTextColor:set(fromRGB(255, 255, 255))
+                    isSelecting:set(false)
                 end,
 
                 [Children] = { Components.RoundUICorner(scope) }
@@ -111,32 +91,46 @@ local function TypeOption(id: string, self: table) : Frame
                 Position = fromScale(0.845, 0),
                 Size = fromScale(0.15, 1),
                 Text = ">",
+                AutoButtonColor = false,
 
-                BackgroundColor3 = Tween(scope, Computed(scope, function(use)
-                    return use(bgColor2)
+                BackgroundColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting2) then fromRGB(255, 255, 255) else fromRGB(30, 30, 30)
                 end), newTweenInfo(0.3)),
-                TextColor3 = Tween(scope, Computed(scope, function(use)
-                    return use(bgTextColor2)
+                TextColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting2) then fromRGB() else fromRGB(255, 255, 255)
                 end), newTweenInfo(0.3)),
 
                 [OnEvent("MouseButton1Click")] = function()
-                    local currentVal = peek(self.inputs[id])
+                    local currentVal = tonumber(peek(self.inputs[id])) or Priority[id]
 
-                    if currentVal ~= "" and tonumber(currentVal) then
-                        self.inputs[id]:set(tonumber(currentVal) + Priority[id])
-                    end
+                    currentVal += Priority[id]
+                    if currentVal < 0 then currentVal = 0 end
+
+                    self.inputs[id]:set(currentVal)
                 end,
                 [OnEvent("MouseEnter")] = function()
-                    bgColor2:set(fromRGB(255, 255, 255))
-                    bgTextColor2:set(fromRGB())
+                    isSelecting2:set(true)
                 end,
                 [OnEvent("MouseLeave")] = function()
-                    bgColor2:set(fromRGB(30, 30, 30))
-                    bgTextColor2:set(fromRGB(255, 255, 255))
+                    isSelecting2:set(false)
                 end,
 
                 [Children] = { Components.RoundUICorner(scope) }
-            })
+            }),
+
+            Components.TextBox(scope, {
+                Name = "Input",
+                BackgroundTransparency = 0.5,
+                Position = fromScale(0.625, 0),
+                Size = fromScale(0.2, 1),
+                TextColor3 = fromRGB(178, 178, 178),
+
+                Text = Computed(scope, function(use: Fusion.Use)
+                    return use(self.inputs[id])
+                end),
+
+                [Children] = { Components.RoundUICorner(scope) }
+            }),
         }
     })
 end

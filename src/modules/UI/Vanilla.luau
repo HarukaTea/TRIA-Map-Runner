@@ -26,9 +26,7 @@ function Components.ScreenGui(scope: Fusion.Scope, props: table) : ScreenGui
 	return _createNewCompoent(scope, props, "ScreenGui", {
 		ClipToDeviceSafeArea = false,
 		ScreenInsets = Enum.ScreenInsets.None,
-		IgnoreGuiInset = true,
-
-		AutoLocalize = false,
+		IgnoreGuiInset = true
 	})
 end
 
@@ -41,25 +39,42 @@ function Components.Frame(scope: Fusion.Scope, props: table) : Frame
 		Position = fromScale(0.5, 0.5),
 		Size = fromScale(1, 1),
 		BackgroundColor3 = fromRGB(30, 30, 30),
-		BackgroundTransparency = 1,
-
-		AutoLocalize = false,
+		BackgroundTransparency = 1
 	})
 end
 
 --[[
 	Return a transparent scrollable frame, with a center anchor, and no clips
 ]]
-function Components.ScrollingFrame(scope: Fusion.Scope, props: table) : ScrollingFrame
+function Components.ScrollingFrame(scope: Fusion.Scope, props: table, listProps: table) : ScrollingFrame
+	local absSize = Fusion.Value(scope, Vector2.new())
+	local absContentSize = Fusion.Value(scope, Vector2.new())
+
+	if listProps.Padding ~= nil then --- UIListLayout
+		listProps[Fusion.Out("AbsoluteContentSize")] = absContentSize
+
+		table.insert(props[Fusion.Children], 1, Fusion.New(scope, "UIListLayout")(listProps))
+
+	elseif listProps.CellPadding ~= nil then --- UIGridLayout
+		listProps[Fusion.Out("AbsoluteContentSize")] = absContentSize
+
+		table.insert(props[Fusion.Children], 1, Fusion.New(scope, "UIGridLayout")(listProps))
+	end
+
 	return _createNewCompoent(scope, props, "ScrollingFrame", {
 		BackgroundColor3 = fromRGB(30, 30, 30),
 		BackgroundTransparency = 1,
-		AnchorPoint = v2New(0.5, 0.5),
-		Position = fromScale(0.5, 0.5),
-		CanvasSize = fromScale(0, 0),
 		ScrollBarThickness = 0,
 
-		AutoLocalize = false,
+		CanvasSize = Fusion.Computed(scope, function(use)
+			return if use(absContentSize).Y > use(absSize).Y then UDim2.fromOffset(0, use(absContentSize).Y + 26) else UDim2.fromOffset(0, 0)
+		end),
+		ScrollingEnabled = Fusion.Computed(scope, function(use)
+			return if use(absContentSize).Y > use(absSize).Y then true else false
+		end),
+
+		[Fusion.Out("AbsoluteSize")] = absSize,
+		[Fusion.Children] = props[Fusion.Children]
 	})
 end
 
@@ -73,9 +88,7 @@ function Components.TextLabel(scope: Fusion.Scope, props: table) : TextLabel
 		FontFace = Font.fromName("SourceSansPro", Enum.FontWeight.Bold),
 		TextScaled = true,
 		TextColor3 = color3New(1, 1, 1),
-		TextStrokeColor3 = color3New(),
-
-		AutoLocalize = false,
+		TextStrokeColor3 = color3New()
 	})
 end
 
@@ -89,9 +102,7 @@ function Components.TextBox(scope: Fusion.Scope, props: table) : TextBox
 		FontFace = fontFromName("SourceSansPro", Enum.FontWeight.Bold),
 		Text = "",
 		TextColor3 = color3New(1, 1, 1),
-		TextScaled = true,
-
-		AutoLocalize = false,
+		TextScaled = true
 	})
 end
 
@@ -102,9 +113,7 @@ function Components.ImageLabel(scope: Fusion.Scope, props: table) : ImageLabel
 	return _createNewCompoent(scope, props, "ImageLabel", {
 		BackgroundColor3 = color3New(),
 		BackgroundTransparency = 1,
-		Image = "",
-
-		AutoLocalize = false,
+		Image = ""
 	})
 end
 
@@ -119,9 +128,7 @@ function Components.HoverImageButton(scope: Fusion.Scope, props: table) : ImageB
 		AnchorPoint = v2New(0.5, 0.5),
 		Position = fromScale(0.5, 0.5),
 		Size = ud2New(1, 0, 1, 0),
-		Image = "",
-
-		AutoLocalize = false,
+		Image = ""
 	})
 end
 
@@ -134,9 +141,7 @@ function Components.TextButton(scope: Fusion.Scope, props: table) : TextButton
 		BackgroundColor3 = fromRGB(30, 30, 30),
 		FontFace = Font.fromName("SourceSansPro", Enum.FontWeight.Bold),
 		TextColor3 = color3New(1, 1, 1),
-		TextScaled = true,
-
-		AutoLocalize = false,
+		TextScaled = true
 	})
 end
 
@@ -147,8 +152,7 @@ function Components.UIStroke(scope: Fusion.Scope, props: table) : UIStroke
 	return _createNewCompoent(scope, props, "UIStroke", {
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Color = color3New(1, 1, 1),
-		Transparency = 0.3,
-		Enabled = false,
+		Transparency = 0.3
 	})
 end
 
@@ -168,17 +172,37 @@ function Components.RoundUICorner(scope: Fusion.Scope) : UICorner
 	return Fusion.New(scope, "UICorner")({ CornerRadius = udNew(0.5, 0) })
 end
 
-
---// Custom
-function Components.BGShadow(scope: Fusion.Scope) : Frame
+--[[
+	Return a padding frame for scrolling frame
+]]
+function Components.PaddingFrame(scope: Fusion.Scope, name: string) : Frame
 	return Components.Frame(scope, {
-        Name = "Shadow",
-        BackgroundTransparency = 0.15,
-        ZIndex = 0,
-        Visible = false,
+		Name = name,
+		Size = UDim2.fromOffset(1, 1),
+		LayoutOrder = if name == "AAA" then 0 else 99999
+	})
+end
 
-		AutoLocalize = false,
-    })
+--[[
+	Return a most basic frame in UI structure, haruka style
+]]
+function Components.HarukaFrame(scope: Fusion.Scope, props: table) : Frame
+	table.insert(props[Fusion.Children], 1, Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 25.627 }))
+
+	return Components.Frame(scope, props)
+end
+
+--[[
+	Return a default billboardGui
+]]
+function Components.BillboardGui(scope: Fusion.Scope, props: table) : BillboardGui
+	return _createNewCompoent(scope, props, "BillboardGui", {
+		LightInfluence = 0,
+		ZIndexBehavior = Enum.ZIndexBehavior.Global,
+		ClipsDescendants = false,
+		AlwaysOnTop = true,
+		ResetOnSpawn = false
+	})
 end
 
 return Components

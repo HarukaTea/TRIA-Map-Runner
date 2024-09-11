@@ -3,13 +3,12 @@
 local Janitor = require(script.Janitor)
 
 local Cleanup = {}
-Cleanup.__index = Cleanup
 
 Cleanup._Janitors = {}
 
 Cleanup.Janitor = {} --// my own bin methods to fit in TRIA apis
 Cleanup.Janitor.new = function(name: string?)
-    local janitor = Janitor.new(name)
+    local janitor = Janitor.new()
 
     Cleanup._Janitors[name] = Janitor
 
@@ -32,4 +31,4 @@ function Cleanup:GetJanitors()
     return Cleanup._Janitors
 end
 
-return table.freeze(setmetatable({}, Cleanup))
+return Cleanup
