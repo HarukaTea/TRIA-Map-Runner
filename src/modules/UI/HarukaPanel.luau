@@ -43,7 +43,6 @@ return function (plr: Player)
                 Name = "Bottom",
                 AnchorPoint = v2New(0.5, 1),
                 Position = fromScale(0.5, 1),
-                Size = fromScale(1, 0.1),
 
                 [Children] = {
                     Components.TextButton(scope, {

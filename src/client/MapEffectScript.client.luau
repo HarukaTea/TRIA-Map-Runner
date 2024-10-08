@@ -19,13 +19,10 @@ setupMapLib()
 
 --// Wait for map to load
 repeat task.wait() until workspace:WaitForChild("Map", 999)
-
-local Signals = require(ReplicatedStorage.Modules.Data.Signals)
+repeat task.wait() until workspace.Map:GetAttribute("IsLoaded")
 
 local effectScript = workspace.Map:FindFirstChild("EffectScript") :: LocalScript
 if not effectScript then
-    Signals.CreateHint:Fire("EffectScript not found!")
-
     warn("EffectScript not found!")
     return
 end

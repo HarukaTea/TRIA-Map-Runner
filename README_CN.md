@@ -19,6 +19,7 @@
 ### 已知的BUG
 
 - 旧地图可能无法正常运行
+- 在V1.0发布之前，物理参数可能不太准确
 
 ### 如何使用？
 
@@ -28,4 +29,4 @@
 4. 插入你的地图，记得 **UNGROUP**
 5. 按F5测试
 
-![Preview](docs/Preview_TRIA_Runner2.png)
+![Preview](docs/TMR_Preview1.png)

@@ -4,6 +4,7 @@ local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local Bezier = require(RepS.Modules.Packages.Bezier)
 local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
@@ -60,7 +61,7 @@ local function setupZipline()
 			curvePointsSet[child] = curvePoints
 
             local startOrb = Instance.new("Part")
-            startOrb.Name = "StartOrb"
+            startOrb.Name = "Hitbox"
             startOrb.Anchored = true
             startOrb.Transparency = 1
             startOrb.Shape = Enum.PartType.Ball
@@ -131,10 +132,10 @@ end
 setupZipline()
 
 local touchCD = false
-Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
+Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit.Parent
         and hit:IsA("BasePart")
-        and hit.Name == "StartOrb"
+        and hit.Name == "Hitbox"
         and hit.Parent:IsA("Model")
         and hit.Parent.Name == "Zipline" then
 
@@ -183,13 +184,26 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 		local curveT = 0
 		local startRiding = tick()
 		local cancelRide = false
+		local jumped = false
+
+		local jumpAdd, jumpEmpty = HarukaLib.Bin()
+		Add(jumpEmpty)
 
 		while curveT <= 1 and task.wait() do
 			if char.Humanoid.Health <= 0 then break end
 			if cancelRide then break end
 
+			local cTime = tick() - startRiding
+			if cTime > 0.04 then
+				jumpAdd(UserInputService.JumpRequest:Once(function()
+					jumped = true
+				end))
+			end
+
 			local startMoving = tick()
-			local rideTime = (1 / 60) / (hit.Parent:GetAttribute("TotalSegmentLength") / hit.Parent:GetAttribute("Speed"))
+			local DEBUG_SPEED_FACTOR = 1.12
+			--// FIXME: this may be inaccurate, need to check again in TRIA 1.0
+			local rideTime = (1 / 60) / (hit.Parent:GetAttribute("TotalSegmentLength") / hit.Parent:GetAttribute("Speed") / DEBUG_SPEED_FACTOR)
 
 			local bezierPos = curvePoints:CalculatePositionRelativeToLength(curveT)
 			while bezierPos ~= bezierPos do
@@ -224,7 +238,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 					curveT += rideTime * scaleFrameDt
 				end
 			end
-			if tick() - startRiding >= 0.1 and humanoid.Jump and hit.Parent:GetAttribute("Jumpable") then
+			if tick() - startRiding >= 0.04 and jumped and hit.Parent:GetAttribute("Jumpable") then
 				cancelRide = true
 			end
 		end
@@ -235,11 +249,13 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
 
 		if sparklePart then Debris:AddItem(sparklePart, 0.5) end
 		if bp then bp:Destroy() end
+		jumpEmpty()
 
-		isRiding = false
 		if hit.Parent:GetAttribute("Momentum") then
 			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, -hit.Parent:GetAttribute("Speed") * 1.45))
 		end
+
+		isRiding = false
     end
 end))
 

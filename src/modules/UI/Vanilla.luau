@@ -6,7 +6,7 @@ local Fusion = require(RepS.Modules.Packages.Fusion)
 
 local Components = {}
 
-local color3New, v2New, ud2New, udNew = Color3.new, Vector2.new, UDim2.new, UDim.new
+local color3New, v2New, udNew = Color3.new, Vector2.new, UDim.new
 local fromScale = UDim2.fromScale
 local fromRGB = Color3.fromRGB
 local fontFromName = Font.fromName
@@ -26,7 +26,10 @@ function Components.ScreenGui(scope: Fusion.Scope, props: table) : ScreenGui
 	return _createNewCompoent(scope, props, "ScreenGui", {
 		ClipToDeviceSafeArea = false,
 		ScreenInsets = Enum.ScreenInsets.None,
-		IgnoreGuiInset = true
+		IgnoreGuiInset = true,
+		ResetOnSpawn = false,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		Enabled = true
 	})
 end
 
@@ -39,7 +42,8 @@ function Components.Frame(scope: Fusion.Scope, props: table) : Frame
 		Position = fromScale(0.5, 0.5),
 		Size = fromScale(1, 1),
 		BackgroundColor3 = fromRGB(30, 30, 30),
-		BackgroundTransparency = 1
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
 	})
 end
 
@@ -64,7 +68,10 @@ function Components.ScrollingFrame(scope: Fusion.Scope, props: table, listProps:
 	return _createNewCompoent(scope, props, "ScrollingFrame", {
 		BackgroundColor3 = fromRGB(30, 30, 30),
 		BackgroundTransparency = 1,
-		ScrollBarThickness = 0,
+		ScrollBarThickness = 5,
+		ScrollBarImageColor3 = color3New(1, 1, 1),
+		BorderSizePixel = 0,
+		Size = fromScale(1, 1),
 
 		CanvasSize = Fusion.Computed(scope, function(use)
 			return if use(absContentSize).Y > use(absSize).Y then UDim2.fromOffset(0, use(absContentSize).Y + 26) else UDim2.fromOffset(0, 0)
@@ -88,7 +95,9 @@ function Components.TextLabel(scope: Fusion.Scope, props: table) : TextLabel
 		FontFace = Font.fromName("SourceSansPro", Enum.FontWeight.Bold),
 		TextScaled = true,
 		TextColor3 = color3New(1, 1, 1),
-		TextStrokeColor3 = color3New()
+		TextStrokeColor3 = color3New(),
+		BorderSizePixel = 0,
+		Size = fromScale(1, 1),
 	})
 end
 
@@ -102,7 +111,9 @@ function Components.TextBox(scope: Fusion.Scope, props: table) : TextBox
 		FontFace = fontFromName("SourceSansPro", Enum.FontWeight.Bold),
 		Text = "",
 		TextColor3 = color3New(1, 1, 1),
-		TextScaled = true
+		TextScaled = true,
+		BorderSizePixel = 0,
+		Size = fromScale(1, 1),
 	})
 end
 
@@ -113,7 +124,9 @@ function Components.ImageLabel(scope: Fusion.Scope, props: table) : ImageLabel
 	return _createNewCompoent(scope, props, "ImageLabel", {
 		BackgroundColor3 = color3New(),
 		BackgroundTransparency = 1,
-		Image = ""
+		Image = "",
+		BorderSizePixel = 0,
+		Size = fromScale(1, 1),
 	})
 end
 
@@ -127,8 +140,10 @@ function Components.HoverImageButton(scope: Fusion.Scope, props: table) : ImageB
 		BackgroundTransparency = 1,
 		AnchorPoint = v2New(0.5, 0.5),
 		Position = fromScale(0.5, 0.5),
-		Size = ud2New(1, 0, 1, 0),
-		Image = ""
+		Size = fromScale(1, 1),
+		Image = "",
+		BorderSizePixel = 0,
+		AutoButtonColor = false
 	})
 end
 
@@ -141,7 +156,8 @@ function Components.TextButton(scope: Fusion.Scope, props: table) : TextButton
 		BackgroundColor3 = fromRGB(30, 30, 30),
 		FontFace = Font.fromName("SourceSansPro", Enum.FontWeight.Bold),
 		TextColor3 = color3New(1, 1, 1),
-		TextScaled = true
+		TextScaled = true,
+		BorderSizePixel = 0,
 	})
 end
 
@@ -150,9 +166,10 @@ end
 ]]
 function Components.UIStroke(scope: Fusion.Scope, props: table) : UIStroke
 	return _createNewCompoent(scope, props, "UIStroke", {
+		Thickness = 1,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Color = color3New(1, 1, 1),
-		Transparency = 0.3
+		Transparency = 0
 	})
 end
 
@@ -161,7 +178,8 @@ end
 ]]
 function Components.TextUIStroke(scope: Fusion.Scope, props: table) : UIStroke
 	return _createNewCompoent(scope, props, "UIStroke", {
-		Transparency = 0.3,
+		Thickness = 1,
+		Transparency = 0,
 	})
 end
 
@@ -170,6 +188,40 @@ end
 ]]
 function Components.RoundUICorner(scope: Fusion.Scope) : UICorner
 	return Fusion.New(scope, "UICorner")({ CornerRadius = udNew(0.5, 0) })
+end
+
+--[[
+	Return a normal UIPadding with 0.1 scale of every direction
+]]
+function Components.UIPadding(scope: Fusion.Scope, props: table) : UIPadding
+	return _createNewCompoent(scope, props, "UIPadding", {
+		PaddingTop = udNew(0.1, 0),
+		PaddingBottom = udNew(0.1, 0),
+		PaddingLeft = udNew(0.1, 0),
+		PaddingRight = udNew(0.1, 0)
+	})
+end
+
+--[[
+	A quick shortcut to UIAspectRatioConstraint
+]]
+function Components.UIAspectRatioConstraint(scope: Fusion.Scope, aspect: number?) : UIAspectRatioConstraint
+	return _createNewCompoent(scope, { AspectRatio = aspect or 25.627 }, "UIAspectRatioConstraint", {
+		AspectRatio = 25.627
+	})
+end
+
+--[[
+	Return a UIListLayout with different directions
+]]
+function Components.UIListLayout(scope: Fusion.Scope, props: table) : UIListLayout
+	return _createNewCompoent(scope, props, "UIListLayout", {
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		FillDirection = Enum.FillDirection.Vertical,
+		VerticalAlignment = Enum.VerticalAlignment.Top,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		Padding = udNew(0, 0)
+	})
 end
 
 --[[
@@ -184,10 +236,12 @@ function Components.PaddingFrame(scope: Fusion.Scope, name: string) : Frame
 end
 
 --[[
-	Return a most basic frame in UI structure, haruka style
+	Return a most basic frame in UI structure, haruka style-ui only
 ]]
 function Components.HarukaFrame(scope: Fusion.Scope, props: table) : Frame
-	table.insert(props[Fusion.Children], 1, Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 25.627 }))
+	table.insert(props[Fusion.Children], 1, Components.UIAspectRatioConstraint(scope, 25.627))
+
+	props.Size = UDim2.fromScale(1, 0.1)
 
 	return Components.Frame(scope, props)
 end
@@ -201,7 +255,18 @@ function Components.BillboardGui(scope: Fusion.Scope, props: table) : BillboardG
 		ZIndexBehavior = Enum.ZIndexBehavior.Global,
 		ClipsDescendants = false,
 		AlwaysOnTop = true,
-		ResetOnSpawn = false
+		ResetOnSpawn = false,
+		Active = true
+	})
+end
+
+--[[
+	Return a BlurEffect for UI objects only
+]]
+function Components.BlurFS(scope: Fusion.Scope, props: table) : BlurEffect
+	return _createNewCompoent(scope, props, "BlurEffect", {
+		Enabled = true,
+		Name = "UIBlur"
 	})
 end
 

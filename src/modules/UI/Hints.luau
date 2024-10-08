@@ -1,7 +1,8 @@
 --!nocheck
 
-local HttpService = game:GetService("HttpService")
+local Debris = game:GetService("Debris")
 local RepS = game:GetService("ReplicatedStorage")
+local TS = game:GetService("TweenService")
 
 local Components = require(RepS.Modules.UI.Vanilla)
 local Events = require(RepS.Modules.Data.Events)
@@ -10,8 +11,7 @@ local Signals = require(RepS.Modules.Data.Signals)
 
 local Children = Fusion.Children
 
-local wait = task.wait
-local v2New, udNew, ud2New = Vector2.new, UDim.new, UDim2.new
+local udNew, ud2New = UDim.new, UDim2.new
 local fromScale = UDim2.fromScale
 local fromRGB = Color3.fromRGB
 
@@ -27,31 +27,35 @@ return function(plr: Player)
 		Parent = plr.PlayerGui,
 
 		[Children] = {
-			Components.Frame(scope, {
+			Fusion.New(scope, "Frame")({
 				Name = "BG",
-                AnchorPoint = v2New(),
-				Position = fromScale(0, 0),
+				BackgroundTransparency = 1,
 				Size = fromScale(1, 0.85),
 				ZIndex = 999,
 
 				[Children] = {
-					Fusion.New(scope, "UIListLayout")({
+					Components.UIListLayout(scope, {
 						Padding = udNew(0, 5),
 						HorizontalAlignment = Enum.HorizontalAlignment.Center,
                         VerticalAlignment = Enum.VerticalAlignment.Bottom,
-						SortOrder = Enum.SortOrder.LayoutOrder
 					}),
 
-					Fusion.ForValues(scope, hintList, function(_, localScope, info: table)
-						return Components.TextLabel(localScope, {
+					Fusion.ForValues(scope, hintList, function(_, localScope: Fusion.Scope, hint: StringValue)
+						local label = Components.TextLabel(localScope, {
 							Name = "Hint",
 							Size = ud2New(1, 0, 0, 24),
-							Text = info.Text,
+							Text = hint.Value,
 							FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
-							TextColor3 = info.Color,
+							TextColor3 = hint:GetAttribute("Color"),
 							TextStrokeTransparency = 0,
-							LayoutOrder = info.DisplayOrder,
+							LayoutOrder = hint:GetAttribute("DisplayOrder"),
 						})
+
+						table.insert(localScope, task.delay(hint:GetAttribute("Duration") - 0.25, function()
+							TS:Create(label, TweenInfo.new(0.2), { TextTransparency = 1 }):Play()
+						end))
+
+						return label
 					end)
 				},
 			}),
@@ -60,9 +64,23 @@ return function(plr: Player)
 	})
 
 	--// Connections
+
+	local hintsFolder = Instance.new("Folder")
+	hintsFolder.Name = "FALLEN_Container"
+	hintsFolder.Parent = char
+	table.insert(scope, hintsFolder)
+
+	local function updateHints()
+		task.wait()
+		hintList:set(hintsFolder:GetChildren())
+	end
+	table.insert(scope, hintsFolder.ChildAdded:Connect(updateHints))
+	table.insert(scope, hintsFolder.ChildRemoved:Connect(updateHints))
+
+
+	---
 	local displayOrder = 0
 	local function _createHint(text: string, color: Color3 | string, duration: string?)
-		local uniqueId = HttpService:GenerateGUID(false)
 		local colorList = {
 			RED = fromRGB(255, 0, 0),
 			GREEN = fromRGB(0, 255, 0),
@@ -83,26 +101,19 @@ return function(plr: Player)
 			color = colorList[string.upper(color)] or fromRGB(255, 255, 255)
 		end
 
-		local info = {
-			Id = uniqueId,
-			Text = text or "",
-			Color = color or fromRGB(255, 255, 255),
-			Duration = tonumber(duration) or 5,
-			DisplayOrder = displayOrder
-		}
 		displayOrder += 1
 		if displayOrder >= math.huge - 1 then displayOrder = 0 end
 
-		local new = Fusion.peek(hintList)
-		new[uniqueId] = info
+		duration = tonumber(duration) or 5
 
-		hintList:set(new)
-
-		wait(info.Duration)
-		local future = Fusion.peek(hintList)
-		if future[uniqueId] then future[uniqueId] = nil end
-
-		hintList:set(future)
+		local hint = Instance.new("StringValue")
+		hint.Name = "Hint"
+		hint.Value = text
+		hint:SetAttribute("Duration", duration)
+		hint:SetAttribute("Color", color)
+		hint:SetAttribute("LayoutOrder", displayOrder)
+		hint.Parent = hintsFolder
+		Debris:AddItem(hint, duration)
 	end
 	table.insert(scope, Events.CreateHint.On(function(data)
 		local text, color, duration = data.Hint, data.Color, data.Duration
@@ -110,6 +121,7 @@ return function(plr: Player)
 		_createHint(text, color, duration)
 	end))
 	table.insert(scope, Signals.CreateHint:Connect(_createHint))
+
 
 	--// Clear
 	local function onDead()

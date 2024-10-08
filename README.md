@@ -3,7 +3,7 @@
 
 <u>English</u> | <a href="./README_CN.md">简体中文</a>
 
-> A project that allows you to run TRIA maps that you created in Roblox Studio.
+> A project that allows you to run TRIA maps in Roblox Studio.
 
 Making maps isn't that easy, and testing makes it more difficult, and this project is the solution for you.
 
@@ -17,6 +17,7 @@ With this project, you can run your TRIA maps in Roblox Studio, and see how the 
 ### Known Issues
 
 - Map with old map kit (V1) may not work fine.
+- Inaccurate physics properties, which needs to be fixed in TRIA V1.0
 
 ### How to use?
 
@@ -26,4 +27,4 @@ With this project, you can run your TRIA maps in Roblox Studio, and see how the 
 4. Insert your own model and **UNGROUP** it
 5. Test the map by clicking the Play button or press F5 key.
 
-![Preview](docs/Preview_TRIA_Runner2.png)
+![Preview](docs/TMR_Preview1.png)

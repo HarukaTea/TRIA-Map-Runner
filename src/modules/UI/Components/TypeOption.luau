@@ -37,7 +37,8 @@ local function TypeOption(id: string, self: table) : Frame
         Size = fromScale(1, 0.12),
 
         [Children] = {
-            Fusion.New(scope, "UIAspectRatioConstraint")({ AspectRatio = 6.449 }),
+            Components.UIAspectRatioConstraint(scope, 6.449),
+
             Components.TextLabel(scope, {
                 Name = "Title",
                 Size = fromScale(0.7, 1),

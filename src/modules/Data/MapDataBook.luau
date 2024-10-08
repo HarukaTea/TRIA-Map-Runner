@@ -8,7 +8,7 @@ MapDataBook.DifficultyColors = {
     [3] = Color3.fromRGB(205, 24, 54),
     [4] = Color3.fromRGB(98, 79, 184),
     [5] = Color3.fromRGB(239, 150, 54),
-    [6] = Color3.fromRGB(125, 15, 79),
+    [6] = Color3.fromRGB(160, 27, 109),
     [7] = Color3.fromRGB(255, 255, 255),
 
     ["Unrated"] = Color3.fromRGB(255, 255, 255)

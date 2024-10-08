@@ -4,7 +4,9 @@ local Players = game:GetService("Players")
 local SSS = game:GetService("ServerScriptService")
 local SS = game:GetService("ServerStorage")
 
-local CharTemplate = require(SSS.Modules.Data.CharTemplate)
+local Signals = require(SSS.Modules.Data.ServerSignals)
+
+local TEMPLATE = require(SSS.Modules.Data.CharTemplate)
 
 repeat task.wait() until workspace:WaitForChild("Map", 999)
 
@@ -22,7 +24,7 @@ local function setup()
 
     char.PrimaryPart.Anchored = true
 
-    for attr: string, val: any in CharTemplate do
+    for attr: string, val: any in TEMPLATE do
         char:SetAttribute(attr, val)
     end
 
@@ -44,3 +46,13 @@ local function setup()
     char:SetAttribute("CharDataLoaded", true)
 end
 setup()
+
+
+local function clear()
+    plr.Backpack:ClearAllChildren()
+
+    task.delay(3, function()
+        Signals.ReloadCharacter:Fire(plr)
+    end)
+end
+char.Humanoid.Died:Once(clear)

@@ -18,7 +18,7 @@ local tFind = table.find
 local Texts = {
     AddCheck = "Add Checkpoint (X)",
     ClearCheck = "Clear Checkpoints",
-    ActivateAllBtns = "Press Btns"
+    ActivateAllBtns = "Press Buttons"
 }
 
 local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope: table?) : TextButton
@@ -70,7 +70,8 @@ local function ButtonOption(id: string, self: table, checkPoint: CFrame?, scope:
         end,
 
         [Fusion.Children] = {
-            New(scope, "UIAspectRatioConstraint")({ AspectRatio = 6.449 }),
+            Components.UIAspectRatioConstraint(scope, 6.449),
+
             New(scope, "UICorner")({ CornerRadius = udNew(0.2, 0) }),
             New(scope, "UIPadding")({
                 PaddingTop = udNew(0.1, 0),

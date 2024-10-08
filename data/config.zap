@@ -1,6 +1,9 @@
 
-opt server_output = "../src/server/Modules/Data/ServerEvents.luau"
 opt client_output = "../src/modules/Data/Events.luau"
+opt server_output = "../src/server/Modules/Data/ServerEvents.luau"
+opt remote_scope = "HARUKA"
+opt yield_type = "promise"
+opt async_lib = "require(game:GetService('ReplicatedStorage').Modules.Packages.Promise)"
 
 event CreateHint = {
     from: Server,

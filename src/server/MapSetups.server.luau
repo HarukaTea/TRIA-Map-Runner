@@ -7,8 +7,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local SoundService = game:GetService("SoundService")
+local StarterPlayer = game:GetService("StarterPlayer")
 
-local Bezier = require(ReplicatedStorage.Modules.Packages.Bezier)
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
@@ -66,6 +66,7 @@ local function setupMap()
 
         child.Parent = mapModel
     end
+    mapModel:PivotTo(CFrame.identity * mapModel:GetPivot().Rotation)
 
     mapModel.Parent = workspace
     setting = mapModel.Settings
@@ -188,6 +189,7 @@ local function setupButtons()
             end
 
             local marker = ReplicatedStorage.Package.Unloads.ButtonMarker:Clone() :: BillboardGui
+            marker:AddTag("ButtonMarker")
             marker.Parent = button
             if button:GetAttribute("Group") then
                 marker.Corners.ImageColor3 = buttonStates.Group.InActive
@@ -205,6 +207,7 @@ local function setupButtons()
                 else
                     marker.Corners.ImageColor3 = buttonStates.Default.Active
                 end
+                marker:SetAttribute("Active", true)
             end
 
             button.Hitbox.Touched:Connect(function(hit: BasePart)
@@ -274,6 +277,7 @@ local function setupButtons()
                                 else
                                     nextMarker.Corners.ImageColor3 = buttonStates.Default.Active
                                 end
+                                nextMarker:SetAttribute("Active", true)
 
                                 if child:GetAttribute("Group") then
                                     child.Light.Color = buttonStates.Group.Active
@@ -365,16 +369,13 @@ local function setupScripts()
         mapScript.Disabled = false
     end
     if mapLocalScript then
-        local mapLocalScriptClone = mapLocalScript:Clone()
-        mapLocalScriptClone.Disabled = false
-        mapLocalScriptClone.Parent = plr.Character
+        mapLocalScript.Disabled = false
+        mapLocalScript.Parent = plr.Character
     end
 
     mapModel:SetAttribute("ScriptsLoaded", true)
 end
 local function setupMain()
-    workspace.Sounds.Lobby:Play()
-
     setupMapLib()
     setupMap()
     setupLighting()
@@ -399,8 +400,6 @@ local function setupMain()
 
     task.wait(1.5)
     mapModel.MapMusic:Play()
-    workspace.Sounds.Lobby:Stop()
-
     mapModel:SetAttribute("IsStarted", true)
 
     local mainSettings = setting.Main :: Configuration
@@ -417,21 +416,18 @@ local function setupMain()
     plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
     plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
 
-    task.delay(5, function()
-        Promise.new(function()
-            if soundId == "" or soundId == nil then return end
+    Promise.delay(5):andThen(function()
+        if soundId == "" or soundId == nil then return end
 
-            local productInfo = MarketplaceService:GetProductInfo(soundId)
-            if productInfo then
-                Events.CreateHint.FireAll({
-                    Hint = `Music: {productInfo.Name}`,
-                    Color = Color3.fromRGB(125, 15, 79)
-                })
-            end
-
-        end):catch(function(err)
-            warn(err)
-        end)
+        local productInfo = MarketplaceService:GetProductInfo(soundId)
+        if productInfo then
+            Events.CreateHint.FireAll({
+                Hint = `Music: {productInfo.Name}`,
+                Color = Color3.fromRGB(125, 15, 79)
+            })
+        end
+    end):catch(function(err)
+        warn(err)
     end)
 
     setupScripts()

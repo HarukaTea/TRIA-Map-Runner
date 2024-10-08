@@ -188,21 +188,9 @@ local function setupUI()
     repeat RunService.RenderStepped:Wait() until workspace.Map:GetAttribute("IsLoaded")
 
     local transitionTween = TweenInfo.new(1)
-    TweenService:Create(
-        bLoadingBar,
-        transitionTween,
-        { Size = UDim2.fromScale(1, 0.1) }
-    ):Play()
-    TweenService:Create(
-        mapImage,
-        transitionTween,
-        { ImageTransparency = 1 }
-    ):Play()
-    TweenService:Create(
-        bG,
-        transitionTween,
-        { BackgroundTransparency = 1 }
-    ):Play()
+    TweenService:Create(bLoadingBar, transitionTween, { Size = UDim2.fromScale(1, 0.1) }):Play()
+    TweenService:Create(mapImage, transitionTween, { ImageTransparency = 1 }):Play()
+    TweenService:Create(bG, transitionTween, { BackgroundTransparency = 1 }):Play()
 
     Debris:AddItem(loadingScreen, 1)
     Debris:AddItem(script, 2)

@@ -6,6 +6,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+
+local Add, Empty = HarukaLib.Bin()
+
 local char = script.Parent.Parent :: Model
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
@@ -56,19 +60,24 @@ local function _slide()
     local move = if humanoid.MoveDirection.Magnitude > 0 then humanoid.MoveDirection * 20
         else char.PrimaryPart.CFrame.LookVector * 20
 
+    local slideAdd, slideEmpty = HarukaLib.Bin()
+    Add(slideEmpty)
+
     while canSlide == false do
         RunService.RenderStepped:Wait()
 
         humanoid:MoveTo(char.PrimaryPart.Position + move)
-        UserInputService.JumpRequest:Connect(function()
+
+        slideAdd(UserInputService.JumpRequest:Once(function()
             canSlide = true
-        end)
-        humanoid.Climbing:Connect(function()
+        end))
+        slideAdd(humanoid.Climbing:Once(function()
             canSlide = true
-        end)
+        end))
 
         if tick() - lastTick >= 1 then canSlide = true end
     end
+    slideEmpty()
 
     canSlide = true
     _cancelSlide()
@@ -92,4 +101,6 @@ ContextActionService:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
 --// Clear
 char.Humanoid.Died:Once(function()
     ContextActionService:UnbindAction("Slide")
+
+    Empty()
 end)

@@ -19,6 +19,8 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.K
 local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
 
+local isWallJumping = false
+
 Add(char.Humanoid.Touched:Connect(function()
     local isJumping = humanoid:GetStateEnabled(Enum.HumanoidStateType.Jumping)
     local state = humanoid:GetState()
@@ -29,9 +31,11 @@ Add(char.Humanoid.Touched:Connect(function()
         local hit, pos, normal = workspace:FindPartOnRay(ray, char)
 
         if hit
-            and (hit:GetAttribute("_action") == "WallJump"
-                or hit:FindFirstChild("_WallJump"))
-            and tick() - lastJumped > 0.07 then
+            and (hit:GetAttribute("_action") == "WallJump" or hit:FindFirstChild("_WallJump"))
+            and tick() - lastJumped > 0.07
+            and not isWallJumping then
+
+            isWallJumping = true
 
             if hit:GetAttribute("UseFrontOnly") then
                 local frontNormal = hit.CFrame.LookVector * 1
@@ -69,10 +73,9 @@ Add(char.Humanoid.Touched:Connect(function()
             char.PrimaryPart.Anchored = false
 
             walljumpAnim:Stop()
+            if weld then weld:Destroy() end
 
             if jumped then
-                if weld then weld:Destroy() end
-
                 local jp = char.Humanoid.JumpPower :: number
 
                 char.PrimaryPart.Velocity = Vector3.new(
@@ -80,16 +83,11 @@ Add(char.Humanoid.Touched:Connect(function()
                     jp + normal.Y * jp,
                     normal.Z * jp
                 )
-
-
-                walljumpAnim:Stop()
             else
-                if weld then weld:Destroy() end
-
-                char.PrimaryPart.Velocity = Vector3.new()
-
-                walljumpAnim:Stop()
+                char.PrimaryPart.Velocity = Vector3.zero
             end
+
+            isWallJumping = false
         end
     end
 end))
