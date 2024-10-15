@@ -43,9 +43,9 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         local oxygenGiven = hit.Parent:GetAttribute("Oxygen") :: number
 
         HarukaLib:AddAttr(char, "MaxOxygen", oxygenGiven)
+        HarukaLib:AddAttr(char, "CurrentOxygen", oxygenGiven)
 
         maxOxygen = char:GetAttribute("MaxOxygen")
-        char:SetAttribute("CurrentOxygen", maxOxygen)
 
         hit.Parent:Destroy()
     end
@@ -71,7 +71,7 @@ local function increaseAir()
         timePerLoss = 0.065
 
         HarukaLib:AddAttr(char, "CurrentOxygen", 1)
-        if char:GetAttribute("CurrentOxygen") >= maxOxygen then char:SetAttribute("CurrentOxygen", maxOxygen) end
+        if char:GetAttribute("CurrentOxygen") >= defaultOxygen then char:SetAttribute("CurrentOxygen", defaultOxygen) end
     end
 end
 
@@ -106,7 +106,7 @@ Add(task.spawn(function()
                 if char:GetAttribute("MaxOxygen") > (maxOxygen or 100) then
                     continue
 
-                elseif maxOxygen <= maxOxygen then
+                elseif maxOxygen <= defaultOxygen then
                     increaseAir()
                 end
             end

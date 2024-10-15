@@ -27,39 +27,43 @@ return function(plr: Player)
 		Parent = plr.PlayerGui,
 
 		[Children] = {
-			Fusion.New(scope, "Frame")({
-				Name = "BG",
-				BackgroundTransparency = 1,
-				Size = fromScale(1, 0.85),
-				ZIndex = 999,
+			Components.HarukaFrame(scope, {
+				Name = "Bottom",
+				AnchorPoint = Vector2.new(0.5, 0.8),
+				Position = fromScale(0.5, 0.8),
 
 				[Children] = {
-					Components.UIListLayout(scope, {
-						Padding = udNew(0, 5),
-						HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                        VerticalAlignment = Enum.VerticalAlignment.Bottom,
-					}),
+					Components.Frame(scope, {
+						Name = "Hints",
 
-					Fusion.ForValues(scope, hintList, function(_, localScope: Fusion.Scope, hint: StringValue)
-						local label = Components.TextLabel(localScope, {
-							Name = "Hint",
-							Size = ud2New(1, 0, 0, 24),
-							Text = hint.Value,
-							FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
-							TextColor3 = hint:GetAttribute("Color"),
-							TextStrokeTransparency = 0,
-							LayoutOrder = hint:GetAttribute("DisplayOrder"),
-						})
+						[Children] = {
+							Components.UIListLayout(scope, {
+								Padding = udNew(0, 5),
+								HorizontalAlignment = Enum.HorizontalAlignment.Center,
+								VerticalAlignment = Enum.VerticalAlignment.Bottom,
+							}),
 
-						table.insert(localScope, task.delay(hint:GetAttribute("Duration") - 0.25, function()
-							TS:Create(label, TweenInfo.new(0.2), { TextTransparency = 1 }):Play()
-						end))
+							Fusion.ForValues(scope, hintList, function(_, localScope: Fusion.Scope, hint: StringValue)
+								local label = Components.TextLabel(localScope, {
+									Name = "Hint",
+									Size = UDim2.fromScale(1, 0.5),
+									Text = hint.Value,
+									FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
+									TextColor3 = hint:GetAttribute("Color"),
+									TextStrokeTransparency = 0,
+									LayoutOrder = hint:GetAttribute("DisplayOrder")
+								})
 
-						return label
-					end)
-				},
+								table.insert(localScope, task.delay(hint:GetAttribute("Duration") - 0.25, function()
+									TS:Create(label, TweenInfo.new(0.2), { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+								end))
+
+								return label
+							end)
+						}
+					})
+				}
 			}),
-
 		},
 	})
 
@@ -72,7 +76,7 @@ return function(plr: Player)
 
 	local function updateHints()
 		task.wait()
-		hintList:set(hintsFolder:GetChildren())
+		hintList:set(table.freeze(hintsFolder:GetChildren()))
 	end
 	table.insert(scope, hintsFolder.ChildAdded:Connect(updateHints))
 	table.insert(scope, hintsFolder.ChildRemoved:Connect(updateHints))

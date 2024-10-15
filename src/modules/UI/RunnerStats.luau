@@ -4,6 +4,8 @@ local RepS = game:GetService("ReplicatedStorage")
 
 local Components = require(RepS.Modules.UI.Vanilla)
 local Fusion = require(RepS.Modules.Packages.Fusion)
+local MapDataBook = require(RepS.Modules.Data.MapDataBook)
+local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
 
 local Pinia = require(RepS.Modules.UI.Pinia.RunnerStatsPinia)
 
@@ -39,9 +41,43 @@ return function (plr: Player)
 
                 [Children] = {
                     Fusion.New(scope, "Frame")({
+                        Name = "FakeBG",
+                        BackgroundColor3 = fromRGB(30, 30, 30),
+                        Size = fromScale(0.27, 1),
+                        ZIndex = 0,
+                    }),
+
+                    Fusion.New(scope, "Frame")({
+                        Name = "Selections",
+                        BackgroundTransparency = 1,
+                        AnchorPoint = v2New(0, 0.5),
+                        Position = fromScale(0.01, 0.5),
+                        Size = fromScale(0.09, 0.5),
+
+                        [Children] = {
+                            Components.UIListLayout(scope, {
+                                VerticalAlignment = Enum.VerticalAlignment.Center,
+                                FillDirection = Enum.FillDirection.Horizontal,
+                                Padding = UDim.new(0.1, 0)
+                            }),
+
+                            Fusion.ForPairs(scope, { "Spectate", "Folder", "Settings" }, function(_, localScope: Fusion.Scope, index: number, selection: string)
+                                return index, Components.ImageLabel(localScope, {
+                                    Name = selection,
+                                    SizeConstraint = Enum.SizeConstraint.RelativeYY,
+                                    Image = MapDataBook.SelectionIcons[selection],
+                                })
+                            end)
+                        }
+
+                    }),
+
+                    Fusion.New(scope, "Frame")({
                         Name = "OxygenBG",
                         BackgroundColor3 = fromRGB(30, 30, 30),
-                        Size = fromScale(0.2, 1),
+                        Position = fromScale(0.1, 0),
+                        Size = fromScale(0.16, 1),
+                        BackgroundTransparency = 1,
 
                         [Children] = {
                             Components.UIListLayout(scope, {
@@ -93,12 +129,29 @@ return function (plr: Player)
                         AnchorPoint = v2New(0, 0.5),
                         Size = fromScale(2, 2),
                         SizeConstraint = Enum.SizeConstraint.RelativeYY,
-                        Position = fromScale(0.16, 1.35),
+                        Position = fromScale(0.23, 1.35),
                         Rotation = 45,
                         BackgroundColor3 = fromRGB(30, 30, 30),
 
                         [Children] = {
                             Fusion.New(scope, "UICorner")({ CornerRadius = UDim.new(0.1, 0) })
+                        }
+                    }),
+
+                    Components.TextLabel(scope, {
+                        Name = "Timer",
+                        AnchorPoint = v2New(0.5, 0),
+                        Position = fromScale(0.5, 0.4),
+                        Size = fromScale(0.98, 0.45),
+                        FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
+                        TextXAlignment = Enum.TextXAlignment.Right,
+
+                        Text = Fusion.Computed(scope, function(use: Fusion.Use)
+                            return use(HarukaLib:ConvertTime(use(self.currentTime)))
+                        end),
+
+                        [Children] = {
+                            Components.TextUIStroke(scope, { Thickness = 1 })
                         }
                     })
                 }

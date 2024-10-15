@@ -7,10 +7,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local SoundService = game:GetService("SoundService")
-local StarterPlayer = game:GetService("StarterPlayer")
 
 local Events = require(ServerScriptService.Modules.Data.ServerEvents)
 local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
+local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
 local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
 local Signals = require(ServerScriptService.Modules.Data.ServerSignals)
 local WaterLib = require(ReplicatedStorage.Modules.Data.WaterLib)
@@ -53,6 +53,10 @@ local function setupMapLib()
             return require(ReplicatedStorage.Modules.Data.MapLib)
         end
     end
+
+    --// Map runtime v1.0 compatibility
+    local runtime = ReplicatedStorage.Modules.Data.Runtime:Clone()
+    runtime.Parent = ServerScriptService
 end
 local function setupMap()
     mapModel = Instance.new("Model")
@@ -67,6 +71,8 @@ local function setupMap()
         child.Parent = mapModel
     end
     mapModel:PivotTo(CFrame.identity * mapModel:GetPivot().Rotation)
+
+    mapModel:SetAttribute("CurrentTime", 0)
 
     mapModel.Parent = workspace
     setting = mapModel.Settings
@@ -129,7 +135,7 @@ local function setupButtons()
 
             local buttonStates = nil
             if not default or not group or not pathChild then
-                warn("Using old map libs!")
+                warn("[Button Init] MapLib is outdated...")
 
                 buttonStates = {
                     Default = {
@@ -137,17 +143,10 @@ local function setupButtons()
                         InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
                         Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
                     },
-                    Group = {
-                        Active = buttonColorSettings:GetAttribute("EnabledGroupColor") :: Color3,
-                        InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
-                        Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
-                    },
-                    PathChild = {
-                        Active = buttonColorSettings:GetAttribute("EnabledColor") :: Color3,
-                        InActive = buttonColorSettings:GetAttribute("DisabledColor") :: Color3,
-                        Activated = buttonColorSettings:GetAttribute("PressedColor") :: Color3,
-                    }
                 }
+                buttonStates.Group = buttonStates.Default
+                buttonStates.PathChild = buttonStates.Default
+
             else
                 buttonStates = {
                     Default = {
@@ -402,9 +401,13 @@ local function setupMain()
     mapModel.MapMusic:Play()
     mapModel:SetAttribute("IsStarted", true)
 
+    HarukaLib.Clock(0.1, function()
+        HarukaLib:AddAttr(mapModel, "CurrentTime", 0.1)
+    end)
+
     local mainSettings = setting.Main :: Configuration
     local mapName = mainSettings:GetAttribute("Name") or "?"
-    local difficulty = mainSettings:GetAttribute("Difficulty") or "Unrated"
+    local difficulty = mainSettings:GetAttribute("Difficulty") or 0
     local creator = mainSettings:GetAttribute("Creator") or "?"
 
     workspace.Sounds.SFXs.MapStart:Play()

@@ -50,8 +50,6 @@ return function (plr: Player)
                         Position = fromScale(0.84, -0.1),
                         Size = fromScale(0.15, 0.5),
                         Text = "Fallen Panel (C)",
-                        BackgroundTransparency = 0.2,
-                        AutoLocalize = false,
 
                         [Children] = {
                             Fusion.New(scope, "UIPadding")({
@@ -82,7 +80,7 @@ return function (plr: Player)
                     Components.Frame(scope, {
                         Name = "PanelBG",
                         Position = fromScale(0.915, -2.8),
-                        BackgroundTransparency = 0.2,
+                        BackgroundTransparency = 0,
                         Size = fromScale(0.15, 5),
 
                         Visible = Computed(scope, function(use)
@@ -96,6 +94,7 @@ return function (plr: Player)
                                 AnchorPoint = v2New(0.5, 0.5),
                                 Position = fromScale(0.5, 0.5),
                                 Size = fromScale(0.9, 0.9),
+                                ScrollBarThickness = 0,
 
                                 [Children] = {
                                     TypeOption("Speed", self),
