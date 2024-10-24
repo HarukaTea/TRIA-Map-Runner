@@ -416,8 +416,6 @@ local function setupMain()
         Hint = `{mapName} [{MapDataBook.DifficultyNames[difficulty]}] by {creator}`,
         Color = MapDataBook.DifficultyColors[difficulty],
     })
-    plr.Character:SetAttribute("MaxOxygen", mainSettings:GetAttribute("DefaultOxygen") or 100)
-    plr.Character:SetAttribute("CurrentOxygen", plr.Character:GetAttribute("MaxOxygen"))
 
     Promise.delay(5):andThen(function()
         if soundId == "" or soundId == nil then return end

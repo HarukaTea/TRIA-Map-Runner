@@ -30,7 +30,8 @@ Add(char.Humanoid.Touched:Connect(function()
         local ray = Ray.new(char.PrimaryPart.Position, char.PrimaryPart.CFrame.LookVector * 2)
         local hit, pos, normal = workspace:FindPartOnRay(ray, char)
 
-        if hit and hit:GetAttribute("_action") == "WallRun"
+        if hit
+            and (hit:GetAttribute("_action") == "WallRun" or hit:FindFirstChild("_WallRun"))
             and tick() - lastJumped > 0.05
             and not isWallRunning then
 

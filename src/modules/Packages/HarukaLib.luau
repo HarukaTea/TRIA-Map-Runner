@@ -212,7 +212,7 @@ function HarukaLib:ConvertTime(num: number) : string
 
 	ms %= 1000
 
-	return string.format("%d:%02d:%03d", minutes, seconds, ms)
+	return string.format("%d:%02d.%03d", minutes, seconds, ms)
 end
 
 return HarukaLib

@@ -115,6 +115,9 @@ if not RunService:IsRunning() then
 		ChangeLighting = table.freeze({
 			Fire = noop
 		}),
+		ForceReset = table.freeze({
+			Fire = noop
+		}),
 	}) :: Events
 end
 if RunService:IsServer() then
@@ -144,8 +147,8 @@ end
 
 RunService.Heartbeat:Connect(SendEvents)
 
-local events = table.create(3)
-local event_queue: { [number]: { any } } = table.create(3)
+local events = table.create(4)
+local event_queue: { [number]: { any } } = table.create(4)
 events[1] = {}
 event_queue[1] = {}
 reliable.OnClientEvent:Connect(function(buff, inst)
@@ -231,8 +234,8 @@ local returns = {
 	},
 	ChangeLighting = {
 		Fire = function(Value: ({
-			Properties: ((unknown)),
-			PostEffects: ((unknown)),
+			Properties: (({ [(string)]: ((unknown)) })?),
+			PostEffects: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
 		}))
 			alloc(1)
 			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
@@ -242,7 +245,25 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				table.insert(outgoing_inst, Value.Properties)
+				local len_pos_1 = alloc(2)
+				local len_1 = 0
+				for k_1, v_1 in Value.Properties do
+					len_1 = len_1 + 1
+					local len_2 = #k_1
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_2)
+					alloc(len_2)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_1, len_2)
+					if v_1 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_1)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_1, len_1)
 			end
 			if Value.PostEffects == nil then
 				alloc(1)
@@ -250,8 +271,51 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				table.insert(outgoing_inst, Value.PostEffects)
+				local len_pos_2 = alloc(2)
+				local len_3 = 0
+				for k_2, v_2 in Value.PostEffects do
+					len_3 = len_3 + 1
+					local len_4 = #k_2
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_4)
+					alloc(len_4)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_2, len_4)
+					if v_2 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_3 = alloc(2)
+						local len_5 = 0
+						for k_3, v_3 in v_2 do
+							len_5 = len_5 + 1
+							local len_6 = #k_3
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_6)
+							alloc(len_6)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_3, len_6)
+							if v_3 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_3)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_3, len_5)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_2, len_3)
 			end
+		end,
+	},
+	ForceReset = {
+		Fire = function(Value: ({
+		}))
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 		end,
 	},
 	CreateHint = {

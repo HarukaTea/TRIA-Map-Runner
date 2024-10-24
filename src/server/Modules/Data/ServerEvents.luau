@@ -119,6 +119,9 @@ if not RunService:IsRunning() then
 		ChangeLighting = table.freeze({
 			SetCallback = noop
 		}),
+		ForceReset = table.freeze({
+			SetCallback = noop
+		}),
 	}) :: Events
 end
 local Players = game:GetService("Players")
@@ -180,7 +183,7 @@ end
 
 RunService.Heartbeat:Connect(SendEvents)
 
-local events = table.create(3)
+local events = table.create(4)
 reliable.OnServerEvent:Connect(function(player, buff, inst)
 	incoming_buff = buff
 	incoming_inst = inst
@@ -213,19 +216,61 @@ reliable.OnServerEvent:Connect(function(player, buff, inst)
 			local value
 			value = {}
 			if buffer.readu8(incoming_buff, read(1)) == 1 then
-				incoming_ipos = incoming_ipos + 1
-				value.Properties = incoming_inst[incoming_ipos]
+				value.Properties = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_1
+					local val_1
+					local len_1 = buffer.readu16(incoming_buff, read(2))
+					key_1 = buffer.readstring(incoming_buff, read(len_1), len_1)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						incoming_ipos = incoming_ipos + 1
+						val_1 = incoming_inst[incoming_ipos]
+					else
+						val_1 = nil
+					end
+					value.Properties[key_1] = val_1
+				end
 			else
 				value.Properties = nil
 			end
 			if buffer.readu8(incoming_buff, read(1)) == 1 then
-				incoming_ipos = incoming_ipos + 1
-				value.PostEffects = incoming_inst[incoming_ipos]
+				value.PostEffects = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_2
+					local val_2
+					local len_2 = buffer.readu16(incoming_buff, read(2))
+					key_2 = buffer.readstring(incoming_buff, read(len_2), len_2)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						val_2 = {}
+						for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+							local key_3
+							local val_3
+							local len_3 = buffer.readu16(incoming_buff, read(2))
+							key_3 = buffer.readstring(incoming_buff, read(len_3), len_3)
+							if buffer.readu8(incoming_buff, read(1)) == 1 then
+								incoming_ipos = incoming_ipos + 1
+								val_3 = incoming_inst[incoming_ipos]
+							else
+								val_3 = nil
+							end
+							val_2[key_3] = val_3
+						end
+					else
+						val_2 = nil
+					end
+					value.PostEffects[key_2] = val_2
+				end
 			else
 				value.PostEffects = nil
 			end
 			if events[3] then
 				task.spawn(events[3], player, value)
+			end
+		elseif id == 4 then
+			local value
+			value = {}
+			if events[4] then
+				task.spawn(events[4], player, value)
 			end
 		else
 			error("Unknown event id")
@@ -455,12 +500,21 @@ local returns = {
 	},
 	ChangeLighting = {
 		SetCallback = function(Callback: (Player, ({
-			Properties: ((unknown)),
-			PostEffects: ((unknown)),
+			Properties: (({ [(string)]: ((unknown)) })?),
+			PostEffects: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
 		})) -> ()): () -> ()
 			events[3] = Callback
 			return function()
 				events[3] = nil
+			end
+		end,
+	},
+	ForceReset = {
+		SetCallback = function(Callback: (Player, ({
+		})) -> ()): () -> ()
+			events[4] = Callback
+			return function()
+				events[4] = nil
 			end
 		end,
 	},

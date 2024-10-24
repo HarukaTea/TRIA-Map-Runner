@@ -27,4 +27,4 @@ With this project, you can run your TRIA maps in Roblox Studio, and see how the 
 4. Insert your own model and **UNGROUP** it
 5. Test the map by clicking the Play button or press F5 key.
 
-![Preview](docs/TMR_Preview1.png)
+![Preview](docs/TRIA_Runner_Preview_V3.png)

@@ -21,3 +21,8 @@ Events.ChangeMusic.SetCallback(function(_, data)
 
     MapLib:ChangeMusic(musicId, volume, startTick)
 end)
+
+
+Events.ForceReset.SetCallback(function(plr: Player, _)
+    plr.Character.Humanoid.Health = 0
+end)

@@ -14,11 +14,13 @@ local isSwimming = false
 local currentWater: BasePart = nil
 
 local splashCD = 0
-local maxOxygen = workspace.Map.Settings.Main:GetAttribute("DefaultOxygen")
-local timePerLoss = 0.085
+local defaultOxygen = workspace.Map.Settings.Main:GetAttribute("DefaultOxygen")
+local timePerLoss = 1 / 10
 local oxygenDepletion = 1
 
-local defaultOxygen = maxOxygen
+char:SetAttribute("SelfOxygen", defaultOxygen)
+char:SetAttribute("TankOxygen", 0)
+char:SetAttribute("MaxOxygen", defaultOxygen)
 
 Add(char.Head.Touched:Connect(function(hit: BasePart)
     if hit:IsA("BasePart") and (string.find(hit.Name, "_Liquid") or string.find(hit.Name, "_Gas")) then
@@ -40,12 +42,15 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         and hit.Parent
         and hit.Parent.Name == "AirTank" then
 
-        local oxygenGiven = hit.Parent:GetAttribute("Oxygen") :: number
+        local oxygenGiven = hit.Parent:GetAttribute("Oxygen") or 300
 
-        HarukaLib:AddAttr(char, "MaxOxygen", oxygenGiven)
-        HarukaLib:AddAttr(char, "CurrentOxygen", oxygenGiven)
-
-        maxOxygen = char:GetAttribute("MaxOxygen")
+        --// FIXME: I don't know what's the exact mechanic in TRIA, needs to be checked in V1.0
+        if oxygenGiven < 0 then
+            HarukaLib:AddAttr(char, "SelfOxygen", oxygenGiven)
+            HarukaLib:AddAttr(char, "MaxOxygen", oxygenGiven)
+        else
+            HarukaLib:AddAttr(char, "TankOxygen", oxygenGiven)
+        end
 
         hit.Parent:Destroy()
     end
@@ -55,23 +60,22 @@ end))
 local function decreaseAir()
     splashCD = 2
 
-    HarukaLib:AddAttr(char, "CurrentOxygen", -oxygenDepletion)
-    if char:GetAttribute("CurrentOxygen") >= maxOxygen then char:SetAttribute("CurrentOxygen", maxOxygen) end
+    local targetOxygen = if char:GetAttribute("TankOxygen") > 0 then "TankOxygen" else "SelfOxygen"
 
-    if char:GetAttribute("CurrentOxygen") < defaultOxygen and maxOxygen ~= defaultOxygen then
-        maxOxygen = defaultOxygen
-
-        char:SetAttribute("MaxOxygen", maxOxygen)
-    end
+    HarukaLib:AddAttr(char, targetOxygen, -oxygenDepletion)
 end
 local function increaseAir()
-    splashCD = math.max(0, splashCD - 0.25)
+    splashCD = math.max(0, splashCD - timePerLoss)
 
     if splashCD <= 0 then
         timePerLoss = 0.065
 
-        HarukaLib:AddAttr(char, "CurrentOxygen", 1)
-        if char:GetAttribute("CurrentOxygen") >= defaultOxygen then char:SetAttribute("CurrentOxygen", defaultOxygen) end
+        if char:GetAttribute("SelfOxygen") < char:GetAttribute("MaxOxygen") then
+            HarukaLib:AddAttr(char, "SelfOxygen", 1)
+        end
+        if char:GetAttribute("SelfOxygen") > char:GetAttribute("MaxOxygen") then
+            char:SetAttribute("SelfOxygen", char:GetAttribute("MaxOxygen"))
+        end
     end
 end
 
@@ -83,35 +87,31 @@ Add(task.spawn(function()
                     local state = currentWater:GetAttribute("Type") :: string
 
                     if state == "water" then
-                        oxygenDepletion = 1
-                        timePerLoss = 0.085
+                        timePerLoss = 1 / 10
 
                     elseif state == "acid" then
-                        oxygenDepletion = 1
-                        timePerLoss = 0.04
+                        timePerLoss = 1 / 30
 
                     elseif state == "lava" then
-                        char:SetAttribute("CurrentOxygen", 0)
+                        timePerLoss = 0.01
+                        char.Humanoid.Health = 0
 
                     elseif state == "custom" then
-                        --// FIXME: this may be inaccurate, need to check again in TRIA 1.0
-                        oxygenDepletion = (currentWater:GetAttribute("OxygenDepletion") or 1) / (1 / 0.085)
-                        timePerLoss = 0.085
+                        timePerLoss = 1 / (currentWater:GetAttribute("OxygenDepletion") or 1)
                     end
                 end
 
                 decreaseAir()
 
             elseif not isSwimming then
-                if char:GetAttribute("MaxOxygen") > (maxOxygen or 100) then
+                if char:GetAttribute("SelfOxygen") >= char:GetAttribute("MaxOxygen") then
                     continue
-
-                elseif maxOxygen <= defaultOxygen then
+                else
                     increaseAir()
                 end
             end
 
-            if char:GetAttribute("CurrentOxygen") <= 0 then
+            if char:GetAttribute("SelfOxygen") + char:GetAttribute("TankOxygen") <= 0 then
                 char.Humanoid.Health = 0
             end
         else

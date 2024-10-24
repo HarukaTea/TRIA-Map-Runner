@@ -9,7 +9,17 @@ local Add, Empty = HarukaLib.Bin()
 local char = script.Parent.Parent :: Model
 
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
-    if hit and hit:GetAttribute("_action") == "Kill" then
+    if not hit then return end
+
+    local action = hit:GetAttribute("_action") :: string?
+
+    if action == "WalkSpeed" then
+        char.Humanoid.WalkSpeed = hit:GetAttribute("WalkSpeed") or 20
+
+    elseif action == "JumpPower" then
+        char.Humanoid.JumpPower = hit:GetAttribute("JumpPower") or 50
+
+    elseif action == "Kill" then
         char.Humanoid.Health = 0
     end
 end))

@@ -1,5 +1,6 @@
 --!nocheck
 
+local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local RF = game:GetService("ReplicatedFirst")
 local RepS = game:GetService("ReplicatedStorage")
@@ -13,6 +14,7 @@ local function initGame()
 
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+    SG:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
 end
 initGame()
 
@@ -49,10 +51,13 @@ local function setupUI()
     local Children = Fusion.Children
 
     local scope = Fusion.scoped({})
+    local function Value(val: any)
+        return Fusion.Value(scope, val)
+    end
 
-    local mapNameAbsPos = Fusion.Value(scope, Vector2.zero)
-    local mapNameAbsSize = Fusion.Value(scope, Vector2.zero)
-    local mapNameSelfSize = Fusion.Value(scope, Vector2.zero)
+    local mapNameAbsPos = Value(Vector2.zero)
+    local mapNameAbsSize = Value(Vector2.zero)
+    local mapNameSelfSize = Value(Vector2.zero)
 
     local function TRIAVividGradient() : UIGradient
         return Fusion.New(scope, "UIGradient")({
@@ -227,9 +232,11 @@ local function setupUI()
 
     repeat task.wait() until workspace.Map:GetAttribute("IsLoaded")
 
-    HarukaLib:UITweenOut(UI)
-    task.delay(1, function()
-        Fusion.doCleanup(scope)
-    end)
+    local tweenOutUI = UI:Clone()
+    tweenOutUI.Parent = plr.PlayerGui
+    Debris:AddItem(tweenOutUI, 1)
+
+    Fusion.doCleanup(scope)
+    HarukaLib:UITweenOut(tweenOutUI)
 end
 setupUI()

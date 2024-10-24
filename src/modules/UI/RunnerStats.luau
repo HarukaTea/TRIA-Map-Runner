@@ -96,7 +96,7 @@ return function (plr: Player)
                                         Name = "OxygenBar",
 
                                         Size = Fusion.Tween(scope, Fusion.Computed(scope, function(use: Fusion.Use)
-                                            return fromScale(math.clamp(use(self.oxygen) / use(self.maxOxygen), 0, 1), 1)
+                                            return fromScale(math.clamp((use(self.oxygen) + use(self.tankOxygen)) / use(self.maxOxygen), 0, 1), 1)
                                         end), TweenInfo.new(0.5)),
 
                                         [Children] = {
@@ -117,7 +117,7 @@ return function (plr: Player)
                                 FontFace = Font.fromName("Nunito", Enum.FontWeight.Bold),
 
                                 Text = Fusion.Computed(scope, function(use: Fusion.Use)
-                                    return "Oxygen: "..math.floor(use(self.oxygen))
+                                    return "Oxygen: "..math.floor(use(self.oxygen) + use(self.tankOxygen))
                                 end)
                             })
                         }
@@ -148,6 +148,9 @@ return function (plr: Player)
 
                         Text = Fusion.Computed(scope, function(use: Fusion.Use)
                             return use(HarukaLib:ConvertTime(use(self.currentTime)))
+                        end),
+                        TextColor3 = Fusion.Computed(scope, function(use: Fusion.Use)
+                            return if use(self.isSurvived) then Color3.fromRGB(0, 255, 0) else Color3.new(1, 1, 1)
                         end),
 
                         [Children] = {

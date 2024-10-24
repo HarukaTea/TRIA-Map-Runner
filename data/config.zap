@@ -30,7 +30,19 @@ event ChangeLighting = {
     type: Reliable,
     call: SingleAsync,
     data: struct {
-        Properties: unknown,
-        PostEffects: unknown
+        Properties: map {
+            [string]: unknown
+        }?,
+        PostEffects: map {
+            [string]: map {
+                [string]: unknown
+            }?
+        }?
     }
+}
+event ForceReset = {
+    from: Client,
+    type: Reliable,
+    call: SingleAsync,
+    data: struct {}
 }

@@ -1,7 +1,8 @@
 --!nocheck
 
 return {
-    CurrentOxygen = 100,
+    SelfOxygen = 100,
+    TankOxygen = 0,
     MaxOxygen = 100,
 
     IsSurvived = false
