@@ -1,15 +1,15 @@
 --!nocheck
 
 local Debris = game:GetService("Debris")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 
 local lastJumped = tick()
 
@@ -46,11 +46,11 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         local now = tick()
 
         task.spawn(function()
-            UserInputService.JumpRequest:Wait()
+            UIS.JumpRequest:Wait()
 
             jumped = true
         end)
-        repeat RunService.RenderStepped:Wait() until jumped or tick() - now > timeout
+        repeat RS.RenderStepped:Wait() until jumped or tick() - now > timeout
 
         if bp then bp:Destroy() end
         char.Humanoid.WalkSpeed = oldSpeed

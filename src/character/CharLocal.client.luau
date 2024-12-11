@@ -2,9 +2,9 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Events = require(RepS.Modules.Data.Events)
+local Events = require(RepS.Shared.Library.Events)
 
-local char = script.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 
 local function onDied()
 	---// sometimes the reset button did not make server thinks player is dead

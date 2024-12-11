@@ -1,20 +1,20 @@
 --!nocheck
 
 local KSP = game:GetService("KeyframeSequenceProvider")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
 local animation = Instance.new("Animation")
-animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.Keyframes.WallHang)
+animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.WallHang)
 
 local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
@@ -58,12 +58,12 @@ Add(char.Humanoid.Touched:Connect(function()
             local start = tick()
             local jumped = false
             task.spawn(function()
-                UserInputService.JumpRequest:Wait()
+                UIS.JumpRequest:Wait()
 
                 jumped = true
             end)
 
-            repeat RunService.RenderStepped:Wait()
+            repeat RS.RenderStepped:Wait()
                 until jumped
                 or tick() - start > (hit:GetAttribute("Timeout") or math.huge)
 
@@ -84,7 +84,13 @@ Add(char.Humanoid.Touched:Connect(function()
                     normal.Z * jp
                 )
             else
-                char.PrimaryPart.Velocity = Vector3.zero
+                local jp = 25
+
+                char.PrimaryPart.Velocity = Vector3.new(
+                    normal.X * jp,
+                    jp + normal.Y * jp,
+                    normal.Z * jp
+                )
             end
 
             isWallJumping = false

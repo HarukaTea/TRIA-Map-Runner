@@ -1,25 +1,23 @@
 --!nocheck
 
+local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local MapLib = require(RepS.Shared.Library.MapLib)
+
+local TeleportFeature = MapLib:GetFeature("Teleport")
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local plr = Players.LocalPlayer
+local char = script:FindFirstAncestorOfClass("Model")
 
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "Teleport" then
-
         if not hit:FindFirstChild("Destination") then return end
 
-        char.PrimaryPart.CFrame = hit.Destination.CFrame
-
-        if hit:GetAttribute("SetCameraFront") then
-            local camera = workspace.CurrentCamera
-
-            camera.CFrame = CFrame.new(camera.CFrame.Position, camera.CFrame.Position + hit.Destination.CFrame.LookVector)
-        end
+        TeleportFeature:Teleport(plr, hit.Destination.CFrame, hit:GetAttribute("SetCameraFront"))
     end
 end))
 

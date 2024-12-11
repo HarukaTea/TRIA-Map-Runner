@@ -1,17 +1,18 @@
 --!nocheck
 
 local KSP = game:GetService("KeyframeSequenceProvider")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local animations = ReplicatedStorage.Package.Animations :: Folder
-local char = script.Parent :: Model
-local keyframes = ReplicatedStorage.Package.Keyframes :: Folder
+local animations = RepS.Package.Animations :: Folder
+local char = script:FindFirstAncestorOfClass("Model")
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
+local keyframes = RepS.Package.Keyframes :: Folder
+
 
 -- create temp animation for studio to use
 local function _createTempAnimation(keyframe: KeyframeSequence) : Animation
@@ -89,7 +90,7 @@ local function setup()
 		isFreefalling = false
 	end))
 
-	Add(RunService.RenderStepped:Connect(function(dt)
+	Add(RS.RenderStepped:Connect(function(dt)
 		if jumpAnimTime > 0 then jumpAnimTime -= dt end
 		if isFreefalling and jumpAnimTime <= 0 then startAnim(ANIMS.Freefall, 0.1) end
 	end))

@@ -3,52 +3,64 @@
     "tree": {
         "$className": "DataModel",
 
-        "Workspace": {
-            "$properties": {
-                "StreamingEnabled": false,
-                "SignalBehavior": "Immediate"
-            }
-        },
         "ReplicatedFirst": {
+            "$className": "ReplicatedFirst",
+            "$ignoreUnknownInstances": true,
+
             "Preload": {
                 "$path": "src/Preload.client.luau"
             }
         },
         "ReplicatedStorage": {
-            "Modules": {
+            "$className": "ReplicatedStorage",
+            "$ignoreUnknownInstances": true,
+
+            "Shared": {
                 "$className": "Folder",
-                "$path": "src/modules"
+                "$path": "src/shared",
+                "$ignoreUnknownInstances": true
             }
         },
         "ServerScriptService": {
-            "$path": "src/server"
+            "$className": "ServerScriptService",
+            "$ignoreUnknownInstances": true,
+
+            "Server": {
+                "$className": "Folder",
+                "$path": "src/server",
+                "$ignoreUnknownInstances": true
+            }
         },
         "ServerStorage": {
+            "$className": "ServerStorage",
+            "$ignoreUnknownInstances": true,
+
             "Resources": {
-                "$path": "src/resources"
+                "$path": "src/resources",
+                "$ignoreUnknownInstances": true
             }
         },
         "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "$ignoreUnknownInstances": true,
+
             "StarterPlayerScripts": {
-                "$path": "src/client"
+                "$className": "StarterPlayerScripts",
+                "$ignoreUnknownInstances": true,
+
+                "Client": {
+                    "$path": "src/client",
+                    "$ignoreUnknownInstances": true
+                }
             },
             "StarterCharacterScripts": {
-                "$path": "src/character"
-            },
-            "$properties": {
-                "CharacterWalkSpeed": 20,
-                "CharacterUseJumpPower": true
-            }
-        },
+                "$className": "StarterCharacterScripts",
+                "$ignoreUnknownInstances": true,
 
-        "MaterialService": {
-            "$properties": {
-                "Use2022Materials": false
-            }
-        },
-        "StarterGui": {
-            "$properties": {
-                "ScreenOrientation": "LandscapeSensor"
+                "Character": {
+                    "$path": "src/character",
+                    "$ignoreUnknownInstances": true
+                }
             }
         }
     }

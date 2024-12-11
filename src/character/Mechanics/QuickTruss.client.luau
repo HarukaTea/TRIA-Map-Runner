@@ -3,11 +3,11 @@
 local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 
 local lastTick = tick()
@@ -79,4 +79,4 @@ Add(humanoid.FallingDown:Connect(function()
 end))
 
 --// Clear
-char.Humanoid.Died:Once(Empty)
+humanoid.Died:Once(Empty)

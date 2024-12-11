@@ -5,12 +5,12 @@ local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-local WaterLib = require(RepS.Modules.Data.WaterLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local WaterLib = require(RepS.Shared.Library.WaterLib)
 
 local currentWater: BasePart = nil
 
-repeat task.wait() until workspace:WaitForChild("Map", 999)
+repeat task.wait() until workspace:GetAttribute("MapPreInited")
 repeat task.wait() until workspace.Map:GetAttribute("IsLoaded")
 
 

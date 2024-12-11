@@ -1,21 +1,21 @@
 --!nocheck
 
-local ContextActionService = game:GetService("ContextActionService")
+local CAS = game:GetService("ContextActionService")
 local KSP = game:GetService("KeyframeSequenceProvider")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
 local animation = Instance.new("Animation")
-animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.Keyframes.Slide)
+animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.Slide)
 
 local slideAnim = animator:LoadAnimation(animation)
 local canSlide = true
@@ -39,7 +39,7 @@ local function _slide()
             )
         end
     end
-    while RunService.Heartbeat:Wait() do
+    while RS.Heartbeat:Wait() do
         if (humanoid:GetState() == Enum.HumanoidStateType.Running)
             or (humanoid:GetState() == Enum.HumanoidStateType.RunningNoPhysics) then
             break
@@ -64,11 +64,11 @@ local function _slide()
     Add(slideEmpty)
 
     while canSlide == false do
-        RunService.RenderStepped:Wait()
+        RS.RenderStepped:Wait()
 
         humanoid:MoveTo(char.PrimaryPart.Position + move)
 
-        slideAdd(UserInputService.JumpRequest:Once(function()
+        slideAdd(UIS.JumpRequest:Once(function()
             canSlide = true
         end))
         slideAdd(humanoid.Climbing:Once(function()
@@ -96,11 +96,11 @@ local function slideHandler(_, inputState: Enum.UserInputState)
         _cancelSlide()
     end
 end
-ContextActionService:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
+CAS:BindAction("Slide", slideHandler, false, Enum.KeyCode.E)
 
 --// Clear
 char.Humanoid.Died:Once(function()
-    ContextActionService:UnbindAction("Slide")
+    CAS:UnbindAction("Slide")
 
     Empty()
 end)

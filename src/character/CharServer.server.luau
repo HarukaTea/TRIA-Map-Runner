@@ -4,19 +4,19 @@ local Players = game:GetService("Players")
 local SSS = game:GetService("ServerScriptService")
 local SS = game:GetService("ServerStorage")
 
-local Signals = require(SSS.Modules.Data.ServerSignals)
+local Signals = require(SSS.Server.Modules.Library.ServerSignals)
+local TEMPLATE = require(SSS.Server.Modules.Library.CharTemplate)
 
-local TEMPLATE = require(SSS.Modules.Data.CharTemplate)
+repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
-repeat task.wait() until workspace:WaitForChild("Map", 999)
-
-local char = script.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local spawnLocation = workspace.Map.Special.Spawn :: BasePart
 local plr = Players:GetPlayerFromCharacter(char)
 
 local function setup()
     char.PrimaryPart = char.Humanoid.RootPart
 
+    char.Humanoid.UseJumpPower = true
     char.Humanoid.WalkSpeed = 20
     char.Humanoid.JumpPower = 50
 

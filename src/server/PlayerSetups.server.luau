@@ -3,7 +3,7 @@
 local Players = game:GetService("Players")
 local SSS = game:GetService("ServerScriptService")
 
-local Signals = require(SSS.Modules.Data.ServerSignals)
+local Signals = require(SSS.Server.Modules.Library.ServerSignals)
 
 --// Private
 

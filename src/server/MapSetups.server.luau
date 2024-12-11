@@ -2,42 +2,43 @@
 
 local Lighting = game:GetService("Lighting")
 local MarketplaceService = game:GetService("MarketplaceService")
+local MaterialService = game:GetService("MaterialService")
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
-local SoundService = game:GetService("SoundService")
+local RepS = game:GetService("ReplicatedStorage")
+local SSS = game:GetService("ServerScriptService")
+local SS = game:GetService("ServerStorage")
+local SoundS = game:GetService("SoundService")
 
-local Events = require(ServerScriptService.Modules.Data.ServerEvents)
-local MapDataBook = require(ReplicatedStorage.Modules.Data.MapDataBook)
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
-local Promise = require(ReplicatedStorage.Modules.Packages.Promise)
-local Signals = require(ServerScriptService.Modules.Data.ServerSignals)
-local WaterLib = require(ReplicatedStorage.Modules.Data.WaterLib)
+local Events = require(SSS.Server.Modules.Library.ServerEvents)
+local MapDataBook = require(RepS.Shared.Library.MapDataBook)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local Promise = require(RepS.Shared.Shared.Promise)
+local Signals = require(SSS.Server.Modules.Library.ServerSignals)
+local WaterLib = require(RepS.Shared.Library.WaterLib)
 
 local mapModel: Model = nil
 local setting: Configuration = nil
 
 repeat task.wait() until Players:FindFirstChildOfClass("Player")
 
-local plr = Players:FindFirstChildOfClass("Player")
-repeat task.wait() until plr.Character or plr.CharacterAdded:Wait()
 
 local function setupMapLib()
     --// Map libs
+    local function _returnMapLib()
+        return function ()
+            return require(RepS.Shared.Library.MapLib)
+        end
+    end
+
     local mapLibRF = Instance.new("BindableFunction")
     mapLibRF.Name = "GetMapLib"
     mapLibRF.Parent = game
-    mapLibRF.OnInvoke = function()
-        return function ()
-            return require(ReplicatedStorage.Modules.Data.MapLib)
-        end
-    end
+    mapLibRF.OnInvoke = _returnMapLib
 
     --// Map libs old
     local bindables = Instance.new("Folder")
     bindables.Name = "Bindables"
-    bindables.Parent = ServerStorage
+    bindables.Parent = SS
 
     local mapLibRFOLD = Instance.new("BindableFunction")
     mapLibRFOLD.Name = "GetMapLib"
@@ -49,14 +50,15 @@ local function setupMapLib()
             Duration = "5"
         })
 
-        return function ()
-            return require(ReplicatedStorage.Modules.Data.MapLib)
-        end
+        _returnMapLib()
     end
 
     --// Map runtime v1.0 compatibility
-    local runtime = ReplicatedStorage.Modules.Data.Runtime:Clone()
-    runtime.Parent = ServerScriptService
+    local runtime = RepS.Shared.Library.Runtime:Clone()
+    runtime.Parent = SSS
+
+
+    workspace:SetAttribute("MapLibInited", true)
 end
 local function setupMap()
     mapModel = Instance.new("Model")
@@ -66,23 +68,31 @@ local function setupMap()
         if child:IsA("Camera") then continue end
         if child:IsA("Terrain") then continue end
         if child.Name == "Sounds" then continue end
-        if child == plr.Character then continue end
+        if Players:GetPlayerFromCharacter(child) then continue end
 
         child.Parent = mapModel
     end
     mapModel:PivotTo(CFrame.identity * mapModel:GetPivot().Rotation)
-
     mapModel:SetAttribute("CurrentTime", 0)
+
+    --- disable all scripts before loading the map
+    for _, child: Instance in mapModel:GetDescendants() do
+        if child:IsA("Script") then child.Disabled = true end
+        if child:IsA("LocalScript") then child.Disabled = true end
+    end
 
     mapModel.Parent = workspace
     setting = mapModel.Settings
+
+
+    workspace:SetAttribute("MapModelInited", true)
 end
 local function setupLighting()
     local lightingSettings = setting.Lighting :: Configuration
 
     Lighting:ClearAllChildren()
-    ReplicatedStorage.Package.Unloads.WaterBlur:Clone().Parent = Lighting
-    ReplicatedStorage.Package.Unloads.WaterColor:Clone().Parent = Lighting
+    RepS.Package.Unloads.WaterBlur:Clone().Parent = Lighting
+    RepS.Package.Unloads.WaterColor:Clone().Parent = Lighting
 
     for _, child: Instance in lightingSettings:GetChildren() do
         child.Parent = Lighting
@@ -90,6 +100,30 @@ local function setupLighting()
     for attr: string, val: any in lightingSettings:GetAttributes() do
         pcall(function() Lighting[attr] = val end)
     end
+
+
+    workspace:SetAttribute("MapLightingInited", true)
+end
+local function setupMaterials()
+    --- there might be an unexpected error here
+    pcall(function()
+        local materialSettings = setting:FindFirstChild("Materials") :: Configuration
+
+        if materialSettings then
+            if not materialSettings:GetAttribute("Use2022Materials") then
+                for _, child: Instance in mapModel:GetDescendants() do
+                    if child:IsA("BasePart") or child:IsA("UnionOperation") or child:IsA("CornerWedgePart") then
+                        if MaterialService:FindFirstChild(child.Material.Name.."_Pre2022") then
+                            child.MaterialVariant = child.Material.Name.."_Pre2022"
+                        end
+                    end
+                end
+            end
+        end
+
+
+        workspace:SetAttribute("MapMaterialsInited", true)
+    end)
 end
 local function setupVariants()
     local variantFolder = mapModel.Special:FindFirstChild("Variant") :: Folder
@@ -108,6 +142,9 @@ local function setupVariants()
 
         variant:Destroy()
     end
+
+
+    workspace:SetAttribute("MapVariantsInited", true)
 end
 local function setupButtons()
     local buttons = mapModel.Special:FindFirstChild("Button") :: Folder
@@ -187,7 +224,7 @@ local function setupButtons()
                 event.Parent = events
             end
 
-            local marker = ReplicatedStorage.Package.Unloads.ButtonMarker:Clone() :: BillboardGui
+            local marker = RepS.Package.Unloads.ButtonMarker:Clone() :: BillboardGui
             marker:AddTag("ButtonMarker")
             marker.Parent = button
             if button:GetAttribute("Group") then
@@ -214,6 +251,7 @@ local function setupButtons()
                     and hit.Parent
                     and hit.Parent:FindFirstChildOfClass("Humanoid") then
 
+                    if not Players:GetPlayerFromCharacter(hit.Parent) then return end
                     if button:GetAttribute("Hit") then return end
                     if button:GetAttribute("Index") ~= tostring(btnIndex) then
                         Events.CreateHint.FireAll({
@@ -254,12 +292,13 @@ local function setupButtons()
                         button.Light.Color = buttonStates.Default.Activated
                     end
 
+                    local toucher = Players:GetPlayerFromCharacter(hit.Parent)
                     Events.CreateHint.FireAll({
-                        Hint = "Button #"..button:GetAttribute("Index").." Pressed by "..plr.DisplayName,
+                        Hint = "Button #"..button:GetAttribute("Index").." Pressed by "..toucher.DisplayName,
                         Color = "white"
                     })
 
-                    event:Fire(Players:GetPlayerFromCharacter(hit.Parent))
+                    event:Fire(toucher)
                     Signals.BtnPressed:Fire(realrealIndex)
 
                     btnIndex += 1
@@ -292,30 +331,36 @@ local function setupButtons()
             end)
         end
     end
+
+
+    workspace:SetAttribute("MapButtonsInited", true)
 end
 local function setupButtonFuncs()
     for _, child: Instance in mapModel:GetDescendants() do
         if child:IsA("ObjectValue") then
             if string.find(child.Name, "_Destroy") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Fade:Clone().Parent = child
+                SS.Resources.Unloads.ButtonEvents.Fade:Clone().Parent = child
 
             elseif string.find(child.Name, "_Fall") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Fall:Clone().Parent = child
+                SS.Resources.Unloads.ButtonEvents.Fall:Clone().Parent = child
 
             elseif string.find(child.Name, "_Show") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Show:Clone().Parent = child
+                SS.Resources.Unloads.ButtonEvents.Show:Clone().Parent = child
 
             elseif string.find(child.Name, "_Hide") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Hide:Clone().Parent = child
+                SS.Resources.Unloads.ButtonEvents.Hide:Clone().Parent = child
 
             elseif string.find(child.Name, "_Explode") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Explode:Clone().Parent = child
+                SS.Resources.Unloads.ButtonEvents.Explode:Clone().Parent = child
             end
 
         elseif child:IsA("Sound") and string.find(child.Name, "_Sound") then
-            ServerStorage.Resources.Unloads.ButtonEvents.Sound:Clone().Parent = child
+            SS.Resources.Unloads.ButtonEvents.Sound:Clone().Parent = child
         end
     end
+
+
+    workspace:SetAttribute("MapButtonFuncsInited", true)
 end
 local function setupWaters()
     local liquidSettings = setting.Liquids :: Configuration
@@ -337,6 +382,9 @@ local function setupWaters()
         _setCustomWater(water)
     end
     WaterLib._WaterAdded:Connect(_setCustomWater)
+
+
+    workspace:SetAttribute("MapWatersInited", true)
 end
 local function setupSkills()
     local skillSettings = setting:FindFirstChild("Skills") :: Configuration
@@ -345,6 +393,9 @@ local function setupSkills()
 
     mapModel:SetAttribute("AllowAirDive", skillSettings:GetAttribute("AllowAirDive"))
     mapModel:SetAttribute("AllowSlide", skillSettings:GetAttribute("AllowSliding"))
+
+
+    workspace:SetAttribute("MapSkillsInited", true)
 end
 local function setupSound() : string
     local soundSettings = setting:FindFirstChild("Music") :: Configuration
@@ -355,8 +406,10 @@ local function setupSound() : string
     sound.SoundId = "rbxassetid://"..soundSettings:GetAttribute("Music") or ""
     sound.Volume = soundSettings:GetAttribute("Volume") or soundSettings:GetAttribute("MusicVolume") or 0
     sound.Looped = true
-    sound.SoundGroup = SoundService.Underwater
+    sound.SoundGroup = SoundS.Underwater
     sound.Parent = mapModel
+
+    workspace:SetAttribute("MapSoundInited", true)
 
     return soundSettings:GetAttribute("Music")
 end
@@ -369,27 +422,30 @@ local function setupScripts()
     end
     if mapLocalScript then
         mapLocalScript.Disabled = false
-        mapLocalScript.Parent = plr.Character
+
+        for _, player: Player in Players:GetPlayers() do
+            mapLocalScript:Clone().Parent = player.Character
+        end
+
+        mapLocalScript:Destroy()
     end
 
-    mapModel:SetAttribute("ScriptsLoaded", true)
-end
-local function setupMain()
-    setupMapLib()
-    setupMap()
-    setupLighting()
-    setupVariants()
-    setupButtons()
-    setupButtonFuncs()
-    setupWaters()
-    setupSkills()
+    --- enable all scripts at this time
+    for _, child: Instance in mapModel:GetDescendants() do
+        if child:IsA("Script") then child.Disabled = false end
+        if child:IsA("LocalScript") then child.Disabled = false end
+    end
 
-    --- starting
+
+    workspace:SetAttribute("MapScriptsInited", true)
+end
+local function _readyToRun()
+    workspace:SetAttribute("MapPreInited", true)
+
     local soundId = setupSound()
     local timeout = 3
 
     task.wait(1)
-
     repeat
         task.wait(1)
         timeout -= 1
@@ -409,6 +465,9 @@ local function setupMain()
     local mapName = mainSettings:GetAttribute("Name") or "?"
     local difficulty = mainSettings:GetAttribute("Difficulty") or 0
     local creator = mainSettings:GetAttribute("Creator") or "?"
+    local mapDuration = mainSettings:GetAttribute("MaxTime") or 120
+
+    local MapLib = require(RepS.Shared.Library.MapLib)
 
     workspace.Sounds.SFXs.MapStart:Play()
 
@@ -427,9 +486,28 @@ local function setupMain()
                 Color = Color3.fromRGB(125, 15, 79)
             })
         end
-    end):catch(function(err)
-        warn(err)
     end)
+    Promise.delay(mapDuration):andThen(function()
+        Events.CreateHint.FireAll({ Hint = "Time runs out!",  Color = "yellow" })
+
+        MapLib.RoundEnding:Fire()
+        Events.MapRoundEnding.FireAll({})
+    end)
+end
+local function setupMain()
+    repeat task.wait() until workspace:GetAttribute("ServerInited")
+
+    setupMapLib()
+    setupMap()
+    setupLighting()
+    setupMaterials()
+    setupVariants()
+    setupButtons()
+    setupButtonFuncs()
+    setupWaters()
+    setupSkills()
+
+    _readyToRun()
 
     setupScripts()
 end

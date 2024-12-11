@@ -1,18 +1,18 @@
 --!nocheck
 
-local ContextActionService = game:GetService("ContextActionService")
+local CAS = game:GetService("ContextActionService")
 local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
+local TS = game:GetService("TweenService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
-local keyframes = ReplicatedStorage.Package.Keyframes :: Folder
+local char = script:FindFirstAncestorOfClass("Model")
+local keyframes = RepS.Package.Keyframes :: Folder
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
 
 -- create temp animation for studio to use
@@ -78,7 +78,7 @@ local function swimIn()
             swimVel.Parent = char.PrimaryPart
         end
 
-        TweenService:Create(
+        TS:Create(
             diveVel,
             TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
             { Velocity = Vector3.new(rootVel.X, 0, rootVel.Z) }
@@ -142,7 +142,7 @@ Add(char.Humanoid.Changed:Connect(function()
         swimUp = false
     end
 end))
-Add(RunService.Heartbeat:Connect(function()
+Add(RS.Heartbeat:Connect(function()
     if isSwimming then
         local swimVelocity = 0
 
@@ -211,7 +211,7 @@ local function swimAction(action: string, inputState: Enum.UserInputState)
     return if (isSwimming and inputState == Enum.UserInputState.Begin) then
         Enum.ContextActionResult.Sink else Enum.ContextActionResult.Pass
 end
-ContextActionService:BindActionAtPriority("SwimDown", swimAction, true, 3000, Enum.KeyCode.LeftShift)
+CAS:BindActionAtPriority("SwimDown", swimAction, true, 3000, Enum.KeyCode.LeftShift)
 
 
 --// Clear
@@ -221,6 +221,8 @@ char.Humanoid.Died:Once(function()
         swimUp = false
         swimDown = false
     end
+
+    CAS:UnbindAction("SwimDown")
 
     Empty()
 end)

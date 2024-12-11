@@ -1,20 +1,20 @@
 --!nocheck
 
 local KSP = game:GetService("KeyframeSequenceProvider")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RepS = game:GetService("ReplicatedStorage")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
-local HarukaLib = require(ReplicatedStorage.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
 local animation = Instance.new("Animation")
-animation.AnimationId = KSP:RegisterKeyframeSequence(ReplicatedStorage.Package.Keyframes.WallHang)
+animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.WallHang)
 
 local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
@@ -57,13 +57,13 @@ Add(char.Humanoid.Touched:Connect(function()
 
             local jumped = false
             task.spawn(function()
-                UserInputService.JumpRequest:Wait()
+                UIS.JumpRequest:Wait()
 
                 jumped = true
             end)
 
             repeat
-                RunService.Heartbeat:Wait()
+                RS.Heartbeat:Wait()
 
                 local ray1, ray2 = Ray.new(char.PrimaryPart.Position, -char.PrimaryPart.CFrame.LookVector * 5), Ray.new(char.PrimaryPart.Position, hit:GetPivot().LookVector * -normal)
                 local rHit1, _, rNormal1 = workspace:FindPartOnRay(ray1, char)
@@ -75,7 +75,7 @@ Add(char.Humanoid.Touched:Connect(function()
                 if rHit2 then finalHit, finalNormal = rHit2, rNormal2 end
 
                 if finalHit then
-                    RunService.Heartbeat:Once(function(delta)
+                    RS.Heartbeat:Once(function(delta)
                         char.PrimaryPart.CFrame = CFrame.lookAlong(char.PrimaryPart.Position + (finalHit.CFrame.LookVector * (hit:GetAttribute("Speed") or 20) * delta), finalNormal)
                     end)
 
@@ -106,7 +106,13 @@ Add(char.Humanoid.Touched:Connect(function()
                     lookVector.Z * jp
                 )
             else
-                char.PrimaryPart.Velocity = Vector3.zero
+                local jp = 25
+
+                char.PrimaryPart.Velocity = Vector3.new(
+                    normal.X * jp,
+                    jp + normal.Y * jp,
+                    normal.Z * jp
+                )
             end
 
             isWallRunning = false

@@ -2,11 +2,11 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if not hit then return end

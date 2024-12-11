@@ -33,8 +33,8 @@ local function setupUI()
     frame.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
     frame.Parent = holderGui
 
-    repeat task.wait() until RepS:WaitForChild("Modules", 999)
-    repeat task.wait() until workspace:WaitForChild("Map", 999)
+    repeat task.wait() until RepS:WaitForChild("Shared", 999)
+    repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
     local setting = workspace.Map:WaitForChild("Settings") :: Configuration
     local mainSettings = setting.Main :: Configuration
@@ -43,10 +43,11 @@ local function setupUI()
     local mapImageConfig = mainSettings:GetAttribute("Image") or ""
     local creator = mainSettings:GetAttribute("Creator") or "[Unknown]"
 
-    local Components = require(RepS.Modules.UI.Vanilla)
-    local Fusion = require(RepS.Modules.Packages.Fusion)
-    local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-    local MapDataBook = require(RepS.Modules.Data.MapDataBook)
+    local twilightTheme = require(RepS.Shared.Library.TwilightTheme)
+    local Components = require(RepS.Shared.UIAtlas.Vanilla)
+    local Fusion = require(RepS.Shared.Shared.Fusion)
+    local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+    local MapDataBook = require(RepS.Shared.Library.MapDataBook)
 
     local Children = Fusion.Children
 
@@ -61,7 +62,7 @@ local function setupUI()
 
     local function TRIAVividGradient() : UIGradient
         return Fusion.New(scope, "UIGradient")({
-            Color = ColorSequence.new(Color3.fromHex('#fbb6db'), Color3.fromHex('#fccd7e'))
+            Color = twilightTheme.gradient
         })
     end
     local function ProgressBar() : Frame

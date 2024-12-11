@@ -2,18 +2,18 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
-local WaterLib = require(RepS.Modules.Data.WaterLib)
-local Signals = require(RepS.Modules.Data.Signals)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local WaterLib = require(RepS.Shared.Library.WaterLib)
+local Signals = require(RepS.Shared.Library.Signals)
 
 local Add, Empty = HarukaLib.Bin()
 
-repeat task.wait() until workspace:WaitForChild("Map", 999)
+repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
 local MapLib = game.GetMapLib:Invoke()()
 local map = MapLib.map
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 
 local touchCD = false
 Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)

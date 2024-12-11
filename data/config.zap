@@ -1,16 +1,14 @@
 
-opt client_output = "../src/modules/Data/Events.luau"
-opt server_output = "../src/server/Modules/Data/ServerEvents.luau"
+opt client_output = "../src/shared/Library/Events.luau"
+opt server_output = "../src/server/Modules/Library/ServerEvents.luau"
 opt remote_scope = "HARUKA"
-opt yield_type = "promise"
-opt async_lib = "require(game:GetService('ReplicatedStorage').Modules.Packages.Promise)"
 
 event CreateHint = {
     from: Server,
     type: Reliable,
     call: ManyAsync,
     data: struct {
-        Hint: string,
+        Hint: string?,
         Color: unknown,
         Duration: string?
     }
@@ -20,7 +18,7 @@ event ChangeMusic = {
     type: Reliable,
     call: SingleAsync,
     data: struct {
-        MusicId: string,
+        MusicId: string?,
         Volume: string?,
         StartTick: string?
     }
@@ -40,8 +38,24 @@ event ChangeLighting = {
         }?
     }
 }
+event TeleportPlayer = {
+    from: Server,
+    type: Reliable,
+    call: SingleAsync,
+    data: struct {
+        Player: Instance (Player)?,
+        Destination: CFrame?,
+        FaceFront: boolean?
+    }
+}
 event ForceReset = {
     from: Client,
+    type: Reliable,
+    call: SingleAsync,
+    data: struct {}
+}
+event MapRoundEnding = {
+    from: Server,
     type: Reliable,
     call: SingleAsync,
     data: struct {}

@@ -1,8 +1,11 @@
 --!nocheck
 
 local SSS = game:GetService("ServerScriptService")
+local SS = game:GetService("ServerStorage")
 
-local Signals = require(SSS.Modules.Data.ServerSignals)
+local Signals = require(SSS.Server.Modules.Library.ServerSignals)
+
+local DelayCheck = require(SS.Resources.Unloads.ButtonEvents._DelayEvent)
 
 local objList = {
 	["BasePart"] = true,
@@ -19,10 +22,7 @@ local realIndex = string.gsub(index, "%a", "")
 Signals.BtnPressed:Connect(function(btnIndex: string)
 	if btnIndex ~= realIndex then return end
 
-	if script.Parent:FindFirstChild("_Delay") then
-		local delayTime = script.Parent["_Delay"].Value :: number
-		task.wait(delayTime)
-	end
+	DelayCheck(script)
 
 	local function _explosionEffect(obj: Instance)
 		local explosion = Instance.new('Explosion')

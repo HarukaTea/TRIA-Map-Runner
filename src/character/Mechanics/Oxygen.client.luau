@@ -2,13 +2,13 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 
-repeat task.wait() until workspace:WaitForChild("Map", 999)
+repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
 local isSwimming = false
 local currentWater: BasePart = nil

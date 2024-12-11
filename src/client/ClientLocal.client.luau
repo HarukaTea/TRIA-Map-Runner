@@ -12,4 +12,7 @@ local function disableFreecam()
     wait()
     plr.PlayerGui.Freecam:Destroy()
 end
---disableFreecam()
+disableFreecam()
+
+
+workspace:SetAttribute("ClientInited", true)

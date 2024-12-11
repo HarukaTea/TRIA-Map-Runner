@@ -17,5 +17,6 @@
         "**/Thumbs.db": true,
 
         "src/character/Health.server.luau": true
-    }
+    },
+    "stylua.targetReleaseVersion": "latest"
 }

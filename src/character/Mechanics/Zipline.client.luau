@@ -3,19 +3,19 @@
 local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local RepS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
-local Bezier = require(RepS.Modules.Packages.Bezier)
-local HarukaLib = require(RepS.Modules.Packages.HarukaLib)
+local Bezier = require(RepS.Shared.Shared.Bezier)
+local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
-local char = script.Parent.Parent :: Model
+local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
-repeat task.wait() until workspace:WaitForChild("Map", 999)
+repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
 local MapLib = game.GetMapLib:Invoke()()
 local map = MapLib.map
@@ -30,7 +30,7 @@ local curvePointsSet = {}
 
 local function setupZipline()
     for _, child: Instance in map:GetDescendants() do
-        if child.Name == "Zipline" and child:IsA("Model") then
+        if string.lower(child.Name) == "zipline" and child:IsA("Model") then
             --- apply configuration
             local configuration = child:FindFirstChildOfClass("Configuration")
             for attr: string, val: any in configuration:GetAttributes() do
@@ -65,7 +65,7 @@ local function setupZipline()
             startOrb.Anchored = true
             startOrb.Transparency = 1
             startOrb.Shape = Enum.PartType.Ball
-            startOrb.Size = Vector3.one * 3.75
+            startOrb.Size = points[1].Size
             startOrb.CFrame = points[1].CFrame
             startOrb.CanCollide = false
             startOrb.CanQuery = false
@@ -195,7 +195,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 
 			local cTime = tick() - startRiding
 			if cTime > 0.04 then
-				jumpAdd(UserInputService.JumpRequest:Once(function()
+				jumpAdd(UIS.JumpRequest:Once(function()
 					jumped = true
 				end))
 			end
@@ -228,7 +228,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 			if sparklePart then sparklePart.CFrame = rideCFrame end
 
 			local timeTaken = tick() - startMoving
-			local frameDt = RunService.RenderStepped:Wait()
+			local frameDt = RS.RenderStepped:Wait()
 			local scaleFrameDt = (timeTaken + frameDt) / (1 / 60)
 
 			if curveT <= 1 then

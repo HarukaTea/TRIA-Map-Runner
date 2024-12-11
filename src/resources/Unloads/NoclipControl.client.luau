@@ -4,13 +4,17 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 
 local tool = script.Parent :: Tool
+local plr = Players.LocalPlayer
+
 local selected = false
 local lastUpdate = 0
-local plr = Players.LocalPlayer
 
 local wait = task.wait
 local v3New, xAxis, yAxis, zAxis = Vector3.new, Vector3.xAxis, Vector3.yAxis, Vector3.zAxis
 local cfNew = CFrame.new
+
+
+--// Pre-defined functions
 
 local function _getNextMovement(deltaTime)
 	local nextMove = v3New()
@@ -33,9 +37,10 @@ local function _getNextMovement(deltaTime)
 		nextMove -= yAxis
 	end
 
-	local speed = script.Parent:GetAttribute("Speed")
+	local speed = script.Parent:GetAttribute("Speed") :: number
 	return cfNew( nextMove * (speed * deltaTime) )
 end
+
 
 local function onSelected()
 	local char = plr.Character
@@ -71,12 +76,10 @@ local function onSelected()
 		humanoid.PlatformStand = false
 	end
 end
-
 local function onDeselected()
 	selected = false
 
 	if plr.Character then plr.Character:SetAttribute("IsNocliping", false) end
 end
-
 tool.Selected:Connect(onSelected)
 tool.Deselected:Connect(onDeselected)
