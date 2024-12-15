@@ -54,7 +54,6 @@ local function setup()
 	Add(humanoid.Running:Connect(function()
 		if humanoid.MoveDirection.Magnitude > 0 then
 			startAnim(ANIMS.Running, 0.1)
-			ANIMS.Running:AdjustSpeed(20 / 26)
 		else
 			startAnim(ANIMS.Idle, 0.1)
 		end
@@ -64,7 +63,6 @@ local function setup()
 	Add(humanoid.Climbing:Connect(function(vel)
 		if vel ~= 0 then
 			startAnim(ANIMS.Climbing, 0.1)
-			ANIMS.Climbing:AdjustSpeed(vel / 12)
 		else
 			ANIMS.Climbing:AdjustSpeed(0)
 		end

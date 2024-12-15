@@ -18,6 +18,11 @@ local defaultOxygen = workspace.Map.Settings.Main:GetAttribute("DefaultOxygen")
 local timePerLoss = 1 / 10
 local oxygenDepletion = 1
 
+if defaultOxygen == nil then
+    --- V1.0 Map kit
+    defaultOxygen = workspace.Map.Settings.Fluid:GetAttribute("DefaultOxygen") or 100
+end
+
 char:SetAttribute("SelfOxygen", defaultOxygen)
 char:SetAttribute("TankOxygen", 0)
 char:SetAttribute("MaxOxygen", defaultOxygen)
@@ -43,8 +48,8 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         and hit.Parent.Name == "AirTank" then
 
         local oxygenGiven = hit.Parent:GetAttribute("Oxygen") or 300
+        oxygenGiven = math.clamp(oxygenGiven, 0, math.huge - 1)
 
-        --// FIXME: I don't know what's the exact mechanic in TRIA, needs to be checked in V1.0
         if oxygenGiven < 0 then
             HarukaLib:AddAttr(char, "SelfOxygen", oxygenGiven)
             HarukaLib:AddAttr(char, "MaxOxygen", oxygenGiven)
@@ -58,7 +63,7 @@ end))
 
 --- air controls
 local function decreaseAir()
-    splashCD = 2
+    splashCD = 1
 
     local targetOxygen = if char:GetAttribute("TankOxygen") > 0 then "TankOxygen" else "SelfOxygen"
 
@@ -68,7 +73,7 @@ local function increaseAir()
     splashCD = math.max(0, splashCD - timePerLoss)
 
     if splashCD <= 0 then
-        timePerLoss = 0.065
+        timePerLoss = 0.135
 
         if char:GetAttribute("SelfOxygen") < char:GetAttribute("MaxOxygen") then
             HarukaLib:AddAttr(char, "SelfOxygen", 1)

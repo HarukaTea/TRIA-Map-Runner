@@ -36,8 +36,6 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         bp.Parent = char.PrimaryPart
         Debris:AddItem(bp, timeout)
 
-        workspace.Sounds.SFXs.Walljump:Play()
-
         local oldSpeed, oldJump = char.Humanoid.WalkSpeed, char.Humanoid.JumpPower
         char.Humanoid.WalkSpeed = 0
         char.Humanoid.JumpPower = 0

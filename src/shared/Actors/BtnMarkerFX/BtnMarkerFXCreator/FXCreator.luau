@@ -13,4 +13,10 @@ local function locatorFX(marker: BillboardGui)
 
     TS:Create(marker.Corners, buttonRotateTween, { Rotation = -720 }):Play()
 end
+
+for _, marker in CS:GetTagged("ButtonMarker") do
+    locatorFX(marker)
+end
 CS:GetInstanceAddedSignal("ButtonMarker"):Connect(locatorFX)
+
+return true

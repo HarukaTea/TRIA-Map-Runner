@@ -41,7 +41,7 @@ local function setupUI()
     local mapDifficultyConfig = mainSettings:GetAttribute("Difficulty") or 0
     local mapNameConfig = mainSettings:GetAttribute("Name") or "[Unknown Map]"
     local mapImageConfig = mainSettings:GetAttribute("Image") or ""
-    local creator = mainSettings:GetAttribute("Creator") or "[Unknown]"
+    local creator = mainSettings:GetAttribute("Creator") or Players.LocalPlayer.Name
 
     local twilightTheme = require(RepS.Shared.Library.TwilightTheme)
     local Components = require(RepS.Shared.UIAtlas.Vanilla)

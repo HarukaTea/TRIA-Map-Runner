@@ -42,9 +42,9 @@ MapDataBook.DifficultyImages = {
 }
 
 MapDataBook.SelectionIcons = {
-    Spectate = "rbxassetid://137783292161525",
-    Folder = "rbxassetid://132791194708413",
-    Settings = "rbxassetid://73509030455641"
+    Spectate = "rbxassetid://11713565149",
+    Folder = "rbxassetid://11713565892",
+    Settings = "rbxassetid://11713567272"
 }
 
 MapDataBook.LiquidColors = {

@@ -48,7 +48,7 @@ Add(HarukaLib:Hydrate(char, {
 
             for _, child: Instance in map:GetDescendants() do
                 if child:IsA("BasePart") and child.Name == "ExitBlock" then
-                    exitBlocks[#exitBlocks + 1] = child
+                    table.insert(exitBlocks, child)
                 end
             end
             for _, child: Instance in WaterLib._Waters do

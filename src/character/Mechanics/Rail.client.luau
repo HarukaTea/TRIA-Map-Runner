@@ -202,7 +202,6 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 
 			local startMoving = tick()
 			local DEBUG_SPEED_FACTOR = 1.12
-			--// FIXME: this may be inaccurate, need to check again in TRIA 1.0
 			local rideTime = (1 / 60) / (hit.Parent:GetAttribute("TotalSegmentLength") / hit.Parent:GetAttribute("Speed") / DEBUG_SPEED_FACTOR)
 
 			local bezierPos = curvePoints:CalculatePositionRelativeToLength(curveT)
@@ -252,7 +251,10 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 		jumpEmpty()
 
 		if hit.Parent:GetAttribute("Momentum") then
-			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, -hit.Parent:GetAttribute("Speed") * 1.45))
+			local DEBUG_FACTOR = 1.075
+			local momentum = if hit.Parent:GetAttribute("Momentum") == true then 1 else hit.Parent:GetAttribute("Momentum")
+
+			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, (50 + (hit.Parent:GetAttribute("Speed") * momentum)) * DEBUG_FACTOR * -1))
 		end
 
 		isRiding = false

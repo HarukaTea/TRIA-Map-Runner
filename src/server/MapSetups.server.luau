@@ -254,10 +254,6 @@ local function setupButtons()
                     if not Players:GetPlayerFromCharacter(hit.Parent) then return end
                     if button:GetAttribute("Hit") then return end
                     if button:GetAttribute("Index") ~= tostring(btnIndex) then
-                        Events.CreateHint.FireAll({
-                            Hint = "Press previous buttons first!",
-                            Color = "white"
-                        })
                         return
                     end
 
@@ -363,7 +359,7 @@ local function setupButtonFuncs()
     workspace:SetAttribute("MapButtonFuncsInited", true)
 end
 local function setupWaters()
-    local liquidSettings = setting.Liquids :: Configuration
+    local liquidSettings = setting:FindFirstChild("Liquids") or setting:FindFirstChild("Fluid") :: Configuration
 
     local function _setCustomWater(water: BasePart)
         if water:GetAttribute("Type") == "custom" then
@@ -398,20 +394,33 @@ local function setupSkills()
     workspace:SetAttribute("MapSkillsInited", true)
 end
 local function setupSound() : string
-    local soundSettings = setting:FindFirstChild("Music") :: Configuration
+    local soundSettings = setting:FindFirstChild("Music") :: Configuration | Sound
     if not soundSettings then soundSettings = setting.Main :: Configuration end
 
-    local sound = Instance.new("Sound")
-    sound.Name = "MapMusic"
-    sound.SoundId = "rbxassetid://"..soundSettings:GetAttribute("Music") or ""
-    sound.Volume = soundSettings:GetAttribute("Volume") or soundSettings:GetAttribute("MusicVolume") or 0
-    sound.Looped = true
-    sound.SoundGroup = SoundS.Underwater
-    sound.Parent = mapModel
+    local soundId = ""
+
+    if soundSettings:IsA("Configuration") then
+        local sound = Instance.new("Sound")
+        sound.Name = "MapMusic"
+        sound.SoundId = "rbxassetid://"..soundSettings:GetAttribute("Music") or ""
+        sound.Volume = soundSettings:GetAttribute("Volume") or soundSettings:GetAttribute("MusicVolume") or 0
+        sound.Looped = true
+        sound.SoundGroup = SoundS.Underwater
+        sound.Parent = mapModel
+
+        soundId = tostring(soundSettings:GetAttribute("Music"))
+
+    elseif soundSettings:IsA("Sound") then
+        soundSettings.Name = "MapMusic"
+        soundSettings.Parent = mapModel
+
+        soundId = string.match(tostring(soundSettings.SoundId), "%d+")
+    end
+
 
     workspace:SetAttribute("MapSoundInited", true)
 
-    return soundSettings:GetAttribute("Music")
+    return soundId
 end
 local function setupScripts()
     local mapScript = mapModel:FindFirstChild("MapScript") :: Script
@@ -464,7 +473,7 @@ local function _readyToRun()
     local mainSettings = setting.Main :: Configuration
     local mapName = mainSettings:GetAttribute("Name") or "?"
     local difficulty = mainSettings:GetAttribute("Difficulty") or 0
-    local creator = mainSettings:GetAttribute("Creator") or "?"
+    local creator = mainSettings:GetAttribute("Creator") or Players:FindFirstChildOfClass("Player").Name
     local mapDuration = mainSettings:GetAttribute("MaxTime") or 120
 
     local MapLib = require(RepS.Shared.Library.MapLib)
@@ -479,7 +488,7 @@ local function _readyToRun()
     Promise.delay(5):andThen(function()
         if soundId == "" or soundId == nil then return end
 
-        local productInfo = MarketplaceService:GetProductInfo(soundId)
+        local productInfo = MarketplaceService:GetProductInfo(tonumber(soundId))
         if productInfo then
             Events.CreateHint.FireAll({
                 Hint = `Music: {productInfo.Name}`,

@@ -53,7 +53,6 @@ Add(char.Humanoid.Touched:Connect(function()
             weld.Parent = char.PrimaryPart
 
             walljumpAnim:Play()
-            workspace.Sounds.SFXs.Walljump:Play()
 
             local jumped = false
             task.spawn(function()
@@ -93,12 +92,12 @@ Add(char.Humanoid.Touched:Connect(function()
             if weld then weld:Destroy() end
 
             if jumped then
-                local momentum = hit:GetAttribute("Momentum") or 1
+                local momentum = hit:GetAttribute("Momentum") or 0.88
                 local speed = hit:GetAttribute("Speed") or 20
                 local lookVector = char.PrimaryPart.CFrame.LookVector
                 local jp = char.Humanoid.JumpPower
 
-                local DEBUG_FACTOR = 0.78
+                local DEBUG_FACTOR = 0.95
                 --// FIXME: this may be inaccurate, need to check again in TRIA 1.0
                 char.PrimaryPart.Velocity = hit:GetPivot().LookVector * (speed * momentum) + Vector3.new(
                     lookVector.X * jp,
@@ -106,7 +105,7 @@ Add(char.Humanoid.Touched:Connect(function()
                     lookVector.Z * jp
                 )
             else
-                local jp = 25
+                local jp = 15
 
                 char.PrimaryPart.Velocity = Vector3.new(
                     normal.X * jp,

@@ -53,7 +53,6 @@ Add(char.Humanoid.Touched:Connect(function()
             weld.Parent = char.PrimaryPart
 
             walljumpAnim:Play()
-            workspace.Sounds.SFXs.Walljump:Play()
 
             local start = tick()
             local jumped = false

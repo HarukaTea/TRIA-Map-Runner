@@ -116,15 +116,11 @@ end
 Add(char.Head.Touched:Connect(function(water: BasePart)
     if water:IsA("BasePart") and string.find(water.Name, "_Liquid") then
         swimIn()
-
-        workspace.Sounds.SFXs.Splash:Play()
     end
 end))
 Add(char.Head.TouchEnded:Connect(function(water: BasePart)
     if water:IsA("BasePart") and string.find(water.Name, "_Liquid") then
         swimOut()
-
-        workspace.Sounds.SFXs.Splash:Play()
     end
 end))
 Add(char.Humanoid.Changed:Connect(function()
