@@ -7,20 +7,20 @@ local RS = game:GetService("RunService")
 local SSS = game:GetService("ServerScriptService")
 local TS = game:GetService("TweenService")
 
-local MapDataBook = require(RepS.Shared.Library.MapDataBook)
-local Signal = require(RepS.Shared.Shared.Signal)
-local Promise = require(RepS.Shared.Shared.Promise)
+local MapDataBook = require(RepS.HarukaShared.Library.MapDataBook)
+local Signal = require(RepS.HarukaShared.Shared.Signal)
+local Promise = require(RepS.HarukaShared.Shared.Promise)
 
 local isServer, isClient = RS:IsServer(), RS:IsClient()
 
-local Events, Signals = nil, nil
+local Events, Bindables = nil, nil
 if isServer then
-    Events = require(SSS.Server.Modules.Library.ServerEvents)
-    Signals = require(SSS.Server.Modules.Library.ServerSignals)
+    Events = require(SSS.HarukaServer.Library.ServerEvents)
+    Bindables = require(SSS.HarukaServer.Library.ServerBindables)
 
 elseif isClient then
-    Events = require(RepS.Shared.Library.Events)
-    Signals = require(RepS.Shared.Library.Signals)
+    Events = require(RepS.HarukaShared.Library.Events)
+    Bindables = require(RepS.HarukaShared.Library.Bindables)
 end
 
 repeat task.wait() until workspace:GetAttribute("MapPreInited")
@@ -43,7 +43,7 @@ function MapLib:Alert(message: string, color: Color3 | string, duration: number?
     duration = tostring(duration) or "3"
 
     if isClient then
-        Signals.CreateHint:Fire(message, color, duration)
+        Bindables.CreateHint:Fire(message, color, duration)
 
     elseif isServer then
         Events.CreateHint.FireAll({ Hint = message, Color = color, Duration = duration })
@@ -212,9 +212,9 @@ end
 ]]
 function MapLib:GetFeature(feature: string) : table
     if not feature then return end
-    if not RepS.Shared.Library.MapLib:FindFirstChild(feature) then return end
+    if not RepS.HarukaShared.Library.MapLib:FindFirstChild(feature) then return end
 
-    return require(RepS.Shared.Library.MapLib[feature])
+    return require(RepS.HarukaShared.Library.MapLib[feature])
 end
 
 --// Private

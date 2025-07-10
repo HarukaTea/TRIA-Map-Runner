@@ -5,8 +5,8 @@ local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
-local WaterLib = require(RepS.Shared.Library.WaterLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+local WaterLib = require(RepS.HarukaShared.Library.WaterLib)
 
 local currentWater: BasePart = nil
 

@@ -64,9 +64,6 @@ local function Spring<T>(
 	damping: Types.UsedAs<number>?
 ): Types.Spring<T>
 	local createdAt = os.clock()
-	if typeof(scope) ~= "table" or castToState(scope) ~= nil then
-		External.logError("scopeMissing", nil, "Springs", "myScope:Spring(goalState, speed, damping)")
-	end
 
 	local goalState = castToState(goal)
 	local stopwatch = nil
@@ -113,7 +110,7 @@ local function Spring<T>(
 	self.oldestTask = destroy
 	nicknames[self.oldestTask] = "Spring"
 	table.insert(scope, destroy)
-	
+
 	if goalState ~= nil then
 		checkLifetime.bOutlivesA(
 			scope, self.oldestTask,
@@ -163,12 +160,6 @@ function class.addVelocity<T>(
 	self._stopwatch:zero()
 	self._stopwatch:unpause()
 	change(self)
-end
-
-function class.get<T>(
-	self: Self<T>
-): never
-	return External.logError("stateGetWasRemoved")
 end
 
 function class.setPosition<T>(
@@ -242,8 +233,8 @@ function class._evaluate<T>(
 		-- integrating the motion that happened over the last frame, after all.
 		-- The stopwatch will have captured the length of time needed correctly.
 		local posPos, posVel, velPos, velVel = springCoefficients(
-			elapsed, 
-			self._activeDamping, 
+			elapsed,
+			self._activeDamping,
 			self._activeSpeed
 		)
 		local isMoving = false
@@ -270,7 +261,7 @@ function class._evaluate<T>(
 			for index = 1, self._activeNumSprings do
 				self._activeLatestP[index] = self._activeTargetP[index]
 			end
-			-- TODO: figure out how to do sleeping correctly for single frame
+			-- figure out how to do sleeping correctly for single frame
 			-- changes
 			-- stopwatch:pause()
 			-- stopwatch:zero()

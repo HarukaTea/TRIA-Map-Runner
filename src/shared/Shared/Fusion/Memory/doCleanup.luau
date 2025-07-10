@@ -16,8 +16,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 local Package = script.Parent.Parent
 local Types = require(Package.Types)
 local External = require(Package.External)
-local scopePool = require(Package.Memory.scopePool)
-local poisonScope = require(Package.Memory.poisonScope)
+local ExternalDebug = require(Package.ExternalDebug)
 
 local alreadyDestroying: {[Types.Task]: true} = {}
 
@@ -54,7 +53,7 @@ local function doCleanup(
 			local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)}
 			task:Destroy()
 
-		-- case 6: table of tasks with an array part
+		-- case 6: { any } of tasks with an array part
 		elseif task[1] ~= nil then
 			local task = task :: {Types.Task}
 
@@ -65,14 +64,10 @@ local function doCleanup(
 				task[index] = nil
 			end
 
-			if External.isTimeCritical() then
-				scopePool.giveIfEmpty(task)
-			else
-				poisonScope(task, "`doCleanup()` was previously called on this scope. Ensure you are not reusing scopes after cleanup.")
-			end
+			ExternalDebug.untrackScope(task)
 		end
 	end
-	
+
 	alreadyDestroying[task] = nil
 end
 

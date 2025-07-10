@@ -9,7 +9,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 
 	https://elttob.uk/Fusion/0.3/api-reference/state/members/forpairs/
 
-	TODO: the sub objects constructed here can be more efficiently implemented
+	the sub objects constructed here can be more efficiently implemented
 	as a dedicated state object.
 ]]
 
@@ -77,14 +77,8 @@ end
 local function ForPairs<KI, KO, VI, VO, S>(
 	scope: Types.Scope<S>,
 	inputTable: Types.UsedAs<{[KI]: VI}>,
-	processor: (Types.Use, Types.Scope<S>, KI, VI) -> (KO, VO),
-	destructor: unknown?
+	processor: (Types.Use, Types.Scope<S>, KI, VI) -> (KO, VO)
 ): Types.For<KO, VO>
-	if typeof(inputTable) == "function" then
-		External.logError("scopeMissing", nil, "ForPairs", "myScope:ForPairs(inputTable, function(scope, use, key, value) ... end)")
-	elseif destructor ~= nil then
-		External.logWarn("destructorRedundant", "ForPairs")
-	end
 	return For(
 		scope,
 		inputTable,

@@ -2,7 +2,7 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Signal = require(RepS.Shared.Shared.Signal)
+local Signal = require(RepS.HarukaShared.Shared.Signal)
 
 local WaterLib = {}
 

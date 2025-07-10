@@ -4,9 +4,9 @@ local CAS = game:GetService("ContextActionService")
 local Lighting = game:GetService("Lighting")
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
-local Fusion = require(RepS.Shared.Shared.Fusion)
+local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
 local Observer, peek = Fusion.Observer, Fusion.peek
 

@@ -6,7 +6,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 --[[
 	State object for measuring time since an event using a reference timer.
 
-	TODO: this should not be exposed to users until it has a proper reactive API
+	this should not be exposed to users until it has a proper reactive API
 	surface
 ]]
 
@@ -59,7 +59,7 @@ local function Stopwatch(
 			_measureTimeSince = 0, -- this should be set on unpause
 			_playing = false,
 			_timer = timer
-		}, 
+		},
 		METATABLE
 	) :: any
 	local destroy = function()
@@ -121,7 +121,7 @@ function class._evaluate(
 	else
 		return false
 	end
-	
+
 end
 
 table.freeze(class)

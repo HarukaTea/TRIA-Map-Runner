@@ -7,12 +7,12 @@ local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local TS = game:GetService("TweenService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
 local char = script:FindFirstAncestorOfClass("Model")
-local keyframes = RepS.Package.Keyframes :: Folder
+local keyframes = RepS.Packages.Keyframes :: Folder
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
 
 -- create temp animation for studio to use

@@ -2,9 +2,9 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
-local WaterLib = require(RepS.Shared.Library.WaterLib)
-local Signals = require(RepS.Shared.Library.Signals)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+local WaterLib = require(RepS.HarukaShared.Library.WaterLib)
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -34,7 +34,7 @@ Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
         end
 
         if not check then
-            Signals.CreateHint:Fire("You need to press all buttons first!", "yellow", 4)
+            Bindables.CreateHint:Fire("You need to press all buttons first!", "yellow", 4)
             return
         end
 

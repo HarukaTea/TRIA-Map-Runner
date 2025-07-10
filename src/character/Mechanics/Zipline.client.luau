@@ -6,8 +6,8 @@ local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
-local Bezier = require(RepS.Shared.Shared.Bezier)
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local Bezier = require(RepS.HarukaShared.Shared.Bezier)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -21,7 +21,7 @@ local MapLib = game.GetMapLib:Invoke()()
 local map = MapLib.map
 
 local animation = Instance.new("Animation")
-animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.Zipline)
+animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Packages.Keyframes.Zipline)
 
 local ziplineAnim = animator:LoadAnimation(animation)
 local isRiding = false

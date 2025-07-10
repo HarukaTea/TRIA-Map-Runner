@@ -3,7 +3,7 @@
 local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 

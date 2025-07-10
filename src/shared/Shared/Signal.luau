@@ -10,8 +10,6 @@ export type Connection<U...> = {
 }
 
 export type Signal<T...> = {
-	RBXScriptConnection: RBXScriptConnection?,
-
 	Connect: <U...>(self: Signal<T...>, fn: (...any) -> (), U...) -> Connection<U...>,
 	Once: <U...>(self: Signal<T...>, fn: (...any) -> (), U...) -> Connection<U...>,
 	Wait: (self: Signal<T...>) -> T...,
@@ -63,15 +61,6 @@ Connection.Disconnect = disconnect
 local Signal = {}
 Signal.__index = Signal
 
--- stylua: ignore
-local rbxConnect, rbxDisconnect do
-	if task then
-		local bindable = Instance.new("BindableEvent")
-		rbxConnect = bindable.Event.Connect
-		rbxDisconnect = bindable.Event:Connect(function() end).Disconnect
-		bindable:Destroy()
-	end
-end
 
 local function connect<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: U...): Connection<U...>
 	local head = self._head
@@ -89,7 +78,7 @@ local function connect<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: 
 	end
 	self._head = cn
 
-	--// Allow for bin to collect garbage
+	--// allow for `HarukaLib.Bin` to collect garbage
 	cn.Destroy = function()
 		cn:Disconnect()
 	end
@@ -112,7 +101,9 @@ local wait = if task
 		local cn
 		cn = connect(self, function(...)
 			disconnect(cn)
-			task.spawn(thread, ...)
+			if coroutine.status(thread) == "suspended" then
+				task.spawn(thread, ...)
+			end
 		end)
 		return coroutine.yield()
 	end
@@ -213,11 +204,6 @@ end
 
 local function destroy<T...>(self: Signal<T...>)
 	disconnectAll(self)
-	local cn = self.RBXScriptConnection
-	if cn then
-		rbxDisconnect(cn)
-		self.RBXScriptConnection = nil
-	end
 end
 
 --\\ Constructors
@@ -225,13 +211,6 @@ function Signal.new<T...>(): Signal<T...>
 	return setmetatable({ _head = false }, Signal)
 end
 
-function Signal.wrap<T...>(signal: RBXScriptSignal): Signal<T...>
-	local wrapper = setmetatable({ _head = false }, Signal)
-	wrapper.RBXScriptConnection = rbxConnect(signal, function(...)
-		fire(wrapper, ...)
-	end)
-	return wrapper
-end
 
 --\\ Methods
 Signal.Connect = connect
@@ -241,4 +220,4 @@ Signal.Fire = fire
 Signal.DisconnectAll = disconnectAll
 Signal.Destroy = destroy
 
-return { new = Signal.new, wrap = Signal.wrap }
+return { new = Signal.new }

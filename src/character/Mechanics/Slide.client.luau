@@ -6,7 +6,7 @@ local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 
@@ -15,7 +15,7 @@ local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
 local animation = Instance.new("Animation")
-animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Package.Keyframes.Slide)
+animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Packages.Keyframes.Slide)
 
 local slideAnim = animator:LoadAnimation(animation)
 local canSlide = true

@@ -6,7 +6,7 @@ local RS = game:GetService("RunService")
 
 local Events = nil
 if RS:IsClient() then
-    Events = require(RepS.Shared.Library.Events)
+    Events = require(RepS.HarukaShared.Library.Events)
 end
 
 local Lighting = {}
@@ -36,6 +36,14 @@ function Lighting:SetLighting(
             end
         end
     end
+end
+
+function Lighting:SetLightingWithTween(
+    properties: {[string]: any},
+    postEffects: {[string]: {[string]: any}},
+    tweenInfo: TweenInfo
+)
+
 end
 
 return Lighting

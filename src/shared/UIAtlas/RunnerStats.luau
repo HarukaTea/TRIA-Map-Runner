@@ -3,10 +3,10 @@
 local RepS = game:GetService("ReplicatedStorage")
 
 local Components = require(RepS.Shared.UIAtlas.Vanilla)
-local Fusion = require(RepS.Shared.Shared.Fusion)
-local MapDataBook = require(RepS.Shared.Library.MapDataBook)
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
-local TwilightTheme = require(RepS.Shared.Library.TwilightTheme)
+local Fusion = require(RepS.HarukaShared.Shared.Fusion)
+local MapDataBook = require(RepS.HarukaShared.Library.MapDataBook)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+local TwilightTheme = require(RepS.HarukaShared.Library.TwilightTheme)
 
 local Pinia = require(RepS.Shared.UIAtlas.Pinia.RunnerStatsPinia)
 

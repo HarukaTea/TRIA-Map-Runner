@@ -3,8 +3,8 @@
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
-local MapLib = require(RepS.Shared.Library.MapLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+local MapLib = require(RepS.HarukaShared.Library.MapLib)
 
 local TeleportFeature = MapLib:GetFeature("Teleport")
 

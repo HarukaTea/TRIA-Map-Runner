@@ -4,7 +4,7 @@ local Debris = game:GetService("Debris")
 local RepS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
 

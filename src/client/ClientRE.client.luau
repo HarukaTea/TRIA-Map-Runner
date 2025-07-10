@@ -2,8 +2,8 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Events = require(RepS.Shared.Library.Events)
-local MapLib = require(RepS.Shared.Library.MapLib)
+local Events = require(RepS.HarukaShared.Library.Events)
+local MapLib = require(RepS.HarukaShared.Library.MapLib)
 
 local TeleportFeature = MapLib:GetFeature("Teleport")
 

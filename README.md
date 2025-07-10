@@ -18,10 +18,14 @@ With this project, you can test your TRIA maps in Roblox Studio, and see how the
 
 ### How to use?
 
+OR..watch this <a href="https://www.youtube.com/watch?v=xK5kZJeNXvc">Video</a> instead (Thank you, RockyTanker!)
+
 1. Download the latest .rbxl file from the <a href="https://github.com/HarukaTea/TRIA-Map-Runner/releases">Releases</a> page.
 2. Open the file in Roblox Studio.
-3. Delete all instances under workspace.
+3. Delete all the things under workspace.
 4. Insert your own model and **UNGROUP** it
-5. Test the map by clicking the Play button or press F5 key.
+(MAKE SURE TO UNGROUP IT, OR THE MAP WILL NOT WORK PROPERLY)
+
+5. Now, you can test the map!
 
 ![Preview](docs/TRIA_Runner_Preview_V6.png)

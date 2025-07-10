@@ -3,9 +3,9 @@
 local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 
-local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
-local Fusion = require(RepS.Shared.Shared.Fusion)
+local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
 return function (self: table)
     self.scope = Fusion.scoped({})

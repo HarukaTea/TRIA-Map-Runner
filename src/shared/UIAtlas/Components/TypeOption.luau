@@ -3,7 +3,7 @@
 local RepS = game:GetService("ReplicatedStorage")
 
 local Components = require(RepS.Shared.UIAtlas.Vanilla)
-local Fusion = require(RepS.Shared.Shared.Fusion)
+local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
 local Children, Tween, Computed, OnEvent, Value, peek =
     Fusion.Children, Fusion.Tween, Fusion.Computed, Fusion.OnEvent, Fusion.Value, Fusion.peek

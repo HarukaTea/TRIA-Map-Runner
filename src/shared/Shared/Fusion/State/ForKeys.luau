@@ -9,7 +9,7 @@ local task = nil -- Disable usage of Roblox's task scheduler
 
 	https://elttob.uk/Fusion/0.3/api-reference/state/members/forkeys/
 
-	TODO: the sub objects constructed here can be more efficiently implemented
+	the sub objects constructed here can be more efficiently implemented
 	as a dedicated state object.
 ]]
 
@@ -74,17 +74,11 @@ end
 local function ForKeys<KI, KO, V, S>(
 	scope: Types.Scope<S>,
 	inputTable: Types.UsedAs<{[KI]: V}>,
-	processor: (Types.Use, Types.Scope<S>, KI) -> KO,
-	destructor: unknown?
+	processor: (Types.Use, Types.Scope<S>, KI) -> KO
 ): Types.For<KO, V>
-	if typeof(inputTable) == "function" then
-		External.logError("scopeMissing", nil, "ForKeys", "myScope:ForKeys(inputTable, function(scope, use, key) ... end)")
-	elseif destructor ~= nil then
-		External.logWarn("destructorRedundant", "ForKeys")
-	end
 	return For(
-		scope, 
-		inputTable, 
+		scope,
+		inputTable,
 		function(scope, initialKey, initialValue)
 			return SubObject(scope, initialKey, initialValue, processor)
 		end

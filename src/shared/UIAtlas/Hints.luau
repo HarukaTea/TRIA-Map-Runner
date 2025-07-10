@@ -5,11 +5,11 @@ local RepS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
 local Components = require(RepS.Shared.UIAtlas.Vanilla)
-local Events = require(RepS.Shared.Library.Events)
-local Fusion = require(RepS.Shared.Shared.Fusion)
-local Signals = require(RepS.Shared.Library.Signals)
+local Events = require(RepS.HarukaShared.Library.Events)
+local Fusion = require(RepS.HarukaShared.Shared.Fusion)
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 
-local TwilightTheme = require(RepS.Shared.Library.TwilightTheme)
+local TwilightTheme = require(RepS.HarukaShared.Library.TwilightTheme)
 
 local Children = Fusion.Children
 
@@ -110,7 +110,7 @@ return function(plr: Player)
 
 		_createHint(text, color, duration)
 	end))
-	table.insert(scope, Signals.CreateHint:Connect(_createHint))
+	table.insert(scope, Bindables.CreateHint:Connect(_createHint))
 
 
 	--// Clear

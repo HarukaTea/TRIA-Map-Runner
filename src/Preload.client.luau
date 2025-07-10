@@ -14,7 +14,6 @@ local function initGame()
 
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
     SG:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
-    SG:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
 end
 initGame()
 
@@ -33,7 +32,7 @@ local function setupUI()
     frame.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
     frame.Parent = holderGui
 
-    repeat task.wait() until RepS:WaitForChild("Shared", 999)
+    repeat task.wait() until RepS:WaitForChild("HarukaShared", 999)
     repeat task.wait() until workspace:GetAttribute("MapPreInited")
 
     local setting = workspace.Map:WaitForChild("Settings") :: Configuration
@@ -43,11 +42,11 @@ local function setupUI()
     local mapImageConfig = mainSettings:GetAttribute("Image") or ""
     local creator = mainSettings:GetAttribute("Creator") or Players.LocalPlayer.Name
 
-    local twilightTheme = require(RepS.Shared.Library.TwilightTheme)
+    local twilightTheme = require(RepS.HarukaShared.Library.TwilightTheme)
     local Components = require(RepS.Shared.UIAtlas.Vanilla)
-    local Fusion = require(RepS.Shared.Shared.Fusion)
-    local HarukaLib = require(RepS.Shared.Shared.HarukaLib)
-    local MapDataBook = require(RepS.Shared.Library.MapDataBook)
+    local Fusion = require(RepS.HarukaShared.Shared.Fusion)
+    local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+    local MapDataBook = require(RepS.HarukaShared.Library.MapDataBook)
 
     local Children = Fusion.Children
 

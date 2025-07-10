@@ -1,7 +1,6 @@
 --!nocheck
 
 --// UI Theme: Twilight Duo
---// Contributed by Fallen_SakuraLY
 
 return {
 	font = Font.fromName("Nunito", Enum.FontWeight.Regular),

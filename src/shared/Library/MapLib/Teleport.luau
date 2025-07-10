@@ -5,7 +5,7 @@ local SSS = game:GetService("ServerScriptService")
 
 local Events = nil
 if RS:IsServer() then
-    Events = require(SSS.Server.Modules.Library.ServerEvents)
+    Events = require(SSS.HarukaServer.Library.ServerEvents)
 end
 
 local Teleport = {}

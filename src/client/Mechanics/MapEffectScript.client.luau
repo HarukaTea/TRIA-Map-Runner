@@ -6,13 +6,13 @@ local RS = game:GetService("RunService")
 local SSS = game:GetService("ServerScriptService")
 local SS = game:GetService("ServerStorage")
 
-local Signals = require(RepS.Shared.Library.Signals)
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 
 --// setup maplib
 local function setupMapLib()
     local function _returnMapLib()
         return function ()
-            return require(RepS.Shared.Library.MapLib)
+            return require(RepS.HarukaShared.Library.MapLib)
         end
     end
 
@@ -30,13 +30,13 @@ local function setupMapLib()
     mapLibRFOLD.Name = "GetMapLib"
     mapLibRFOLD.Parent = bindables
     mapLibRFOLD.OnInvoke = function()
-        Signals.CreateHint:Fire("This map is using the old maplib, read console for more info.", "red", "5")
+        Bindables.CreateHint:Fire("This map is using the old maplib, read console for more info.", "red", "5")
 
         _returnMapLib()
     end
 
     --// Map runtime v1.0 compatibility
-    local runtime = RepS.Shared.Library.Runtime:Clone()
+    local runtime = RepS.HarukaShared.Library.Runtime:Clone()
     runtime.Parent = SSS
 
 
