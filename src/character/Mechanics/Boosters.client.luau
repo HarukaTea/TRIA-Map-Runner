@@ -10,6 +10,11 @@ local Add, Empty = HarukaLib.Bin()
 
 local char = script:FindFirstAncestorOfClass("Model")
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
+
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if not hit then return end
 

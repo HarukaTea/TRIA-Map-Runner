@@ -1,5 +1,10 @@
 --!nocheck
 
+-- Copyright (C) 2025 Tria
+-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+-- If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
@@ -23,7 +28,7 @@ elseif isClient then
     Bindables = require(RepS.HarukaShared.Library.Bindables)
 end
 
-repeat task.wait() until workspace:GetAttribute("MapPreInited")
+repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
 
 local MapLib = {}
 
@@ -159,7 +164,7 @@ MapLib.MoveModelLocal = MapLib.MoveRelative
     MapLib:SetLiquidType(map.Liquid1, "water")
     ``````
 ]]
-function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
+function MapLib:SetLiquidType(liquid: BasePart, liquidType: string, tweenDuration: number?, stateDelay: number?)
     if not liquid then return end
     if not liquidType then return end
 
@@ -178,8 +183,8 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string)
         finalOxygenDepletion = customAttr:GetAttribute("OxygenDepletion")
     end
 
-    TS:Create(liquid, TweenInfo.new(), { Color = finalLiquidColor }):Play()
-    task.delay(1, function()
+    TS:Create(liquid, TweenInfo.new(tweenDuration or 1), { Color = finalLiquidColor }):Play()
+    task.delay(stateDelay or 1, function()
         liquid:SetAttribute("OxygenDepletion", finalOxygenDepletion)
         liquid:SetAttribute("Type", liquidType)
     end)
@@ -214,6 +219,12 @@ function MapLib:GetFeature(feature: string) : table
     if not feature then return end
     if not RepS.HarukaShared.Library.MapLib:FindFirstChild(feature) then return end
 
+
+    local featureModule = require(RepS.HarukaShared.Library.MapLib[feature])
+    if featureModule.new then
+        return featureModule.new(MapLib)
+    end
+
     return require(RepS.HarukaShared.Library.MapLib[feature])
 end
 
@@ -246,5 +257,28 @@ function MapLib:_Move(moveable: PVInstance, movement: Vector3, duration: number?
 		end
 	end)
 end
+
+
+if RS:IsClient() then
+    Events.MapRoundEnding.SetCallback(function()
+        MapLib.RoundEnding:Fire()
+    end)
+
+    Events.ChangeLighting.On(function(data)
+        local LightingFeature = MapLib:GetFeature("Lighting")
+
+
+        LightingFeature:SetLighting(data.Properties, data.PostEffects)
+    end)
+
+    Events.ChangeLightingEase.On(function(data)
+        local LightingFeature = MapLib:GetFeature("Lighting")
+
+
+        LightingFeature:EaseLighting(data.TweenInfo, data.Properties, data.PostEffects)
+    end)
+end
+
+
 
 return MapLib

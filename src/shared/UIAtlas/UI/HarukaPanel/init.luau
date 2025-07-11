@@ -2,14 +2,14 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Components = require(RepS.Shared.UIAtlas.Vanilla)
+local Components = require(RepS.HarukaShared.UIAtlas.HarukaComponents)
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
-local Pinia = require(RepS.Shared.UIAtlas.Pinia.HarukaPanelPinia)
+local Pinia = require(script.Pinia)
 
-local ButtonOption = require(RepS.Shared.UIAtlas.Components.ButtonOption)
-local TypeOption = require(RepS.Shared.UIAtlas.Components.TypeOption)
-local ToggleOption = require(RepS.Shared.UIAtlas.Components.ToggleOption)
+local ButtonOption = require(script.Components.ButtonOption)
+local TypeOption = require(script.Components.TypeOption)
+local ToggleOption = require(script.Components.ToggleOption)
 
 local Children, Computed, OnEvent = Fusion.Children, Fusion.Computed, Fusion.OnEvent
 

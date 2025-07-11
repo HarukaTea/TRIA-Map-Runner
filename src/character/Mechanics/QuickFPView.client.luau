@@ -7,6 +7,11 @@ local TS = game:GetService("TweenService")
 local char = script:FindFirstAncestorOfClass("Model")
 local plr = Players.LocalPlayer
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
+
 local isInFPView = false
 local toggleCD = false
 local quickTween = TweenInfo.new(0.12, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)

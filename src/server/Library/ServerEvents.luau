@@ -146,8 +146,19 @@ if not RunService:IsRunning() then
 		ChangeMusic = table.freeze({
 			SetCallback = noop
 		}),
+		ChangeLightingEase = table.freeze({
+			Fire = noop,
+			FireAll = noop,
+			FireExcept = noop,
+			FireList = noop,
+			FireSet = noop
+		}),
 		ChangeLighting = table.freeze({
-			SetCallback = noop
+			Fire = noop,
+			FireAll = noop,
+			FireExcept = noop,
+			FireList = noop,
+			FireSet = noop
 		}),
 	}) :: Events
 end
@@ -203,7 +214,7 @@ end
 
 RunService.Heartbeat:Connect(SendEvents)
 
-local reliable_events = table.create(3)
+local reliable_events = table.create(2)
 reliable.OnServerEvent:Connect(function(player, buff, inst)
 	incoming_buff = buff
 	incoming_inst = inst
@@ -212,10 +223,10 @@ reliable.OnServerEvent:Connect(function(player, buff, inst)
 	local len = buffer.len(buff)
 	while incoming_read < len do
 		local id = buffer.readu8(buff, read(1))
-		if id == 2 then
+		if id == 1 then
 			local value
-			if reliable_events[2] then
-				task.spawn(reliable_events[2], player, value)
+			if reliable_events[1] then
+				task.spawn(reliable_events[1], player, value)
 			end
 		elseif id == 0 then
 			local value
@@ -241,60 +252,6 @@ reliable.OnServerEvent:Connect(function(player, buff, inst)
 			if reliable_events[0] then
 				task.spawn(reliable_events[0], player, value)
 			end
-		elseif id == 1 then
-			local value
-			value = {}
-			if buffer.readu8(incoming_buff, read(1)) == 1 then
-				value["Properties"] = {}
-				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
-					local key_1
-					local val_1
-					local len_4 = buffer.readu16(incoming_buff, read(2))
-					key_1 = buffer.readstring(incoming_buff, read(len_4), len_4)
-					if buffer.readu8(incoming_buff, read(1)) == 1 then
-						incoming_ipos = incoming_ipos + 1
-						val_1 = incoming_inst[incoming_ipos]
-					else
-						val_1 = nil
-					end
-					value["Properties"][key_1] = val_1
-				end
-			else
-				value["Properties"] = nil
-			end
-			if buffer.readu8(incoming_buff, read(1)) == 1 then
-				value["PostEffects"] = {}
-				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
-					local key_2
-					local val_2
-					local len_5 = buffer.readu16(incoming_buff, read(2))
-					key_2 = buffer.readstring(incoming_buff, read(len_5), len_5)
-					if buffer.readu8(incoming_buff, read(1)) == 1 then
-						val_2 = {}
-						for _ = 1, buffer.readu16(incoming_buff, read(2)) do
-							local key_3
-							local val_3
-							local len_6 = buffer.readu16(incoming_buff, read(2))
-							key_3 = buffer.readstring(incoming_buff, read(len_6), len_6)
-							if buffer.readu8(incoming_buff, read(1)) == 1 then
-								incoming_ipos = incoming_ipos + 1
-								val_3 = incoming_inst[incoming_ipos]
-							else
-								val_3 = nil
-							end
-							val_2[key_3] = val_3
-						end
-					else
-						val_2 = nil
-					end
-					value["PostEffects"][key_2] = val_2
-				end
-			else
-				value["PostEffects"] = nil
-			end
-			if reliable_events[1] then
-				task.spawn(reliable_events[1], player, value)
-			end
 		else
 			error("Unknown event id")
 		end
@@ -313,7 +270,7 @@ local returns = {
 		}))
 			load_player(Player)
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
 			if Value["Player"] == nil then
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
@@ -362,7 +319,7 @@ local returns = {
 		}))
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
 			if Value["Player"] == nil then
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
@@ -418,7 +375,7 @@ local returns = {
 		}))
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
 			if Value["Player"] == nil then
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
@@ -476,7 +433,7 @@ local returns = {
 		}))
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
 			if Value["Player"] == nil then
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
@@ -532,7 +489,7 @@ local returns = {
 		}))
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
 			if Value["Player"] == nil then
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
@@ -584,9 +541,9 @@ local returns = {
 	},
 	RequestToForceReset = {
 		SetCallback = function(Callback: (Player: Player) -> ()): () -> ()
-			reliable_events[2] = Callback
+			reliable_events[1] = Callback
 			return function()
-				reliable_events[2] = nil
+				reliable_events[1] = nil
 			end
 		end,
 	},
@@ -594,13 +551,13 @@ local returns = {
 		Fire = function(Player: Player)
 			load_player(Player)
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			player_map[Player] = save()
 		end,
 		FireAll = function()
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in Players:GetPlayers() do
 				load_player(player)
@@ -613,7 +570,7 @@ local returns = {
 		FireExcept = function(Except: Player)
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in Players:GetPlayers() do
 				if player ~= Except then
@@ -628,7 +585,7 @@ local returns = {
 		FireList = function(List: { [unknown]: Player })
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in List do
 				load_player(player)
@@ -641,7 +598,7 @@ local returns = {
 		FireSet = function(Set: { [Player]: any })
 			load_empty()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for player in Set do
 				load_player(player)
@@ -667,11 +624,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_7 = #Value["Hint"]
+				local len_4 = #Value["Hint"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_7)
-				alloc(len_7)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_7)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_4)
+				alloc(len_4)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_4)
 			end
 			if Value["Color"] == nil then
 				alloc(1)
@@ -687,11 +644,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_8 = #Value["Duration"]
+				local len_5 = #Value["Duration"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_8)
-				alloc(len_8)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_8)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_5)
+				alloc(len_5)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_5)
 			end
 			player_map[Player] = save()
 		end,
@@ -709,11 +666,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_9 = #Value["Hint"]
+				local len_6 = #Value["Hint"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_9)
-				alloc(len_9)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_9)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_6)
+				alloc(len_6)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_6)
 			end
 			if Value["Color"] == nil then
 				alloc(1)
@@ -729,11 +686,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_10 = #Value["Duration"]
+				local len_7 = #Value["Duration"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_10)
-				alloc(len_10)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_10)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_7)
+				alloc(len_7)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_7)
 			end
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in Players:GetPlayers() do
@@ -758,11 +715,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_11 = #Value["Hint"]
+				local len_8 = #Value["Hint"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_11)
-				alloc(len_11)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_11)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_8)
+				alloc(len_8)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_8)
 			end
 			if Value["Color"] == nil then
 				alloc(1)
@@ -778,11 +735,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_12 = #Value["Duration"]
+				local len_9 = #Value["Duration"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_12)
-				alloc(len_12)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_12)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_9)
+				alloc(len_9)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_9)
 			end
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in Players:GetPlayers() do
@@ -809,11 +766,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_13 = #Value["Hint"]
+				local len_10 = #Value["Hint"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_13)
-				alloc(len_13)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_13)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_10)
+				alloc(len_10)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_10)
 			end
 			if Value["Color"] == nil then
 				alloc(1)
@@ -829,11 +786,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_14 = #Value["Duration"]
+				local len_11 = #Value["Duration"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_14)
-				alloc(len_14)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_14)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_11)
+				alloc(len_11)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_11)
 			end
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for _, player in List do
@@ -858,11 +815,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_15 = #Value["Hint"]
+				local len_12 = #Value["Hint"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_15)
-				alloc(len_15)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_15)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_12)
+				alloc(len_12)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Hint"], len_12)
 			end
 			if Value["Color"] == nil then
 				alloc(1)
@@ -878,11 +835,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_16 = #Value["Duration"]
+				local len_13 = #Value["Duration"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_16)
-				alloc(len_16)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_16)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_13)
+				alloc(len_13)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Duration"], len_13)
 			end
 			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
 			for player in Set do
@@ -906,14 +863,902 @@ local returns = {
 			end
 		end,
 	},
-	ChangeLighting = {
-		SetCallback = function(Callback: (Player: Player, Value: ({
+	ChangeLightingEase = {
+		Fire = function(Player: Player, Value: ({
 			["Properties"]: (({ [(string)]: ((unknown)) })?),
 			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
-		})) -> ()): () -> ()
-			reliable_events[1] = Callback
-			return function()
-				reliable_events[1] = nil
+			["TweenInfo"]: ((unknown)),
+		}))
+			load_player(Player)
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_1 = alloc(2)
+				local len_14 = 0
+				for k_1, v_1 in Value["Properties"] do
+					len_14 = len_14 + 1
+					local len_15 = #k_1
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_15)
+					alloc(len_15)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_1, len_15)
+					if v_1 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_1)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_1, len_14)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_2 = alloc(2)
+				local len_16 = 0
+				for k_2, v_2 in Value["PostEffects"] do
+					len_16 = len_16 + 1
+					local len_17 = #k_2
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_17)
+					alloc(len_17)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_2, len_17)
+					if v_2 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_3 = alloc(2)
+						local len_18 = 0
+						for k_3, v_3 in v_2 do
+							len_18 = len_18 + 1
+							local len_19 = #k_3
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_19)
+							alloc(len_19)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_3, len_19)
+							if v_3 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_3)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_3, len_18)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_2, len_16)
+			end
+			if Value["TweenInfo"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				table.insert(outgoing_inst, Value["TweenInfo"])
+			end
+			player_map[Player] = save()
+		end,
+		FireAll = function(Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+			["TweenInfo"]: ((unknown)),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_4 = alloc(2)
+				local len_20 = 0
+				for k_4, v_4 in Value["Properties"] do
+					len_20 = len_20 + 1
+					local len_21 = #k_4
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_21)
+					alloc(len_21)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_4, len_21)
+					if v_4 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_4)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_4, len_20)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_5 = alloc(2)
+				local len_22 = 0
+				for k_5, v_5 in Value["PostEffects"] do
+					len_22 = len_22 + 1
+					local len_23 = #k_5
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_23)
+					alloc(len_23)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_5, len_23)
+					if v_5 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_6 = alloc(2)
+						local len_24 = 0
+						for k_6, v_6 in v_5 do
+							len_24 = len_24 + 1
+							local len_25 = #k_6
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_25)
+							alloc(len_25)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_6, len_25)
+							if v_6 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_6)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_6, len_24)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_5, len_22)
+			end
+			if Value["TweenInfo"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				table.insert(outgoing_inst, Value["TweenInfo"])
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in Players:GetPlayers() do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+			["TweenInfo"]: ((unknown)),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_7 = alloc(2)
+				local len_26 = 0
+				for k_7, v_7 in Value["Properties"] do
+					len_26 = len_26 + 1
+					local len_27 = #k_7
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_27)
+					alloc(len_27)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_7, len_27)
+					if v_7 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_7)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_7, len_26)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_8 = alloc(2)
+				local len_28 = 0
+				for k_8, v_8 in Value["PostEffects"] do
+					len_28 = len_28 + 1
+					local len_29 = #k_8
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_29)
+					alloc(len_29)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_8, len_29)
+					if v_8 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_9 = alloc(2)
+						local len_30 = 0
+						for k_9, v_9 in v_8 do
+							len_30 = len_30 + 1
+							local len_31 = #k_9
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_31)
+							alloc(len_31)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_9, len_31)
+							if v_9 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_9)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_9, len_30)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_8, len_28)
+			end
+			if Value["TweenInfo"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				table.insert(outgoing_inst, Value["TweenInfo"])
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in Players:GetPlayers() do
+				if player ~= Except then
+					load_player(player)
+					alloc(used)
+					buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+					table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+					player_map[player] = save()
+				end
+			end
+		end,
+		FireList = function(List: { [unknown]: Player }, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+			["TweenInfo"]: ((unknown)),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_10 = alloc(2)
+				local len_32 = 0
+				for k_10, v_10 in Value["Properties"] do
+					len_32 = len_32 + 1
+					local len_33 = #k_10
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_33)
+					alloc(len_33)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_10, len_33)
+					if v_10 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_10)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_10, len_32)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_11 = alloc(2)
+				local len_34 = 0
+				for k_11, v_11 in Value["PostEffects"] do
+					len_34 = len_34 + 1
+					local len_35 = #k_11
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_35)
+					alloc(len_35)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_11, len_35)
+					if v_11 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_12 = alloc(2)
+						local len_36 = 0
+						for k_12, v_12 in v_11 do
+							len_36 = len_36 + 1
+							local len_37 = #k_12
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_37)
+							alloc(len_37)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_12, len_37)
+							if v_12 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_12)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_12, len_36)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_11, len_34)
+			end
+			if Value["TweenInfo"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				table.insert(outgoing_inst, Value["TweenInfo"])
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in List do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
+			end
+		end,
+		FireSet = function(Set: { [Player]: any }, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+			["TweenInfo"]: ((unknown)),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_13 = alloc(2)
+				local len_38 = 0
+				for k_13, v_13 in Value["Properties"] do
+					len_38 = len_38 + 1
+					local len_39 = #k_13
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_39)
+					alloc(len_39)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_13, len_39)
+					if v_13 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_13)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_13, len_38)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_14 = alloc(2)
+				local len_40 = 0
+				for k_14, v_14 in Value["PostEffects"] do
+					len_40 = len_40 + 1
+					local len_41 = #k_14
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_41)
+					alloc(len_41)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_14, len_41)
+					if v_14 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_15 = alloc(2)
+						local len_42 = 0
+						for k_15, v_15 in v_14 do
+							len_42 = len_42 + 1
+							local len_43 = #k_15
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_43)
+							alloc(len_43)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_15, len_43)
+							if v_15 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_15)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_15, len_42)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_14, len_40)
+			end
+			if Value["TweenInfo"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				table.insert(outgoing_inst, Value["TweenInfo"])
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for player in Set do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
+			end
+		end,
+	},
+	ChangeLighting = {
+		Fire = function(Player: Player, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+		}))
+			load_player(Player)
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_16 = alloc(2)
+				local len_44 = 0
+				for k_16, v_16 in Value["Properties"] do
+					len_44 = len_44 + 1
+					local len_45 = #k_16
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_45)
+					alloc(len_45)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_16, len_45)
+					if v_16 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_16)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_16, len_44)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_17 = alloc(2)
+				local len_46 = 0
+				for k_17, v_17 in Value["PostEffects"] do
+					len_46 = len_46 + 1
+					local len_47 = #k_17
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_47)
+					alloc(len_47)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_17, len_47)
+					if v_17 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_18 = alloc(2)
+						local len_48 = 0
+						for k_18, v_18 in v_17 do
+							len_48 = len_48 + 1
+							local len_49 = #k_18
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_49)
+							alloc(len_49)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_18, len_49)
+							if v_18 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_18)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_18, len_48)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_17, len_46)
+			end
+			player_map[Player] = save()
+		end,
+		FireAll = function(Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_19 = alloc(2)
+				local len_50 = 0
+				for k_19, v_19 in Value["Properties"] do
+					len_50 = len_50 + 1
+					local len_51 = #k_19
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_51)
+					alloc(len_51)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_19, len_51)
+					if v_19 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_19)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_19, len_50)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_20 = alloc(2)
+				local len_52 = 0
+				for k_20, v_20 in Value["PostEffects"] do
+					len_52 = len_52 + 1
+					local len_53 = #k_20
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_53)
+					alloc(len_53)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_20, len_53)
+					if v_20 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_21 = alloc(2)
+						local len_54 = 0
+						for k_21, v_21 in v_20 do
+							len_54 = len_54 + 1
+							local len_55 = #k_21
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_55)
+							alloc(len_55)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_21, len_55)
+							if v_21 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_21)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_21, len_54)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_20, len_52)
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in Players:GetPlayers() do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
+			end
+		end,
+		FireExcept = function(Except: Player, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_22 = alloc(2)
+				local len_56 = 0
+				for k_22, v_22 in Value["Properties"] do
+					len_56 = len_56 + 1
+					local len_57 = #k_22
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_57)
+					alloc(len_57)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_22, len_57)
+					if v_22 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_22)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_22, len_56)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_23 = alloc(2)
+				local len_58 = 0
+				for k_23, v_23 in Value["PostEffects"] do
+					len_58 = len_58 + 1
+					local len_59 = #k_23
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_59)
+					alloc(len_59)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_23, len_59)
+					if v_23 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_24 = alloc(2)
+						local len_60 = 0
+						for k_24, v_24 in v_23 do
+							len_60 = len_60 + 1
+							local len_61 = #k_24
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_61)
+							alloc(len_61)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_24, len_61)
+							if v_24 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_24)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_24, len_60)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_23, len_58)
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in Players:GetPlayers() do
+				if player ~= Except then
+					load_player(player)
+					alloc(used)
+					buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+					table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+					player_map[player] = save()
+				end
+			end
+		end,
+		FireList = function(List: { [unknown]: Player }, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_25 = alloc(2)
+				local len_62 = 0
+				for k_25, v_25 in Value["Properties"] do
+					len_62 = len_62 + 1
+					local len_63 = #k_25
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_63)
+					alloc(len_63)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_25, len_63)
+					if v_25 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_25)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_25, len_62)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_26 = alloc(2)
+				local len_64 = 0
+				for k_26, v_26 in Value["PostEffects"] do
+					len_64 = len_64 + 1
+					local len_65 = #k_26
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_65)
+					alloc(len_65)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_26, len_65)
+					if v_26 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_27 = alloc(2)
+						local len_66 = 0
+						for k_27, v_27 in v_26 do
+							len_66 = len_66 + 1
+							local len_67 = #k_27
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_67)
+							alloc(len_67)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_27, len_67)
+							if v_27 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_27)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_27, len_66)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_26, len_64)
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for _, player in List do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
+			end
+		end,
+		FireSet = function(Set: { [Player]: any }, Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+		}))
+			load_empty()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			if Value["Properties"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_28 = alloc(2)
+				local len_68 = 0
+				for k_28, v_28 in Value["Properties"] do
+					len_68 = len_68 + 1
+					local len_69 = #k_28
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_69)
+					alloc(len_69)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_28, len_69)
+					if v_28 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						table.insert(outgoing_inst, v_28)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_28, len_68)
+			end
+			if Value["PostEffects"] == nil then
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			else
+				alloc(1)
+				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+				local len_pos_29 = alloc(2)
+				local len_70 = 0
+				for k_29, v_29 in Value["PostEffects"] do
+					len_70 = len_70 + 1
+					local len_71 = #k_29
+					alloc(2)
+					buffer.writeu16(outgoing_buff, outgoing_apos, len_71)
+					alloc(len_71)
+					buffer.writestring(outgoing_buff, outgoing_apos, k_29, len_71)
+					if v_29 == nil then
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+					else
+						alloc(1)
+						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+						local len_pos_30 = alloc(2)
+						local len_72 = 0
+						for k_30, v_30 in v_29 do
+							len_72 = len_72 + 1
+							local len_73 = #k_30
+							alloc(2)
+							buffer.writeu16(outgoing_buff, outgoing_apos, len_73)
+							alloc(len_73)
+							buffer.writestring(outgoing_buff, outgoing_apos, k_30, len_73)
+							if v_30 == nil then
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+							else
+								alloc(1)
+								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+								table.insert(outgoing_inst, v_30)
+							end
+						end
+						buffer.writeu16(outgoing_buff, len_pos_30, len_72)
+					end
+				end
+				buffer.writeu16(outgoing_buff, len_pos_29, len_70)
+			end
+			local buff, used, inst = outgoing_buff, outgoing_used, outgoing_inst
+			for player in Set do
+				load_player(player)
+				alloc(used)
+				buffer.copy(outgoing_buff, outgoing_apos, buff, 0, used)
+				table.move(inst, 1, #inst, #outgoing_inst + 1, outgoing_inst)
+				player_map[player] = save()
 			end
 		end,
 	},

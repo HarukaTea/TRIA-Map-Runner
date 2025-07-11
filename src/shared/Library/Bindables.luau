@@ -8,6 +8,8 @@ local signals = {
     CreateHint = Signal.new(),
 
     PlaySound = Signal.new(),
+
+    PlayerChatted = Signal.new(),
 }
 
 return signals

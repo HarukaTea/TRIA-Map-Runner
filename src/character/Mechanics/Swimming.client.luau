@@ -15,6 +15,11 @@ local char = script:FindFirstAncestorOfClass("Model")
 local keyframes = RepS.Packages.Keyframes :: Folder
 local animator = char.Humanoid:WaitForChild("Animator") :: Animator
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
+
 -- create temp animation for studio to use
 local function _createTempAnimation(keyframe: KeyframeSequence) : Animation
 	local anim = Instance.new("Animation")

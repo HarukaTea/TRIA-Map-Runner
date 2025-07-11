@@ -40,12 +40,12 @@ local function setupMapLib()
     runtime.Parent = SSS
 
 
-    workspace:SetAttribute("MapLibClientLoaded", true)
+    workspace:SetAttribute("Haruka_MapLibClientLoaded", true)
 end
 setupMapLib()
 
 --// Wait for map to load
-repeat task.wait() until workspace:GetAttribute("MapPreInited")
+repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
 repeat task.wait() until workspace.Map:GetAttribute("IsLoaded")
 
 local effectScript = workspace.Map:FindFirstChild("EffectScript") :: LocalScript
@@ -56,6 +56,6 @@ end
 
 effectScript.Parent = Players.LocalPlayer.PlayerScripts
 
-repeat RS.RenderStepped:Wait() until workspace:GetAttribute("MapScriptsInited")
+repeat RS.RenderStepped:Wait() until workspace:GetAttribute("Haruka_MapScriptsInited")
 
 effectScript.Disabled = false

@@ -12,9 +12,8 @@ Janitor.ClassName = "Janitor"
 
 --// Private
 
-local function _getJanitors() : table
-	return require(script.Parent)._Janitors
-end
+
+local allJanitorPool = {}
 
 --[[
 	Constructs a new Janitor class and is cached for later use.
@@ -26,10 +25,8 @@ function Janitor.new(name: string?)
 	self.context = if RS:IsServer() then "Server" else "Client"
 	self.name = name
 
-	local janitors = _getJanitors()
-
-	self.index = name or #janitors + 1
-	janitors[self.index] = self
+	self.index = name or #allJanitorPool + 1
+	allJanitorPool[self.index] = self
 
 	self._Add, self._Empty = HarukaLib.Bin()
 
@@ -71,6 +68,13 @@ end
 function Janitor:Destroy()
 	self:Cleanup()
 	self = nil
+end
+
+
+
+
+function Janitor:_GetAllJanitors()
+	return allJanitorPool
 end
 
 return Janitor

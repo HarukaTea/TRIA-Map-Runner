@@ -15,6 +15,10 @@ local map = MapLib.map
 
 local char = script:FindFirstAncestorOfClass("Model")
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
 local touchCD = false
 Add(char.Humanoid.RootPart.Touched:Connect(function(hit: BasePart)
     if hit and hit.Name == "ExitRegion" and not char:GetAttribute("IsSurvived") then

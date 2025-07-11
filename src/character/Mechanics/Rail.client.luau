@@ -15,7 +15,10 @@ local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
-repeat task.wait() until workspace:GetAttribute("MapPreInited")
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
 
 local MapLib = game.GetMapLib:Invoke()()
 local map = MapLib.map

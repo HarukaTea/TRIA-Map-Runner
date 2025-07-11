@@ -120,13 +120,13 @@ if not RunService:IsRunning() then
 	return table.freeze({
 		SendEvents = noop,
 		TeleportPlayer = table.freeze({
-			SetCallback = noop
+			On = noop
 		}),
 		RequestToForceReset = table.freeze({
 			Fire = noop
 		}),
 		MapRoundEnding = table.freeze({
-			SetCallback = noop
+			On = noop
 		}),
 		CreateHint = table.freeze({
 			On = noop
@@ -134,8 +134,11 @@ if not RunService:IsRunning() then
 		ChangeMusic = table.freeze({
 			Fire = noop
 		}),
+		ChangeLightingEase = table.freeze({
+			On = noop
+		}),
 		ChangeLighting = table.freeze({
-			Fire = noop
+			On = noop
 		}),
 	}) :: Events
 end
@@ -164,12 +167,18 @@ end
 
 RunService.Heartbeat:Connect(SendEvents)
 
-local reliable_events = table.create(3)
-local reliable_event_queue: { [number]: { any } } = table.create(3)
-reliable_event_queue[1] = {}
-reliable_event_queue[2] = 0
+local reliable_events = table.create(5)
+local reliable_event_queue: { [number]: { any } } = table.create(5)
+reliable_events[3] = {}
+reliable_event_queue[3] = {}
+reliable_events[4] = {}
+reliable_event_queue[4] = 0
 reliable_events[0] = {}
 reliable_event_queue[0] = {}
+reliable_events[2] = {}
+reliable_event_queue[2] = {}
+reliable_events[1] = {}
+reliable_event_queue[1] = {}
 reliable.OnClientEvent:Connect(function(buff, inst)
 	incoming_buff = buff
 	incoming_inst = inst
@@ -178,7 +187,7 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 	local len = buffer.len(buff)
 	while incoming_read < len do
 		local id = buffer.readu8(buff, read(1))
-		if id == 1 then
+		if id == 3 then
 			local value
 			value = {}
 			if buffer.readu8(incoming_buff, read(1)) == 1 then
@@ -205,22 +214,26 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 			else
 				value["FaceFront"] = nil
 			end
-			if reliable_events[1] then
-				task.spawn(reliable_events[1], value)
+			if reliable_events[3][1] then
+				for _, cb in reliable_events[3] do
+					task.spawn(cb, value)
+				end
 			else
-				table.insert(reliable_event_queue[1], value)
-				if #reliable_event_queue[1] > 64 then
-					warn(`[ZAP] {#reliable_event_queue[1]} events in queue for TeleportPlayer. Did you forget to attach a listener?`)
+				table.insert(reliable_event_queue[3], value)
+				if #reliable_event_queue[3] > 64 then
+					warn(`[ZAP] {#reliable_event_queue[3]} events in queue for TeleportPlayer. Did you forget to attach a listener?`)
 				end
 			end
-		elseif id == 2 then
+		elseif id == 4 then
 			local value
-			if reliable_events[2] then
-				task.spawn(reliable_events[2], value)
+			if reliable_events[4][1] then
+				for _, cb in reliable_events[4] do
+					task.spawn(cb, value)
+				end
 			else
-				reliable_event_queue[2] += 1
-				if reliable_event_queue[2] > 16 then
-					warn(`[ZAP] {reliable_event_queue[2]} events in queue for MapRoundEnding. Did you forget to attach a listener?`)
+				reliable_event_queue[4] += 1
+				if reliable_event_queue[4] > 16 then
+					warn(`[ZAP] {reliable_event_queue[4]} events in queue for MapRoundEnding. Did you forget to attach a listener?`)
 				end
 			end
 		elseif id == 0 then
@@ -254,6 +267,134 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 					warn(`[ZAP] {#reliable_event_queue[0]} events in queue for CreateHint. Did you forget to attach a listener?`)
 				end
 			end
+		elseif id == 2 then
+			local value
+			value = {}
+			if buffer.readu8(incoming_buff, read(1)) == 1 then
+				value["Properties"] = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_1
+					local val_1
+					local len_3 = buffer.readu16(incoming_buff, read(2))
+					key_1 = buffer.readstring(incoming_buff, read(len_3), len_3)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						incoming_ipos = incoming_ipos + 1
+						val_1 = incoming_inst[incoming_ipos]
+					else
+						val_1 = nil
+					end
+					value["Properties"][key_1] = val_1
+				end
+			else
+				value["Properties"] = nil
+			end
+			if buffer.readu8(incoming_buff, read(1)) == 1 then
+				value["PostEffects"] = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_2
+					local val_2
+					local len_4 = buffer.readu16(incoming_buff, read(2))
+					key_2 = buffer.readstring(incoming_buff, read(len_4), len_4)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						val_2 = {}
+						for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+							local key_3
+							local val_3
+							local len_5 = buffer.readu16(incoming_buff, read(2))
+							key_3 = buffer.readstring(incoming_buff, read(len_5), len_5)
+							if buffer.readu8(incoming_buff, read(1)) == 1 then
+								incoming_ipos = incoming_ipos + 1
+								val_3 = incoming_inst[incoming_ipos]
+							else
+								val_3 = nil
+							end
+							val_2[key_3] = val_3
+						end
+					else
+						val_2 = nil
+					end
+					value["PostEffects"][key_2] = val_2
+				end
+			else
+				value["PostEffects"] = nil
+			end
+			if buffer.readu8(incoming_buff, read(1)) == 1 then
+				incoming_ipos = incoming_ipos + 1
+				value["TweenInfo"] = incoming_inst[incoming_ipos]
+			else
+				value["TweenInfo"] = nil
+			end
+			if reliable_events[2][1] then
+				for _, cb in reliable_events[2] do
+					task.spawn(cb, value)
+				end
+			else
+				table.insert(reliable_event_queue[2], value)
+				if #reliable_event_queue[2] > 64 then
+					warn(`[ZAP] {#reliable_event_queue[2]} events in queue for ChangeLightingEase. Did you forget to attach a listener?`)
+				end
+			end
+		elseif id == 1 then
+			local value
+			value = {}
+			if buffer.readu8(incoming_buff, read(1)) == 1 then
+				value["Properties"] = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_4
+					local val_4
+					local len_6 = buffer.readu16(incoming_buff, read(2))
+					key_4 = buffer.readstring(incoming_buff, read(len_6), len_6)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						incoming_ipos = incoming_ipos + 1
+						val_4 = incoming_inst[incoming_ipos]
+					else
+						val_4 = nil
+					end
+					value["Properties"][key_4] = val_4
+				end
+			else
+				value["Properties"] = nil
+			end
+			if buffer.readu8(incoming_buff, read(1)) == 1 then
+				value["PostEffects"] = {}
+				for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+					local key_5
+					local val_5
+					local len_7 = buffer.readu16(incoming_buff, read(2))
+					key_5 = buffer.readstring(incoming_buff, read(len_7), len_7)
+					if buffer.readu8(incoming_buff, read(1)) == 1 then
+						val_5 = {}
+						for _ = 1, buffer.readu16(incoming_buff, read(2)) do
+							local key_6
+							local val_6
+							local len_8 = buffer.readu16(incoming_buff, read(2))
+							key_6 = buffer.readstring(incoming_buff, read(len_8), len_8)
+							if buffer.readu8(incoming_buff, read(1)) == 1 then
+								incoming_ipos = incoming_ipos + 1
+								val_6 = incoming_inst[incoming_ipos]
+							else
+								val_6 = nil
+							end
+							val_5[key_6] = val_6
+						end
+					else
+						val_5 = nil
+					end
+					value["PostEffects"][key_5] = val_5
+				end
+			else
+				value["PostEffects"] = nil
+			end
+			if reliable_events[1][1] then
+				for _, cb in reliable_events[1] do
+					task.spawn(cb, value)
+				end
+			else
+				table.insert(reliable_event_queue[1], value)
+				if #reliable_event_queue[1] > 64 then
+					warn(`[ZAP] {#reliable_event_queue[1]} events in queue for ChangeLighting. Did you forget to attach a listener?`)
+				end
+			end
 		else
 			error("Unknown event id")
 		end
@@ -265,36 +406,36 @@ table.freeze(polling_queues_unreliable)
 local returns = {
 	SendEvents = SendEvents,
 	TeleportPlayer = {
-		SetCallback = function(Callback: (Value: ({
+		On = function(Callback: (Value: ({
 			["Player"]: ((Player)?),
 			["Destination"]: ((CFrame)?),
 			["FaceFront"]: ((boolean)?),
-		})) -> ()): () -> ()
-			reliable_events[1] = Callback
-			for _, value in reliable_event_queue[1] do
+		})) -> ())
+			table.insert(reliable_events[3], Callback)
+			for _, value in reliable_event_queue[3] do
 				task.spawn(Callback, value)
 			end
-			reliable_event_queue[1] = {}
+			reliable_event_queue[3] = {}
 			return function()
-				reliable_events[1] = nil
+				table.remove(reliable_events[3], table.find(reliable_events[3], Callback))
 			end
 		end,
 	},
 	RequestToForceReset = {
 		Fire = function()
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
 		end,
 	},
 	MapRoundEnding = {
-		SetCallback = function(Callback: () -> ()): () -> ()
-			reliable_events[2] = Callback
-			for _ = 1, reliable_event_queue[2] do
+		On = function(Callback: () -> ())
+			table.insert(reliable_events[4], Callback)
+			for _ = 1, reliable_event_queue[4] do
 				task.spawn(Callback)
 			end
-			reliable_event_queue[2] = 0
+			reliable_event_queue[4] = 0
 			return function()
-				reliable_events[2] = nil
+				table.remove(reliable_events[4], table.find(reliable_events[4], Callback))
 			end
 		end,
 	},
@@ -328,11 +469,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_3 = #Value["MusicId"]
+				local len_9 = #Value["MusicId"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_3)
-				alloc(len_3)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["MusicId"], len_3)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_9)
+				alloc(len_9)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["MusicId"], len_9)
 			end
 			if Value["Volume"] == nil then
 				alloc(1)
@@ -340,11 +481,11 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_4 = #Value["Volume"]
+				local len_10 = #Value["Volume"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_4)
-				alloc(len_4)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["Volume"], len_4)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_10)
+				alloc(len_10)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["Volume"], len_10)
 			end
 			if Value["StartTick"] == nil then
 				alloc(1)
@@ -352,90 +493,42 @@ local returns = {
 			else
 				alloc(1)
 				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_5 = #Value["StartTick"]
+				local len_11 = #Value["StartTick"]
 				alloc(2)
-				buffer.writeu16(outgoing_buff, outgoing_apos, len_5)
-				alloc(len_5)
-				buffer.writestring(outgoing_buff, outgoing_apos, Value["StartTick"], len_5)
+				buffer.writeu16(outgoing_buff, outgoing_apos, len_11)
+				alloc(len_11)
+				buffer.writestring(outgoing_buff, outgoing_apos, Value["StartTick"], len_11)
+			end
+		end,
+	},
+	ChangeLightingEase = {
+		On = function(Callback: (Value: ({
+			["Properties"]: (({ [(string)]: ((unknown)) })?),
+			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
+			["TweenInfo"]: ((unknown)),
+		})) -> ())
+			table.insert(reliable_events[2], Callback)
+			for _, value in reliable_event_queue[2] do
+				task.spawn(Callback, value)
+			end
+			reliable_event_queue[2] = {}
+			return function()
+				table.remove(reliable_events[2], table.find(reliable_events[2], Callback))
 			end
 		end,
 	},
 	ChangeLighting = {
-		Fire = function(Value: ({
+		On = function(Callback: (Value: ({
 			["Properties"]: (({ [(string)]: ((unknown)) })?),
 			["PostEffects"]: (({ [(string)]: (({ [(string)]: ((unknown)) })?) })?),
-		}))
-			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-			if Value["Properties"] == nil then
-				alloc(1)
-				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-			else
-				alloc(1)
-				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_pos_1 = alloc(2)
-				local len_6 = 0
-				for k_1, v_1 in Value["Properties"] do
-					len_6 = len_6 + 1
-					local len_7 = #k_1
-					alloc(2)
-					buffer.writeu16(outgoing_buff, outgoing_apos, len_7)
-					alloc(len_7)
-					buffer.writestring(outgoing_buff, outgoing_apos, k_1, len_7)
-					if v_1 == nil then
-						alloc(1)
-						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-					else
-						alloc(1)
-						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-						table.insert(outgoing_inst, v_1)
-					end
-				end
-				buffer.writeu16(outgoing_buff, len_pos_1, len_6)
+		})) -> ())
+			table.insert(reliable_events[1], Callback)
+			for _, value in reliable_event_queue[1] do
+				task.spawn(Callback, value)
 			end
-			if Value["PostEffects"] == nil then
-				alloc(1)
-				buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-			else
-				alloc(1)
-				buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-				local len_pos_2 = alloc(2)
-				local len_8 = 0
-				for k_2, v_2 in Value["PostEffects"] do
-					len_8 = len_8 + 1
-					local len_9 = #k_2
-					alloc(2)
-					buffer.writeu16(outgoing_buff, outgoing_apos, len_9)
-					alloc(len_9)
-					buffer.writestring(outgoing_buff, outgoing_apos, k_2, len_9)
-					if v_2 == nil then
-						alloc(1)
-						buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-					else
-						alloc(1)
-						buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-						local len_pos_3 = alloc(2)
-						local len_10 = 0
-						for k_3, v_3 in v_2 do
-							len_10 = len_10 + 1
-							local len_11 = #k_3
-							alloc(2)
-							buffer.writeu16(outgoing_buff, outgoing_apos, len_11)
-							alloc(len_11)
-							buffer.writestring(outgoing_buff, outgoing_apos, k_3, len_11)
-							if v_3 == nil then
-								alloc(1)
-								buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-							else
-								alloc(1)
-								buffer.writeu8(outgoing_buff, outgoing_apos, 1)
-								table.insert(outgoing_inst, v_3)
-							end
-						end
-						buffer.writeu16(outgoing_buff, len_pos_3, len_10)
-					end
-				end
-				buffer.writeu16(outgoing_buff, len_pos_2, len_8)
+			reliable_event_queue[1] = {}
+			return function()
+				table.remove(reliable_events[1], table.find(reliable_events[1], Callback))
 			end
 		end,
 	},

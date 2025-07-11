@@ -14,6 +14,9 @@ local lastTick = tick()
 local climbingState = Enum.HumanoidStateType.Climbing
 
 
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
 --// Private
 local function _trussStartJump()
     humanoid:SetStateEnabled(climbingState, false)

@@ -13,6 +13,11 @@ local Add, Empty = HarukaLib.Bin()
 local plr = Players.LocalPlayer
 local char = script:FindFirstAncestorOfClass("Model")
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
+
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit:GetAttribute("_action") == "Teleport" then
         if not hit:FindFirstChild("Destination") then return end

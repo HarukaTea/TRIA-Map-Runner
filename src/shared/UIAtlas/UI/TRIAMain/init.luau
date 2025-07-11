@@ -8,7 +8,7 @@ local MapDataBook = require(RepS.HarukaShared.Library.MapDataBook)
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 local TwilightTheme = require(RepS.HarukaShared.Library.TwilightTheme)
 
-local Pinia = require(RepS.Shared.UIAtlas.Pinia.RunnerStatsPinia)
+local Pinia = require(script.Pinia)
 
 local Children = Fusion.Children
 

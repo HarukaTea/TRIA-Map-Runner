@@ -1,11 +1,19 @@
 --!nocheck
 
+-- Copyright (C) 2025 Tria
+-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+-- If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local SSS = game:GetService("ServerScriptService")
 
 local Events = nil
 if RS:IsServer() then
     Events = require(SSS.HarukaServer.Library.ServerEvents)
+elseif RS:IsClient() then
+    Events = require(ReplicatedStorage.HarukaShared.Library.Events)
 end
 
 local Teleport = {}
@@ -60,6 +68,15 @@ function Teleport:Teleport(
             })
         end
     end
+end
+
+
+if RS:IsClient() then
+    Events.TeleportPlayer.SetCallback(function(data)
+        local player, destination, faceFront = data.Player, data.Destination, data.FaceFront
+
+        Teleport:Teleport(player, destination, faceFront)
+    end)
 end
 
 return Teleport

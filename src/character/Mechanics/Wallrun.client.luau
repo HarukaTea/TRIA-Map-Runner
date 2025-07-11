@@ -13,6 +13,11 @@ local char = script:FindFirstAncestorOfClass("Model")
 local humanoid = char.Humanoid :: Humanoid
 local animator = humanoid.Animator :: Animator
 
+
+repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
+
+
+
 local animation = Instance.new("Animation")
 animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Packages.Keyframes.WallHang)
 
