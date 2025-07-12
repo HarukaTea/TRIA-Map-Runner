@@ -6,6 +6,7 @@ local TS = game:GetService("TweenService")
 
 
 local Promise = require(ReplicatedStorage.HarukaShared.Shared.Promise)
+local HarukaLib = require(ReplicatedStorage.HarukaShared.Shared.HarukaLib)
 
 
 local wait = task.wait
@@ -17,7 +18,10 @@ local function locatorFX(marker: BillboardGui)
     wait()
     repeat wait() until marker:GetAttribute("Active")
 
-    TS:Create(marker.Corners, buttonRotateTween, { Rotation = -720 }):Play()
+
+    HarukaLib:CreateTween(marker.Corners, buttonRotateTween, {
+        Rotation = -720
+    }):Play()
 end
 
 for _, marker in CS:GetTagged("ButtonMarker") do

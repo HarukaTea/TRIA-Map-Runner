@@ -15,6 +15,7 @@ local TS = game:GetService("TweenService")
 local MapDataBook = require(RepS.HarukaShared.Library.MapDataBook)
 local Signal = require(RepS.HarukaShared.Shared.Signal)
 local Promise = require(RepS.HarukaShared.Shared.Promise)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local isServer, isClient = RS:IsServer(), RS:IsClient()
 
@@ -183,7 +184,10 @@ function MapLib:SetLiquidType(liquid: BasePart, liquidType: string, tweenDuratio
         finalOxygenDepletion = customAttr:GetAttribute("OxygenDepletion")
     end
 
-    TS:Create(liquid, TweenInfo.new(tweenDuration or 1), { Color = finalLiquidColor }):Play()
+    HarukaLib:CreateTween(liquid, TweenInfo.new(tweenDuration or 1), {
+        Color = finalLiquidColor,
+    }):Play()
+
     task.delay(stateDelay or 1, function()
         liquid:SetAttribute("OxygenDepletion", finalOxygenDepletion)
         liquid:SetAttribute("Type", liquidType)
@@ -212,20 +216,26 @@ function MapLib:Survive(player: Player)
     player.Character:SetAttribute("IsSurvived", true)
 end
 
+
+local features = {}
+for _, v in next, script.Features:GetChildren() do
+	features[v.Name] = require(v)
+end
+
 --[[
     This method is used to get any features listed in the features list.
 ]]
-function MapLib:GetFeature(feature: string) : table
-    if not feature then return end
-    if not RepS.HarukaShared.Library.MapLib:FindFirstChild(feature) then return end
-
-
-    local featureModule = require(RepS.HarukaShared.Library.MapLib[feature])
-    if featureModule.new then
-        return featureModule.new(MapLib)
-    end
-
-    return require(RepS.HarukaShared.Library.MapLib[feature])
+function MapLib:GetFeature(featureName: string)
+	local feature = features[featureName]
+	if feature then
+		if feature.context == "client" and RS:IsServer() or feature.context == "server" and not RS:IsServer() then
+			error(("Feature '%s' can only be used on the '%s'"):format(featureName, feature.context), 2)
+		end
+		--Ensures the feature is called with the MapLib object for said map
+		return feature.new and feature.new(MapLib) or feature
+	else
+		error(("Cannot find feature '%s'"):format(featureName), 2)
+	end
 end
 
 --// Private
@@ -260,7 +270,7 @@ end
 
 
 if RS:IsClient() then
-    Events.MapRoundEnding.SetCallback(function()
+    Events.MapRoundEnding.On(function()
         MapLib.RoundEnding:Fire()
     end)
 
@@ -276,6 +286,13 @@ if RS:IsClient() then
 
 
         LightingFeature:EaseLighting(data.TweenInfo, data.Properties, data.PostEffects)
+    end)
+
+elseif RS:IsServer() then
+    Events.ChangeMusic.SetCallback(function(_, data)
+        local musicId, volume, startTick = data.MusicId, data.Volume, data.StartTick
+
+        MapLib:ChangeMusic(musicId, volume, startTick)
     end)
 end
 

@@ -1,10 +1,10 @@
-repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
+repeat task.wait() until workspace:GetAttribute("Haruka_PlayerClientInited")
 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KSP = game:GetService("KeyframeSequenceProvider")
-local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 
 
 local Events = require(ReplicatedStorage.HarukaShared.Library.Events)
@@ -113,6 +113,8 @@ end
 function CharLib:__Destroy()
     self.UIEmpty()
 
+    SoundService.Sounds.SFXs.Died:Play()
+
     Events.RequestToForceReset.Fire()
 end
 
@@ -166,10 +168,6 @@ function CharLib:_ListenAnimateTracker()
 
     self.OldAnim = nil :: AnimationTrack?
 
-    local isFreefalling = false
-    local jumpAnimTime = 0
-
-
     local function _playAnim(anim: AnimationTrack, transitionTime: number)
         if self.OldAnim ~= anim then
             if self.OldAnim then self.OldAnim:Stop(transitionTime) end
@@ -178,48 +176,33 @@ function CharLib:_ListenAnimateTracker()
             self.OldAnim = anim
 	    end
     end
+	local charAnims = self.CharAnims
 	Add(humanoid.Running:Connect(function()
 		if humanoid.MoveDirection.Magnitude > 0 then
-			_playAnim(self.CharAnims.Run, 0.1)
+            _playAnim(charAnims.Run, 0.15)
 		else
-			_playAnim(self.CharAnims.Idle, 0.1)
+            _playAnim(charAnims.Idle, 0.15)
 		end
-
-		isFreefalling = false
 	end))
 	Add(humanoid.Climbing:Connect(function(vel)
 		if vel ~= 0 then
-			_playAnim(self.CharAnims.Climb, 0.1)
+			_playAnim(charAnims.Climb, 0.1)
 		else
-			self.CharAnims.Climb:AdjustSpeed(0)
+			charAnims.Climb:AdjustSpeed(0)
 		end
-
-		isFreefalling = false
 	end))
 	Add(humanoid.Jumping:Connect(function()
-		jumpAnimTime = 0.3
-
-		_playAnim(self.CharAnims.Jump, 0.1)
-		isFreefalling = false
+        _playAnim(charAnims.Jump, 0.18)
 	end))
 	Add(humanoid.FreeFalling:Connect(function()
-		if jumpAnimTime <= 0 then
-			_playAnim(self.CharAnims.Fall, 0.1)
-		end
-
-		isFreefalling = true
+        _playAnim(charAnims.Fall, 0.2)
 	end))
 	Add(humanoid.Seated:Connect(function()
-		_playAnim(self.CharAnims.Sit, 0.1)
-
-		isFreefalling = false
+		_playAnim(charAnims.Sit, 0.1)
 	end))
 
-	Add(RunService.RenderStepped:Connect(function(dt)
-		if jumpAnimTime > 0 then jumpAnimTime -= dt end
-		if isFreefalling and jumpAnimTime <= 0 then _playAnim(self.CharAnims.Freefall, 0.1) end
-	end))
-	_playAnim(self.CharAnims.Idle, 0.1)
+
+	_playAnim(charAnims.Idle, 0.1)
 
 
 

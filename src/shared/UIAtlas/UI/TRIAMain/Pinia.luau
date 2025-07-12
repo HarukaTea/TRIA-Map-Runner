@@ -15,37 +15,37 @@ return function (self: table)
         return Fusion.Value(scope, val)
     end
 
-    self.oxygen = Value(100)
-    self.tankOxygen = Value(0)
-    self.maxOxygen = Value(100)
+    self.Oxygen = Value(100)
+    self.TankOxygen = Value(0)
+    self.MaxOxygen = Value(100)
 
-    self.isSurvived = Value(false)
+    self.IsSurvived = Value(false)
 
-    self.currentTime = Value(workspace.Map:GetAttribute("CurrentTime"))
+    self.CurrentTime = Value(workspace.Map:GetAttribute("CurrentTime"))
 
     table.insert(scope, HarukaLib:Hydrate(self.char, {
         ["Attr-SelfOxygen"] = function(o2: number)
-            self.oxygen:set(o2)
+            self.Oxygen:set(o2)
         end,
         ["Attr-TankOxygen"] = function(tank: number)
-            self.tankOxygen:set(tank)
+            self.TankOxygen:set(tank)
         end,
         ["Attr-MaxOxygen"] = function(maxo2: number)
-            self.maxOxygen:set(maxo2)
+            self.MaxOxygen:set(maxo2)
         end,
         ["Attr-IsSurvived"] = function(state: boolean)
-            self.isSurvived:set(state)
+            self.IsSurvived:set(state)
         end
     }))
 
     local timeCalConnection: RBXScriptConnection; timeCalConnection = RS.RenderStepped:Connect(function(dt)
-        if Fusion.peek(self.isSurvived) then
+        if Fusion.peek(self.IsSurvived) then
             timeCalConnection:Disconnect()
             return
         end
 
-        local nowTime = Fusion.peek(self.currentTime)
-        self.currentTime:set(nowTime + dt)
+        local nowTime = Fusion.peek(self.CurrentTime)
+        self.CurrentTime:set(nowTime + dt)
     end)
     table.insert(scope, timeCalConnection)
 end

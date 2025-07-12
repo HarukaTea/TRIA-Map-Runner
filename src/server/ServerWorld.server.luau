@@ -41,6 +41,7 @@ end
 --// Init server modules
 do
     require(SSS.HarukaServer.Services.ServerWorldLib):Init()
+    require(SSS.HarukaServer.Services.GlobalTRIALib):Init()
 end
 
 

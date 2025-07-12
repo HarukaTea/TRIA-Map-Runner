@@ -43,6 +43,12 @@ function PlayerUI.new()
     player.CharacterAdded:Connect(_AutoCleanup)
 
 
+
+    function self:LoadUI(...)
+        PlayerUI:LoadUI(...)
+    end
+
+
     return self
 end
 

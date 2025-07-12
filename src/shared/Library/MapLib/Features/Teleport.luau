@@ -72,7 +72,7 @@ end
 
 
 if RS:IsClient() then
-    Events.TeleportPlayer.SetCallback(function(data)
+    Events.TeleportPlayer.On(function(data)
         local player, destination, faceFront = data.Player, data.Destination, data.FaceFront
 
         Teleport:Teleport(player, destination, faceFront)

@@ -33,6 +33,13 @@ function Lighting.new(MapLib)
         self.cache[child.Name] = child
     end
 
+    function self:SetLighting(...)
+        Lighting:SetLighting(...)
+    end
+    function self:EaseLighting(...)
+        Lighting:EaseLighting(...)
+    end
+
     return self
 end
 

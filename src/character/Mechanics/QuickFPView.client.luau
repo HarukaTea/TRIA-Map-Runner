@@ -2,10 +2,14 @@
 
 local CAS = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
 local char = script:FindFirstAncestorOfClass("Model")
 local plr = Players.LocalPlayer
+
+
+local HarukaLib = require(ReplicatedStorage.HarukaShared.Shared.HarukaLib)
 
 
 repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
@@ -32,6 +36,10 @@ local function toggleFPView(_, inputState: Enum.UserInputState)
         plr.CameraMaxZoomDistance = 128
 
         local tween = TS:Create(plr, quickTween, { CameraMinZoomDistance = oldDistance })
+
+        tween.Completed:Once(function()
+            tween:Destroy()
+        end)
         tween:Play()
         tween.Completed:Wait()
 
@@ -40,7 +48,7 @@ local function toggleFPView(_, inputState: Enum.UserInputState)
         oldDistance = (workspace.CurrentCamera.CFrame.Position - char.PrimaryPart.Position).Magnitude
 
         plr.CameraMaxZoomDistance = oldDistance
-        TS:Create(plr, quickTween, { CameraMaxZoomDistance = 0.5 }):Play()
+        HarukaLib:CreateTween(plr, quickTween, { CameraMinZoomDistance = 0.5 }):Play()
 
         isInFPView = true
     end

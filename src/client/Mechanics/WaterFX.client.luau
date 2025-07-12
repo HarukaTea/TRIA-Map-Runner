@@ -10,7 +10,7 @@ local WaterLib = require(RepS.HarukaShared.Library.WaterLib)
 
 local currentWater: BasePart = nil
 
-repeat task.wait() until workspace:GetAttribute("MapPreInited")
+repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
 repeat task.wait() until workspace.Map:GetAttribute("IsLoaded")
 
 
@@ -41,7 +41,7 @@ WaterLib._WaterAdded:Connect(_bindMesh)
 workspace.DescendantAdded:Connect(_bindSound)
 workspace.ChildAdded:Connect(_bindSound)
 
---- update
+
 RunService.RenderStepped:Connect(function()
     currentWater = HarukaLib:IsInRegion(workspace.CurrentCamera.CFrame.Position, WaterLib._Waters)
 

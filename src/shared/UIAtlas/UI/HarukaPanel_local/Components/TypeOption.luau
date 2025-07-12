@@ -2,16 +2,15 @@
 
 local RepS = game:GetService("ReplicatedStorage")
 
-local Components = require(RepS.Shared.UIAtlas.Vanilla)
+local Components = require(RepS.HarukaShared.UIAtlas.HarukaComponents)
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
-local Children, Tween, Computed, OnEvent, Value, peek =
-    Fusion.Children, Fusion.Tween, Fusion.Computed, Fusion.OnEvent, Fusion.Value, Fusion.peek
+local Children, Computed, OnEvent, Value, peek =
+    Fusion.Children, Fusion.Computed, Fusion.OnEvent, Fusion.Value, Fusion.peek
 
 local fromScale = UDim2.fromScale
 local udNew = UDim.new
 local fromRGB = Color3.fromRGB
-local newTweenInfo = TweenInfo.new
 
 local Texts = {
     Speed = "Speed",
@@ -26,30 +25,33 @@ local Priority = {
     Buttons = 1
 }
 
-local function TypeOption(id: string, self: table) : Frame
-    local scope = self.scope :: table
+return function (scope: Fusion.Scope, props: {
+    TypeId: string,
+    Order: number,
+
+}, self: table) : Frame
 
     local isSelecting = Value(scope, false)
     local isSelecting2 = Value(scope, false)
 
     return Components.Frame(scope, {
-        Name = "TypeOption",
-        Size = fromScale(1, 0.12),
+        Name = "TypeOption_"..props.TypeId,
+        Size = fromScale(0.9, 0.11),
+        LayoutOrder = props.Order,
 
         [Children] = {
-            Components.UIAspectRatioConstraint(scope, 6.449),
+            Components.UIAspectRatioConstraint(scope, 6.919),
 
             Components.TextLabel(scope, {
                 Name = "Title",
-                Size = fromScale(0.7, 1),
+                Size = fromScale(0.45, 1),
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Text = Texts[id],
+                Text = Texts[props.TypeId],
 
                 [Children] = {
-                    Fusion.New(scope, "UIPadding")({
-                        PaddingBottom = udNew(0.1, 0),
-                        PaddingTop = udNew(0.1, 0),
-                        PaddingLeft = udNew(0.03, 0)
+                    Components.UIPadding(scope, {
+                        PaddingLeft = udNew(0.03, 0),
+                        PaddingRight = udNew(0.03, 0)
                     })
                 }
             }),
@@ -61,21 +63,22 @@ local function TypeOption(id: string, self: table) : Frame
                 Size = fromScale(0.15, 1),
                 Text = "<",
                 AutoButtonColor = false,
+                FontFace = Font.fromName("MontSerrat", Enum.FontWeight.Bold),
 
-                BackgroundColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
-                    return if use(isSelecting) then fromRGB(255, 255, 255) else fromRGB(30, 30, 30)
-                end), newTweenInfo(0.3)),
-                TextColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                BackgroundColor3 = Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting) then fromRGB(255, 255, 255) else fromRGB(28, 28, 37)
+                end),
+                TextColor3 = Computed(scope, function(use: Fusion.Use)
                     return if use(isSelecting) then fromRGB() else fromRGB(255, 255, 255)
-                end), newTweenInfo(0.3)),
+                end),
 
                 [OnEvent("MouseButton1Click")] = function()
-                    local currentVal = tonumber(peek(self.inputs[id])) or Priority[id]
+                    local currentVal = peek(self.Inputs[props.TypeId]) or Priority[props.TypeId]
 
-                    currentVal -= Priority[id]
+                    currentVal -= Priority[props.TypeId]
                     if currentVal < 0 then currentVal = 0 end
 
-                    self.inputs[id]:set(currentVal)
+                    self.Inputs[props.TypeId]:set(currentVal)
                 end,
                 [OnEvent("MouseEnter")] = function()
                     isSelecting:set(true)
@@ -93,21 +96,22 @@ local function TypeOption(id: string, self: table) : Frame
                 Size = fromScale(0.15, 1),
                 Text = ">",
                 AutoButtonColor = false,
+                FontFace = Font.fromName("MontSerrat", Enum.FontWeight.Bold),
 
-                BackgroundColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
-                    return if use(isSelecting2) then fromRGB(255, 255, 255) else fromRGB(30, 30, 30)
-                end), newTweenInfo(0.3)),
-                TextColor3 = Tween(scope, Computed(scope, function(use: Fusion.Use)
+                BackgroundColor3 = Computed(scope, function(use: Fusion.Use)
+                    return if use(isSelecting2) then fromRGB(255, 255, 255) else fromRGB(28, 28, 37)
+                end),
+                TextColor3 = Computed(scope, function(use: Fusion.Use)
                     return if use(isSelecting2) then fromRGB() else fromRGB(255, 255, 255)
-                end), newTweenInfo(0.3)),
+                end),
 
                 [OnEvent("MouseButton1Click")] = function()
-                    local currentVal = tonumber(peek(self.inputs[id])) or Priority[id]
+                    local currentVal = peek(self.Inputs[props.TypeId]) or Priority[props.TypeId]
 
-                    currentVal += Priority[id]
+                    currentVal += Priority[props.TypeId]
                     if currentVal < 0 then currentVal = 0 end
 
-                    self.inputs[id]:set(currentVal)
+                    self.Inputs[props.TypeId]:set(currentVal)
                 end,
                 [OnEvent("MouseEnter")] = function()
                     isSelecting2:set(true)
@@ -119,7 +123,7 @@ local function TypeOption(id: string, self: table) : Frame
                 [Children] = { Components.RoundUICorner(scope) }
             }),
 
-            Components.TextBox(scope, {
+            Components.TextLabel(scope, {
                 Name = "Input",
                 BackgroundTransparency = 0.5,
                 Position = fromScale(0.625, 0),
@@ -127,7 +131,7 @@ local function TypeOption(id: string, self: table) : Frame
                 TextColor3 = fromRGB(178, 178, 178),
 
                 Text = Computed(scope, function(use: Fusion.Use)
-                    return use(self.inputs[id])
+                    return use(self.Inputs[props.TypeId])
                 end),
 
                 [Children] = { Components.RoundUICorner(scope) }
@@ -135,5 +139,3 @@ local function TypeOption(id: string, self: table) : Frame
         }
     })
 end
-
-return TypeOption

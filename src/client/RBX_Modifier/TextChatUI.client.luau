@@ -31,8 +31,6 @@ bubbleChat.FontFace = Font.fromEnum(Enum.Font.SourceSansBold)
 bubbleChat.TextSize = 16
 bubbleChat.TextColor3 = Components.WHITE_COLOR
 bubbleChat.BubbleDuration = 6
-bubbleChat.LocalPlayerStudsOffset = -Vector3.yAxis * 2
-bubbleChat.VerticalStudsOffset = 2
 bubbleChat.MaxDistance = 159
 
 channelTab.Enabled = false

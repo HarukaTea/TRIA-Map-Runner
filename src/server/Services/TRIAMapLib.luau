@@ -242,7 +242,7 @@ function TRIAMapLib:_DoInitButtonsFromMapModel()
                     }
                 }
             end
-            require(ServerScriptService.HarukaServer.Library.ButtonStatesShared)[realIndex] = buttonStates
+            require(ServerScriptService.HarukaServer.Library.ButtonStatesShared)[realrealIndex] = buttonStates
 
 
             button:SetAttribute("Index", realrealIndex)
@@ -302,11 +302,11 @@ function TRIAMapLib:_DoInitButtonsFromMapModel()
                     end
                     if button:GetAttribute("PathChild") then
                         --- activate all buttons in the path
-                        ServerBindables.BtnTouched:Fire("PathChild", btnIndex)
+                        ServerBindables.BtnTouched:Fire("PathChild", realrealIndex)
                     end
 
 
-                    ServerBindables.BtnTouched:Fire("Normal", btnIndex, button)
+                    ServerBindables.BtnTouched:Fire("Normal", realrealIndex, button)
 
 
                     local toucher = Players:GetPlayerFromCharacter(hit.Parent)
@@ -316,6 +316,8 @@ function TRIAMapLib:_DoInitButtonsFromMapModel()
                     })
                     event:Fire(toucher)
                     ServerBindables.BtnPressed:Fire(realrealIndex)
+
+                    btnIndex += 1
                 end
             end)
         end
@@ -330,23 +332,23 @@ function TRIAMapLib:_DoInitButtonFuncsFromButtons()
     for _, child: Instance in self.MapModel:GetDescendants() do
         if child:IsA("ObjectValue") then
             if string.find(child.Name, "_Destroy") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Fade:Clone().Parent = child
+                ServerStorage.HarukaRes.Unloads.ButtonEvents.Fade:Clone().Parent = child
 
             elseif string.find(child.Name, "_Fall") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Fall:Clone().Parent = child
+                ServerStorage.HarukaRes.Unloads.ButtonEvents.Fall:Clone().Parent = child
 
             elseif string.find(child.Name, "_Show") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Show:Clone().Parent = child
+                ServerStorage.HarukaRes.Unloads.ButtonEvents.Show:Clone().Parent = child
 
             elseif string.find(child.Name, "_Hide") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Hide:Clone().Parent = child
+                ServerStorage.HarukaRes.Unloads.ButtonEvents.Hide:Clone().Parent = child
 
             elseif string.find(child.Name, "_Explode") then
-                ServerStorage.Resources.Unloads.ButtonEvents.Explode:Clone().Parent = child
+                ServerStorage.HarukaRes.Unloads.ButtonEvents.Explode:Clone().Parent = child
             end
 
         elseif child:IsA("Sound") and string.find(child.Name, "_Sound") then
-            ServerStorage.Resources.Unloads.ButtonEvents.Sound:Clone().Parent = child
+            ServerStorage.HarukaRes.Unloads.ButtonEvents.Sound:Clone().Parent = child
         end
     end
 
@@ -386,6 +388,9 @@ end
 
 function TRIAMapLib:_DoInitSkillSettings()
     local skillSettings = self.MapSettings:FindFirstChild("Skills") :: Configuration
+    if not skillSettings then
+        skillSettings = self.MapSettings:FindFirstChild("Skill") :: Configuration
+    end
     if not skillSettings then return end
 
 

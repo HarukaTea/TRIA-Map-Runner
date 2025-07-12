@@ -1,6 +1,7 @@
 --!nocheck
 
 local RepS = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 local WaterLib = require(RepS.HarukaShared.Library.WaterLib)
@@ -8,7 +9,7 @@ local Bindables = require(RepS.HarukaShared.Library.Bindables)
 
 local Add, Empty = HarukaLib.Bin()
 
-repeat task.wait() until workspace:GetAttribute("MapPreInited")
+repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
 
 local MapLib = game.GetMapLib:Invoke()()
 local map = MapLib.map
@@ -61,7 +62,7 @@ Add(HarukaLib:Hydrate(char, {
                 end
             end
 
-            workspace.Sounds.SFXs.Survived:Play()
+            SoundService.Sounds.SFXs.Survived:Play()
             MapLib:Alert("Survived", "green", 4)
 
             task.wait(0.5)

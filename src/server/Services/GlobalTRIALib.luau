@@ -24,7 +24,9 @@ local wait = task.wait
 function GlobalTRIALib:Init()
     for funcId: string, func: (self) -> nil in GlobalTRIALib do
         if string.find(funcId, "_Listen") and typeof(func) == "function" then
-            Promise.try(func, self)
+            Promise.try(func, self):catch(function(err)
+                warn(tostring(err))
+            end)
         end
     end
 end
@@ -115,62 +117,20 @@ function GlobalTRIALib:_ListenCharSpawnTracker()
         HarukaLib:SetCollisionGroup(r6Char, "PlayerBodyPart")
 
         plr.Character = r6Char
-
-
-        local enumState = {
-            Enum.HumanoidStateType.Swimming,
-        }
-        for _, state: Enum.HumanoidStateType in enumState do
-            r6Char.Humanoid:SetStateEnabled(state, false)
-        end
-
-
-        --// clear collision box
-        for _, part: BasePart in r6Char:GetChildren() do
-            if not HarukaLib:IsBasePartType(part) then continue end
-            if part == r6Char.PrimaryPart then continue end
-
-            part.EnableFluidForces = false
-            part.CanCollide = false
-            part.Material = Enum.Material.SmoothPlastic
-        end
-
-
-        r6Char:SetAttribute("SpawnClock", DateTime.now().UnixTimestamp)
-        r6Char.Parent = workspace.EntitiesPlayerChar
+        r6Char.Parent = workspace
 
 
         for _, thatScript: Instance in StarterPlayer.StarterCharacterScripts:GetChildren() do
             thatScript:Clone().Parent = r6Char
         end
+
+        r6Char:AddTag("PlayerCharEntity")
     end)
 end
-
-
-function GlobalTRIALib:_ListenTRIAMapLibRequestsTracker()
-    repeat task.wait() until workspace:GetAttribute("Haruka_MapInited")
-
-
-    local MapLib = game.GetMapLib:Invoke()()
-
-    Events.ChangeLighting.SetCallback(function(_, data)
-        local properties, postEffects = data.Properties, data.PostEffects
-
-        MapLib:GetFeature("Lighting"):SetLighting(properties, postEffects)
-    end)
-
-
-    Events.ChangeMusic.SetCallback(function(_, data)
-        local musicId, volume, startTick = data.MusicId, data.Volume, data.StartTick
-
-        MapLib:ChangeMusic(musicId, volume, startTick)
-    end)
-end
-
 
 
 function GlobalTRIALib:_ListenButtonTouchedTracker()
-    repeat task.wait() until workspace:GetAttribute("Haruka_MapInited")
+    repeat task.wait() until workspace:GetAttribute("Haruka_MapButtonsInited")
 
 
     local buttons = workspace.Map.Special:FindFirstChild("Button") :: Folder

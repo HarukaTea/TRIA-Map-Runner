@@ -36,6 +36,7 @@ local ANIMS = {
 	SwimUpDiagonal = animator:LoadAnimation(_createTempAnimation(keyframes.SwimUpDiagonal)),
 	SwimDownDiagonal = animator:LoadAnimation(_createTempAnimation(keyframes.SwimDownDiagonal))
 }
+Add(ANIMS)
 
 --- swimming
 local animState = nil
@@ -83,11 +84,10 @@ local function swimIn()
             swimVel.Parent = char.PrimaryPart
         end
 
-        TS:Create(
-            diveVel,
-            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
-            { Velocity = Vector3.new(rootVel.X, 0, rootVel.Z) }
-        ):Play()
+
+        HarukaLib:CreateTween(diveVel, TweenInfo.new(0.2), {
+            Velocity = Vector3.new(rootVel.X, 0, rootVel.Z)
+        }):Play()
 
         Debris:AddItem(diveVel, 0.2)
 
