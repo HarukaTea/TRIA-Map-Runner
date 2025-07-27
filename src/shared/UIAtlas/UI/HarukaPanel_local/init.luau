@@ -152,7 +152,7 @@ return function (plr: Player)
 
                                 Fusion.ForPairs(scope, self.TuneCheckPoints, function(_, scope: table, index: number, part: BasePart)
                                     return index, ButtonOption(scope, {
-                                        ButtonId = "CheckTPTune", CheckPoint = part, Index = index,
+                                        ButtonId = "CheckTPTune", CheckPoint = part.CFrame, Index = index,
                                     }, self)
                                 end),
 

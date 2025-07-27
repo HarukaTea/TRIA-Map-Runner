@@ -93,7 +93,7 @@ Add(task.spawn(function()
                     local state = currentWater:GetAttribute("Type") :: string
 
                     if state == "water" then
-                        timePerLoss = 1 / 10
+                        timePerLoss = 1 / 5
 
                     elseif state == "acid" then
                         timePerLoss = 1 / 30
@@ -113,6 +113,9 @@ Add(task.spawn(function()
                 if char:GetAttribute("SelfOxygen") >= char:GetAttribute("MaxOxygen") then
                     continue
                 else
+                    if char:GetAttribute("TankOxygen") > 0 then
+                        continue
+                    end
                     increaseAir()
                 end
             end

@@ -12,19 +12,12 @@ With this project, you can test your TRIA maps in Roblox Studio, and see how the
 - Internal practice tools to help map makers test their maps.
 - Directly test the map in studio instead of in TRIA.OS.
 
-### Known Issues / Pending Support
+### DOES NOT SUPPORT:
 
 - ❌ Inaccurate Physics Simulation, DO NOT use it for maps that need Precision
-- ❌ Skill Cancel Mechanic
 - ❌ Zipline Leaning
 - ❌ Linear Sliding (Actually, I don't know about what this setting do in TRIA)
 - ❌ Jetstream
-
-### TODO-List
-
-- 🛠️ Medal Support
-- 🛠️ UI Folder Support (Currently, you can only add UI by using legacy method: `MapLib:GetFeature("PlayerUI"):LoadUI(...)`)
-- 🛠️ Tune Checkpoint Support
 
 ### How to use?
 

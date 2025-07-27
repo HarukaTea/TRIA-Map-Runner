@@ -48,7 +48,7 @@ return function (scope: Fusion.Scope, props: {
                 return "Check #"..props.Index
 
             elseif props.ButtonId == "CheckTPTune" then
-
+                return "TuneCheck #"..props.Index
             else
                 return Texts[props.ButtonId]
             end
@@ -75,7 +75,7 @@ return function (scope: Fusion.Scope, props: {
 
                 MapLib:Alert("[Fallen Panel] All Checkpoints Cleared!", "red", 3)
 
-            elseif props.ButtonId == "CheckTP" then
+            elseif props.ButtonId == "CheckTP" or props.ButtonId == "CheckTPTune" then
                 self.plr.Character.PrimaryPart.CFrame = props.CheckPoint
 
             elseif props.ButtonId == "ActivateAllBtns" then

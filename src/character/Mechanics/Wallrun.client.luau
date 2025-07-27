@@ -5,6 +5,7 @@ local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
@@ -25,6 +26,12 @@ local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
 
 local isWallRunning = false
+local allowRide = true
+Add(Bindables.TRIA_SkillCancel:Connect(function()
+	allowRide = false
+	task.wait(0.1)
+	allowRide = true
+end))
 
 Add(char.Humanoid.Touched:Connect(function()
     local isJumping = humanoid:GetStateEnabled(Enum.HumanoidStateType.Jumping)
@@ -86,7 +93,7 @@ Add(char.Humanoid.Touched:Connect(function()
                     hit = finalHit
                     normal = finalNormal
                 end
-            until jumped or finalHit == nil
+            until allowRide and (jumped or finalHit == nil)
 
             lastJumped = tick()
 
@@ -96,7 +103,7 @@ Add(char.Humanoid.Touched:Connect(function()
             walljumpAnim:Stop()
             if weld then weld:Destroy() end
 
-            if jumped then
+            if jumped and allowRide then
                 local momentum = hit:GetAttribute("Momentum") or 0.88
                 local speed = hit:GetAttribute("Speed") or 20
                 local lookVector = char.PrimaryPart.CFrame.LookVector

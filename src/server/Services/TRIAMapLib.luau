@@ -33,10 +33,12 @@ function TRIAMapLib:Init()
     TRIAMapLib:_DoInitMapMaterialsFromMapSettings()
     TRIAMapLib:_DoInitVariantsFromMapModel()
     TRIAMapLib:_DoInitButtonsFromMapModel()
+    TRIAMapLib:_DoInitMapMedals()
     TRIAMapLib:_DoInitButtonFuncsFromButtons()
     TRIAMapLib:_DoInitMapWatersFromMapModel()
     TRIAMapLib:_DoInitSkillSettings()
     TRIAMapLib:_DoInitMapSounds()
+    TRIAMapLib:_DoInitMapUIs()
 
     TRIAMapLib:_DoPreloadRun()
     TRIAMapLib:_DoRunScripts()
@@ -98,6 +100,7 @@ function TRIAMapLib:_DoInitMapModel()
 
     --- disable all scripts before loading the map
     for _, child: Instance in mapModel:GetDescendants() do
+        if child:FindFirstAncestorOfClass("ScreenGui") then continue end
         if child:IsA("Script") then child.Disabled = true end
         if child:IsA("LocalScript") then child.Disabled = true end
     end
@@ -328,6 +331,25 @@ function TRIAMapLib:_DoInitButtonsFromMapModel()
 end
 
 
+function TRIAMapLib:_DoInitMapMedals()
+    local medal = self.MapModel.Special:FindFirstChild("Medal") :: Model | BasePart
+    if not medal then return end
+
+    if medal:IsA("Model") then
+        for _, ins: Instance in medal:GetDescendants() do
+            if ins.Name == "Medal" and ins:IsA("BasePart") then
+                ins:AddTag("MedalEntity")
+            end
+        end
+    elseif medal:IsA("BasePart") then
+        medal:AddTag("MedalEntity")
+    end
+
+
+    workspace:SetAttribute("Haruka_MapMedalsInited", true)
+end
+
+
 function TRIAMapLib:_DoInitButtonFuncsFromButtons()
     for _, child: Instance in self.MapModel:GetDescendants() do
         if child:IsA("ObjectValue") then
@@ -432,6 +454,24 @@ function TRIAMapLib:_DoInitMapSounds()
 
 
     self.MapSoundId = soundId
+end
+
+
+function TRIAMapLib:_DoInitMapUIs()
+    local uiSettings = self.MapSettings:FindFirstChild("UI") :: Configuration
+    if not uiSettings then return end
+
+
+    for _, player: Player in Players:GetPlayers() do
+        for _, gui: ScreenGui in uiSettings:GetChildren() do
+            local cloned = gui:Clone()
+            cloned:AddTag("MapUIEntity")
+            cloned.Parent = player.PlayerGui
+        end
+    end
+
+
+    workspace:SetAttribute("Haruka_MapUIsInited", true)
 end
 
 

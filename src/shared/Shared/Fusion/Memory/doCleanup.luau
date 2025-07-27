@@ -3,6 +3,8 @@
 --!nolint LocalShadow
 local task = nil -- Disable usage of Roblox's task scheduler
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 --[[
 	Cleans up the tasks passed in as the arguments.
 	A task can be any of the following:
@@ -18,6 +20,10 @@ local Types = require(Package.Types)
 local External = require(Package.External)
 local ExternalDebug = require(Package.ExternalDebug)
 
+local HarukaLib = require(ReplicatedStorage.HarukaShared.Shared.HarukaLib)
+
+local FusionAdd, FusionEmpty = HarukaLib.Bin()
+
 local alreadyDestroying: {[Types.Task]: true} = {}
 
 local function doCleanup(
@@ -28,33 +34,10 @@ local function doCleanup(
 	end
 	alreadyDestroying[task] = true
 
-	-- case 1: Instance
-	if typeof(task) == "Instance" then
-		task:Destroy()
-
-	-- case 2: RBXScriptConnection
-	elseif typeof(task) == "RBXScriptConnection" then
-		task:Disconnect()
-
-	-- case 3: callback
-	elseif typeof(task) == "function" then
-		task()
-
-	elseif typeof(task) == "table" then
+	if typeof(task) == "table" then
 		local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)?, destroy: (...unknown) -> (...unknown)?}
 
-		-- case 4: destroy() function
-		if typeof(task.destroy) == "function" then
-			local task = (task :: any) :: {destroy: (...unknown) -> (...unknown)}
-			task:destroy()
-
-		-- case 5: Destroy() function
-		elseif typeof(task.Destroy) == "function" then
-			local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)}
-			task:Destroy()
-
-		-- case 6: { any } of tasks with an array part
-		elseif task[1] ~= nil then
+		if task[1] ~= nil then
 			local task = task :: {Types.Task}
 
 			-- It is important to iterate backwards through the table, since
@@ -67,6 +50,9 @@ local function doCleanup(
 			ExternalDebug.untrackScope(task)
 		end
 	end
+
+	FusionAdd(task)
+	FusionEmpty()
 
 	alreadyDestroying[task] = nil
 end

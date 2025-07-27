@@ -3,6 +3,7 @@
 local Debris = game:GetService("Debris")
 local RepS = game:GetService("ReplicatedStorage")
 
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Add, Empty = HarukaLib.Bin()
@@ -76,6 +77,9 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
         bv.Parent = char.PrimaryPart
 
         Debris:AddItem(bv, 0.01)
+
+    elseif action == "Cancel" then
+        Bindables.TRIA_SkillCancel:Fire()
     end
 end))
 

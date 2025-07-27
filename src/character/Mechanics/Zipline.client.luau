@@ -6,6 +6,7 @@ local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
+local Bindables = require(RepS.HarukaShared.Library.Bindables)
 local Bezier = require(RepS.HarukaShared.Shared.Bezier)
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
@@ -134,6 +135,12 @@ end
 setupZipline()
 
 local touchCD = false
+local allowRide = true
+Add(Bindables.TRIA_SkillCancel:Connect(function()
+	allowRide = false
+	task.wait(0.1)
+	allowRide = true
+end))
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
     if hit and hit.Parent
         and hit:IsA("BasePart")
@@ -194,6 +201,7 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 		while curveT <= 1 and task.wait() do
 			if char.Humanoid.Health <= 0 then break end
 			if cancelRide then break end
+			if not allowRide then break end
 
 			local cTime = tick() - startRiding
 			if cTime > 0.04 then
@@ -252,11 +260,11 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 		if bp then bp:Destroy() end
 		jumpEmpty()
 
-		if hit.Parent:GetAttribute("Momentum") then
+		if hit.Parent:GetAttribute("Momentum") and allowRide then
 			local DEBUG_FACTOR = 1.075
 			local momentum = if hit.Parent:GetAttribute("Momentum") == true then 1 else hit.Parent:GetAttribute("Momentum")
 
-			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, (50 + (hit.Parent:GetAttribute("Speed") * momentum)) * DEBUG_FACTOR * -1))
+			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, (15 + (hit.Parent:GetAttribute("Speed") * momentum)) * DEBUG_FACTOR * -1))
 		end
 
 		isRiding = false

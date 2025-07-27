@@ -2,9 +2,11 @@
 
 local CollectionService = game:GetService("CollectionService")
 local CAS = game:GetService("ContextActionService")
+local Debris = game:GetService("Debris")
 local Lighting = game:GetService("Lighting")
 
 local RepS = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 local FusionComponents = require(RepS.HarukaShared.UIAtlas.FusionComponents)
@@ -14,7 +16,7 @@ local MedalMarker = require(script.Parent.Components.MedalMarker)
 local Observer, peek = Fusion.Observer, Fusion.peek
 
 local MapLib = game.GetMapLib:Invoke()()
-local map = MapLib.map
+local map = MapLib.map :: Model
 
 local sFind, match = string.find, string.match
 local clear, tFind = table.clear, table.find
@@ -57,12 +59,31 @@ return function (self: table)
 
     self.CheckPointsContainer = checkPointsContainer
     self.CheckPoints = FusionComponents.useFolder(scope, checkPointsContainer)
-    self.TuneCheckPoints = {}
+    self.TuneCheckPoints = Value({})
 
-    self.MapChanged = Instance.new("BindableEvent")
     self.CharRespawned = Instance.new("BindableEvent")
-    table.insert(scope, self.MapChanged)
     table.insert(scope, self.CharRespawned)
+
+
+    --// Tune detector
+    local tuneFolder = map:FindFirstChild("Tune", true)
+    if tuneFolder then
+        if tuneFolder:FindFirstChild("Checkpoint") then
+            self.TuneCheckPoints = FusionComponents.useFolder(scope, tuneFolder.Checkpoint)
+        end
+    end
+    table.insert(scope, workspace.DescendantRemoving:Connect(function(descendant: Instance)
+        if descendant.Name == "Tune" and descendant:IsA("Folder") then
+            self.TuneCheckPoints:set({})
+        end
+    end))
+    table.insert(scope, workspace.DescendantAdded:Connect(function(descendant: Instance)
+        if descendant.Name == "Tune" and descendant:IsA("Folder") then
+            if descendant:FindFirstChild("Checkpoint") then
+                self.TuneCheckPoints = FusionComponents.useFolder(scope, tuneFolder.Checkpoint)
+            end
+        end
+    end))
 
 
     --// Actions
@@ -386,6 +407,22 @@ return function (self: table)
             clear(killbricksDetected)
         end
     end)
+    local localChar = self.plr.Character
+    localChar.Humanoid.Touched:Connect(function(hit: BasePart)
+        if hit:GetAttribute("_action") == "Kill" then
+            if peek(inputs.DisableKillbrick) == false then
+                local highlight = Instance.new("Highlight")
+                highlight.Adornee = localChar
+                highlight.Parent = localChar
+                Debris:AddItem(highlight, 2)
+
+                TweenService:Create(highlight, TweenInfo.new(0.5), {
+                    FillTransparency = 1,
+                    OutlineTransparency = 1
+                }):Play()
+            end
+        end
+    end)
 
 
     --// medal detector
@@ -522,14 +559,31 @@ return function (self: table)
         repeat wait() until char:WaitForChild("Humanoid", 999)
 
         wait()
-        self.CharRespawned:Fire()
+        self.CharRespawned:Fire(char)
     end))
-    table.insert(scope, self.CharRespawned.Event:Connect(function()
+    table.insert(scope, self.CharRespawned.Event:Connect(function(char)
         _changeSpeed()
         _changeJump()
 
         if peek(inputs.ForceJump) then _enableForceJump() end
         if peek(inputs.ForceSpeed) then _enableForceSpeed() end
-        if peek(inputs.Lights) then _enableLights(self.plr.Character) end
+        if peek(inputs.Lights) then _enableLights(char) end
+
+
+        char.Humanoid.Touched:Connect(function(hit: BasePart)
+            if hit:GetAttribute("_action") == "Kill" then
+                if peek(inputs.DisableKillbrick) == false then
+                    local highlight = Instance.new("Highlight")
+                    highlight.Adornee = char
+                    highlight.Parent = char
+                    Debris:AddItem(highlight, 2)
+
+                    TweenService:Create(highlight, TweenInfo.new(0.5), {
+                        FillTransparency = 1,
+                        OutlineTransparency = 1
+                    }):Play()
+                end
+            end
+        end)
     end))
 end

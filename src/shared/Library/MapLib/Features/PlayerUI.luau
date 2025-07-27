@@ -4,6 +4,7 @@
 -- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 -- If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local RS = game:GetService("RunService")
 
@@ -22,6 +23,9 @@ function PlayerUI.new()
 
     local function doCleanUp()
         for _, gui: ScreenGui in self.MapUIs do
+            gui:Destroy()
+        end
+        for _, gui: ScreenGui in CollectionService:GetTagged("MapUIEntity") do
             gui:Destroy()
         end
         table.clear(self.MapUIs)

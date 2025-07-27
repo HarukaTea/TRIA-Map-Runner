@@ -192,7 +192,7 @@ function CharLib:_ListenAnimateTracker()
 		end
 	end))
 	Add(humanoid.Jumping:Connect(function()
-        _playAnim(charAnims.Jump, 0.18)
+        _playAnim(charAnims.Jump, 0.25)
 	end))
 	Add(humanoid.FreeFalling:Connect(function()
         _playAnim(charAnims.Fall, 0.2)
