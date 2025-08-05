@@ -5,7 +5,6 @@ local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")
 local RepS = game:GetService("ReplicatedStorage")
 local RS = game:GetService("RunService")
-local TS = game:GetService("TweenService")
 
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
@@ -42,6 +41,8 @@ Add(ANIMS)
 local animState = nil
 local isSwimming = false
 local swimVel: BodyVelocity = nil
+
+local watersIn: { BasePart } = {}
 
 local swimUp = false
 local swimDown = false
@@ -121,11 +122,19 @@ end
 Add(char.Head.Touched:Connect(function(water: BasePart)
     if water:IsA("BasePart") and string.find(water.Name, "_Liquid") then
         swimIn()
+        if not table.find(watersIn, water) then
+            table.insert(watersIn, water)
+        end
     end
 end))
 Add(char.Head.TouchEnded:Connect(function(water: BasePart)
     if water:IsA("BasePart") and string.find(water.Name, "_Liquid") then
-        swimOut()
+        if table.find(watersIn, water) then
+            table.remove(watersIn, table.find(watersIn, water))
+        end
+        if #watersIn <= 0 then
+            swimOut()
+        end
     end
 end))
 Add(char.Humanoid.Changed:Connect(function()

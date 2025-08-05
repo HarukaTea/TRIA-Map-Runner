@@ -13,6 +13,14 @@ repeat task.wait() until char:GetAttribute("Haruka_CharClientInited")
 
 local isSwimming = false
 local currentWater: BasePart = nil
+local currentWaters: { BasePart } = {}
+
+
+local DRAIN_RATE = {
+    water = 1 / 6.5,
+    acid = 1 / 30,
+    lava = 0.01,
+}
 
 local splashCD = 0
 local defaultOxygen = workspace.Map.Settings.Main:GetAttribute("DefaultOxygen")
@@ -30,16 +38,69 @@ char:SetAttribute("MaxOxygen", defaultOxygen)
 
 Add(char.Head.Touched:Connect(function(hit: BasePart)
     if hit:IsA("BasePart") and (string.find(hit.Name, "_Liquid") or string.find(hit.Name, "_Gas")) then
-        isSwimming = true
+        if isSwimming then
+            if hit ~= currentWater then
+                local priority = hit:GetAttribute("Priority") or 0
+                local currentPriority = currentWater:GetAttribute("Priority") or 0
 
-        currentWater = hit
+                local isGas = string.find(hit.Name, "_Gas")
+                --// same priority, gas gets ignored
+                if isGas then
+                    if priority > currentPriority then
+                        currentWater = hit
+                        table.insert(currentWaters, hit)
+                    else
+                        table.insert(currentWaters, hit)
+                    end
+                --// same priority, highest drain amount get chosen
+                else
+                    local waterType = hit:GetAttribute("Type") or "water" :: string
+                    local currentWaterType = currentWater:GetAttribute("Type") or "water" :: string
+
+                    local drainRate = DRAIN_RATE[waterType] or 1
+                    local currentDrainRate = DRAIN_RATE[currentWaterType] or 1
+
+                    if waterType == "custom" then
+                        drainRate = 1 / (hit:GetAttribute("OxygenDepletion") or 1)
+                    end
+                    if currentWaterType == "custom" then
+                        currentDrainRate = 1 / (currentWater:GetAttribute("OxygenDepletion") or 1)
+                    end
+
+                    if priority > currentPriority then
+                        currentWater = hit
+                        table.insert(currentWaters, hit)
+
+                    elseif priority == currentPriority then
+                        if drainRate <= currentDrainRate then
+                            currentWater = hit
+                            table.insert(currentWaters, hit)
+                        else
+                            table.insert(currentWaters, hit)
+                        end
+                    else
+                        table.insert(currentWaters, hit)
+                    end
+                end
+            end
+        else
+            isSwimming = true
+            currentWater = hit
+            table.insert(currentWaters, hit)
+        end
     end
 end))
 Add(char.Head.TouchEnded:Connect(function(hit: BasePart)
     if hit:IsA("BasePart") and (string.find(hit.Name, "_Liquid") or string.find(hit.Name, "_Gas")) then
-        isSwimming = false
-
-        currentWater = nil
+        if table.find(currentWaters, hit) then
+            table.remove(currentWaters, table.find(currentWaters, hit))
+        end
+        if #currentWaters <= 0 then
+            isSwimming = false
+            currentWater = nil
+        else
+            currentWater = currentWaters[1]
+        end
     end
 end))
 Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
@@ -74,7 +135,7 @@ local function increaseAir()
     splashCD = math.max(0, splashCD - timePerLoss)
 
     if splashCD <= 0 then
-        timePerLoss = 0.135
+        timePerLoss = 1 / 12.5
 
         if char:GetAttribute("SelfOxygen") < char:GetAttribute("MaxOxygen") then
             HarukaLib:AddAttr(char, "SelfOxygen", 1)
@@ -93,13 +154,13 @@ Add(task.spawn(function()
                     local state = currentWater:GetAttribute("Type") :: string
 
                     if state == "water" then
-                        timePerLoss = 1 / 5
+                        timePerLoss = DRAIN_RATE.water
 
                     elseif state == "acid" then
-                        timePerLoss = 1 / 30
+                        timePerLoss = DRAIN_RATE.acid
 
                     elseif state == "lava" then
-                        timePerLoss = 0.01
+                        timePerLoss = DRAIN_RATE.lava
                         char.Humanoid.Health = 0
 
                     elseif state == "custom" then

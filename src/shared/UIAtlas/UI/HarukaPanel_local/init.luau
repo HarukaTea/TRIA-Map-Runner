@@ -48,7 +48,7 @@ return function (plr: Player)
         Name = "HarukaPanel",
         DisplayOrder = 15,
         AutoLocalize = false,
-        Parent = RepS,
+        Parent = plr.PlayerGui,
 
     }, {
         BottomProps = {

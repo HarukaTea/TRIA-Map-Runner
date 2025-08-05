@@ -88,8 +88,7 @@ Add(char.Humanoid.Touched:Connect(function()
                     normal.Z * jp
                 )
             else
-                local jp = 25
-
+                local jp = 15
                 char.PrimaryPart.Velocity = Vector3.new(
                     normal.X * jp,
                     jp + normal.Y * jp,

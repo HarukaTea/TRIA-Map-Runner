@@ -261,11 +261,11 @@ Add(char.Humanoid.Touched:Connect(function(hit: BasePart)
 		if bp then bp:Destroy() end
 		jumpEmpty()
 
-		if hit.Parent:GetAttribute("Momentum") and allowRide then
-			local DEBUG_FACTOR = 1.075
+		if hit.Parent:GetAttribute("Momentum") and allowRide and jumped == false then
+			local DEBUG_FACTOR = 0.095
 			local momentum = if hit.Parent:GetAttribute("Momentum") == true then 1 else hit.Parent:GetAttribute("Momentum")
 
-			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, (15 + (hit.Parent:GetAttribute("Speed") * momentum)) * DEBUG_FACTOR * -1))
+			char.PrimaryPart.Velocity = char.PrimaryPart.CFrame:Inverse():VectorToObjectSpace(Vector3.new(0, 0, ((hit.Parent:GetAttribute("Speed") * momentum)) * DEBUG_FACTOR * -1))
 		end
 
 		isRiding = false

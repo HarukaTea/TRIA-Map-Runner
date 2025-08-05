@@ -104,7 +104,7 @@ Add(char.Humanoid.Touched:Connect(function()
             if weld then weld:Destroy() end
 
             if jumped and allowRide then
-                local momentum = hit:GetAttribute("Momentum") or 0.88
+                local momentum = hit:GetAttribute("Momentum") or 1
                 local speed = hit:GetAttribute("Speed") or 20
                 local lookVector = char.PrimaryPart.CFrame.LookVector
                 local jp = char.Humanoid.JumpPower
