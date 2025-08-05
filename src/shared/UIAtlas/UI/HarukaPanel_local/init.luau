@@ -48,7 +48,7 @@ return function (plr: Player)
         Name = "HarukaPanel",
         DisplayOrder = 15,
         AutoLocalize = false,
-        Parent = plr.PlayerGui,
+        Parent = RepS,
 
     }, {
         BottomProps = {
@@ -152,7 +152,7 @@ return function (plr: Player)
 
                                 Fusion.ForPairs(scope, self.TuneCheckPoints, function(_, scope: table, index: number, part: BasePart)
                                     return index, ButtonOption(scope, {
-                                        ButtonId = "CheckTPTune", CheckPoint = part.CFrame, Index = index,
+                                        ButtonId = "CheckTPTune", CheckPoint = part, Index = index,
                                     }, self)
                                 end),
 
@@ -163,6 +163,10 @@ return function (plr: Player)
                                         ButtonId = "CheckTP", CheckPoint = checkPoint.Value, Index = index,
                                     }, self)
                                 end),
+
+
+                                --TitleSection(scope, { TitleId = "DEBUG", Order = 554, }, self),
+                                --ButtonOption(scope, { ButtonId = "DEBUG", Order = 555 }, self),
 
 
                                 Components.PaddingFrame(scope, "ZZZ"),

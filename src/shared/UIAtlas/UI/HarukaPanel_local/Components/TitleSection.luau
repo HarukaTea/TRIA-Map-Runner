@@ -15,9 +15,10 @@ local fromRGB = Color3.fromRGB
 local TITLES = {
     Controls = "CONTROLS",
     Map = "MAP",
-    Checkpoints = "TP",
+    Checkpoints = "TELEPORT",
     CheckpointsNormal = "CHECKPOINTS",
     CheckpointsTune = "TUNE",
+    DEBUG = "DEBUG"
 }
 
 

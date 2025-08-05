@@ -2,14 +2,13 @@
 
 local CollectionService = game:GetService("CollectionService")
 local CAS = game:GetService("ContextActionService")
-local Debris = game:GetService("Debris")
 local Lighting = game:GetService("Lighting")
 
 local RepS = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 local FusionComponents = require(RepS.HarukaShared.UIAtlas.FusionComponents)
+local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local MedalMarker = require(script.Parent.Components.MedalMarker)
 
@@ -66,22 +65,29 @@ return function (self: table)
 
 
     --// Tune detector
-    local tuneFolder = map:FindFirstChild("Tune", true)
-    if tuneFolder then
-        if tuneFolder:FindFirstChild("Checkpoint") then
-            self.TuneCheckPoints = FusionComponents.useFolder(scope, tuneFolder.Checkpoint)
-        end
-    end
-    table.insert(scope, workspace.DescendantRemoving:Connect(function(descendant: Instance)
-        if descendant.Name == "Tune" and descendant:IsA("Folder") then
-            self.TuneCheckPoints:set({})
-        end
-    end))
-    table.insert(scope, workspace.DescendantAdded:Connect(function(descendant: Instance)
-        if descendant.Name == "Tune" and descendant:IsA("Folder") then
-            if descendant:FindFirstChild("Checkpoint") then
-                self.TuneCheckPoints = FusionComponents.useFolder(scope, tuneFolder.Checkpoint)
+    table.insert(scope, HarukaLib.Clock(1.5, function()
+        local thatMapLib = game.GetMapLib:Invoke()()
+        if thatMapLib == nil then self.TuneCheckPoints:set({}) return end
+        local thatMap = thatMapLib.map :: Model
+        if thatMap == nil then self.TuneCheckPoints:set({}) return end
+
+        local thatTuneFolder = thatMap:FindFirstChild("Tune", true)
+        if thatTuneFolder then
+            if thatTuneFolder:FindFirstChild("Checkpoint") then
+                local folder = thatTuneFolder.Checkpoint
+
+                self.TuneCheckPoints:set(folder:GetChildren())
+                local function _getChildren()
+                    wait()
+                    self.TuneCheckPoints:set(folder:GetChildren())
+                end
+                table.insert(scope, folder.ChildAdded:Connect(_getChildren))
+                table.insert(scope, folder.ChildRemoved:Connect(_getChildren))
+            else
+                self.TuneCheckPoints:set({})
             end
+        else
+            self.TuneCheckPoints:set({})
         end
     end))
 
@@ -407,22 +413,6 @@ return function (self: table)
             clear(killbricksDetected)
         end
     end)
-    local localChar = self.plr.Character
-    localChar.Humanoid.Touched:Connect(function(hit: BasePart)
-        if hit:GetAttribute("_action") == "Kill" then
-            if peek(inputs.DisableKillbrick) == false then
-                local highlight = Instance.new("Highlight")
-                highlight.Adornee = localChar
-                highlight.Parent = localChar
-                Debris:AddItem(highlight, 2)
-
-                TweenService:Create(highlight, TweenInfo.new(0.5), {
-                    FillTransparency = 1,
-                    OutlineTransparency = 1
-                }):Play()
-            end
-        end
-    end)
 
 
     --// medal detector
@@ -490,6 +480,7 @@ return function (self: table)
             end
 
             btn.Hitbox.Size = v3New(1, 1, 1) * 15.99
+            btn.Hitbox.CFrame = CFrame.identity
             btn.Hitbox.CFrame = self.plr.Character.PrimaryPart.CFrame
         end
     end
@@ -568,22 +559,5 @@ return function (self: table)
         if peek(inputs.ForceJump) then _enableForceJump() end
         if peek(inputs.ForceSpeed) then _enableForceSpeed() end
         if peek(inputs.Lights) then _enableLights(char) end
-
-
-        char.Humanoid.Touched:Connect(function(hit: BasePart)
-            if hit:GetAttribute("_action") == "Kill" then
-                if peek(inputs.DisableKillbrick) == false then
-                    local highlight = Instance.new("Highlight")
-                    highlight.Adornee = char
-                    highlight.Parent = char
-                    Debris:AddItem(highlight, 2)
-
-                    TweenService:Create(highlight, TweenInfo.new(0.5), {
-                        FillTransparency = 1,
-                        OutlineTransparency = 1
-                    }):Play()
-                end
-            end
-        end)
     end))
 end

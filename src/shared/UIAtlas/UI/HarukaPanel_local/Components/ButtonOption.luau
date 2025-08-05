@@ -15,14 +15,14 @@ local fromRGB = Color3.fromRGB
 
 local Texts = {
     AddCheck = "Add Checkpoint (X)",
-    ClearCheck = "Clear All Checks",
+    ClearCheck = "Clear All",
     ActivateAllBtns = "Activate Buttons",
-    TimeStopMap = "Time Stop Map"
+    DEBUG = "_DEBUG ONLY"
 }
 
 return function (scope: Fusion.Scope, props: {
     ButtonId: string,
-    CheckPoint: CFrame?,
+    CheckPoint: CFrame | BasePart?,
     Index: number?,
     Order: number,
 
@@ -48,7 +48,7 @@ return function (scope: Fusion.Scope, props: {
                 return "Check #"..props.Index
 
             elseif props.ButtonId == "CheckTPTune" then
-                return "TuneCheck #"..props.Index
+                return props.CheckPoint.Name
             else
                 return Texts[props.ButtonId]
             end
@@ -75,8 +75,11 @@ return function (scope: Fusion.Scope, props: {
 
                 MapLib:Alert("[Fallen Panel] All Checkpoints Cleared!", "red", 3)
 
-            elseif props.ButtonId == "CheckTP" or props.ButtonId == "CheckTPTune" then
-                self.plr.Character.PrimaryPart.CFrame = props.CheckPoint
+            elseif props.ButtonId == "CheckTP" then
+                self.plr.Character.PrimaryPart.CFrame = props.CheckPoint * CFrame.new(0, 2.7, 0)
+
+            elseif props.ButtonId == "CheckTPTune" then
+                self.plr.Character.PrimaryPart.CFrame = props.CheckPoint.CFrame * CFrame.new(0, 2.7, 0)
 
             elseif props.ButtonId == "ActivateAllBtns" then
                 for _, btn: Instance in workspace:GetDescendants() do
@@ -84,6 +87,21 @@ return function (scope: Fusion.Scope, props: {
                 end
 
                 MapLib:Alert("[Fallen Panel] Buttons Activated!", "green", 3)
+
+
+            elseif props.ButtonId == "DEBUG" then
+                for _, descendant in workspace:GetDescendants() do
+                    if descendant.Name == "Tune" and descendant:IsA("Folder") and descendant:FindFirstAncestorOfClass("Model") then
+                        for _, child in descendant:GetChildren() do
+                            warn(child.Name)
+                        end
+                    end
+                end
+                for _, descendant in workspace:GetDescendants() do
+                    if descendant.Name == "Tower2" and descendant:IsA("BasePart") then
+                        warn(descendant.Parent)
+                    end
+                end
             end
         end,
         [OnEvent("MouseEnter")] = function()
@@ -101,4 +119,3 @@ return function (scope: Fusion.Scope, props: {
         }
     })
 end
-

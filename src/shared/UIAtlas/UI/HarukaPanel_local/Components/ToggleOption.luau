@@ -16,16 +16,16 @@ local newTweenInfo = TweenInfo.new
 local fromRGB = Color3.fromRGB
 
 local Texts = {
-    Waters = "Fluid",
+    Waters = "Fluids",
     Lights = "Light UP",
-    Shadows = "Fog",
-    Shaders = "Shader FXs",
-    SkipBtns = "Auto Btns",
-    InfAir = "Safe Fluid",
-    ForceSpeed = "Keep Speed",
-    ForceJump = "Keep Jump",
+    Shadows = "Fog/Shadows",
+    Shaders = "Post FXs",
+    SkipBtns = "Auto Press",
+    InfAir = "Safe Fluids",
+    ForceSpeed = "Fixed Speed",
+    ForceJump = "Fixed Jump",
     DisableKillbrick = "Killbricks",
-    ShowMedals = "Show Medals"
+    ShowMedals = "Tag Medals"
 }
 
 return function (scope: Fusion.Scope, props: {
