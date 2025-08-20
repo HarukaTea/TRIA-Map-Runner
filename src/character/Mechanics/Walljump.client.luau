@@ -24,8 +24,6 @@ animation.AnimationId = KSP:RegisterKeyframeSequence(RepS.Packages.Keyframes.Wal
 local walljumpAnim = animator:LoadAnimation(animation)
 local lastJumped = tick()
 
-local isWallJumping = false
-
 Add(char.Humanoid.Touched:Connect(function()
     local isJumping = humanoid:GetStateEnabled(Enum.HumanoidStateType.Jumping)
     local state = humanoid:GetState()
@@ -37,10 +35,7 @@ Add(char.Humanoid.Touched:Connect(function()
 
         if hit
             and (hit:GetAttribute("_action") == "WallJump" or hit:FindFirstChild("_WallJump"))
-            and tick() - lastJumped > 0.07
-            and not isWallJumping then
-
-            isWallJumping = true
+            and tick() - lastJumped > 0.07 then
 
             if hit:GetAttribute("UseFrontOnly") then
                 local frontNormal = hit.CFrame.LookVector * 1
@@ -95,8 +90,6 @@ Add(char.Humanoid.Touched:Connect(function()
                     normal.Z * jp
                 )
             end
-
-            isWallJumping = false
         end
     end
 end))
