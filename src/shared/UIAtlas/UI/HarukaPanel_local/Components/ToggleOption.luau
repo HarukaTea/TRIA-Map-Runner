@@ -27,7 +27,7 @@ local Texts = {
     ShowMedals = "Tag Medals"
 }
 
-return function (scope: Fusion.Scope, props: {
+return function (scope: Fusion.Scope<any>, props: {
     ToggleId: string,
     Order: number,
 

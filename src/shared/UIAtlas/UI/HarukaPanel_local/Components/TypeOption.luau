@@ -24,7 +24,7 @@ local Priority = {
     Buttons = 1
 }
 
-return function (scope: Fusion.Scope, props: {
+return function (scope: Fusion.Scope<any>, props: {
     TypeId: string,
     Order: number,
 

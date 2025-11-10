@@ -16,17 +16,20 @@ local v2New = Vector2.new
 local fromScale = UDim2.fromScale
 
 
+local Pinia = require(script.Pinia)
+
+
 return function (plr: Player)
-    local self = {}
+    local self = {} :: Pinia.Self
 
     self.scope = Fusion.scoped()
     self.plr = plr
 
 
-    require(script.Pinia)(self)
+    Pinia(self)
 
 
-    local scope = self.scope :: Fusion.Scope
+    local scope = self.scope :: Fusion.Scope<any>
     local isSelecting = Fusion.Value(scope, false)
 
 
@@ -47,7 +50,7 @@ return function (plr: Player)
         Name = "HarukaPanel",
         DisplayOrder = 15,
         AutoLocalize = false,
-        Parent = plr.PlayerGui,
+        Parent = RepS,
 
     }, {
         BottomProps = {

@@ -2,7 +2,6 @@
 local CollectionService = game:GetService("CollectionService")
 local CAS = game:GetService("ContextActionService")
 local Lighting = game:GetService("Lighting")
-
 local RepS = game:GetService("ReplicatedStorage")
 
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
@@ -22,10 +21,49 @@ local wait = task.wait
 local instanceNew = Instance.new
 local v3New = Vector3.new
 
-return function (self: table)
-    local scope = self.scope :: Fusion.Scope
 
-    local function Value(val: any)
+
+
+export type Self = {
+    plr: Player,
+    char: Model,
+    scope: Fusion.Scope<any>,
+
+    PanelOpen: Fusion.Value<boolean>,
+    Inputs: {
+        Speed: Fusion.Value<number>,
+        ForceSpeed: Fusion.Value<boolean>,
+
+        Jump: Fusion.Value<number>,
+        ForceJump: Fusion.Value<boolean>,
+
+        Noclip: Fusion.Value<number>,
+        Waters: Fusion.Value<boolean>,
+        Lights: Fusion.Value<boolean>,
+        Shadows: Fusion.Value<boolean>,
+        Shaders: Fusion.Value<boolean>,
+        DisableKillbrick: Fusion.Value<boolean>,
+        ShowMedals: Fusion.Value<boolean>,
+
+        Buttons: Fusion.Value<number>,
+        SkipBtns: Fusion.Value<boolean>,
+        InfAir: Fusion.Value<boolean>,
+    },
+
+    CheckPointsContainer: Folder,
+    CheckPoints: Fusion.Value<Folder>,
+    TuneCheckPoints: Fusion.Value<{ BasePart }>,
+
+    CharRespawned: BindableEvent,
+}
+
+
+
+
+return function (self: Self)
+    local scope = self.scope :: Fusion.Scope<any>
+
+    local function Value<T>(val: T) : Fusion.Value<T>
 		return Fusion.Value(self.scope, val)
 	end
 
@@ -56,7 +94,7 @@ return function (self: table)
     checkPointsContainer.Parent = script:FindFirstAncestorOfClass("ScreenGui")
 
     self.CheckPointsContainer = checkPointsContainer
-    self.CheckPoints = FusionComponents.useFolder(scope, checkPointsContainer)
+    self.CheckPoints = FusionComponents.useChildren(scope, checkPointsContainer)
     self.TuneCheckPoints = Value({})
 
     self.CharRespawned = Instance.new("BindableEvent")

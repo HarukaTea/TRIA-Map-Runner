@@ -6,7 +6,7 @@ local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
 local Children = Fusion.Children
 
-return function (scope: Fusion.Scope, props: {
+return function (scope: Fusion.Scope<any>, props: {
     Adornee: BasePart
 
 }, self: table) : Frame
@@ -16,7 +16,7 @@ return function (scope: Fusion.Scope, props: {
         Size = UDim2.fromOffset(45, 45),
 
         Adornee = props.Adornee,
-        Parent = self.plr.PlayerGui.HarukaPanel,
+        Parent = self.plr.PlayerGui._HarukaPanel,
 
         [Children] = {
             Components.Frame(scope, {

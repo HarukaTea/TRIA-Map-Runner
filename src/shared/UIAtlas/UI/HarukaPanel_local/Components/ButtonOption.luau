@@ -19,7 +19,7 @@ local Texts = {
     DEBUG = "_DEBUG ONLY"
 }
 
-return function (scope: Fusion.Scope, props: {
+return function (scope: Fusion.Scope<any>, props: {
     ButtonId: string,
     CheckPoint: CFrame | BasePart?,
     Index: number?,

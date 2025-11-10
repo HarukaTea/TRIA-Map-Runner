@@ -21,7 +21,7 @@ return function (self: table)
 	table.insert(scope, hintsFolder)
 
 
-    self.HintList = FusionComponents.useFolder(scope, hintsFolder)
+    self.HintList = FusionComponents.useChildren(scope, hintsFolder)
 
 
 

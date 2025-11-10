@@ -21,7 +21,7 @@ local TITLES = {
 }
 
 
-return function (scope: Fusion.Scope, props: {
+return function (scope: Fusion.Scope<any>, props: {
     TitleId: string,
     Order: number,
 
