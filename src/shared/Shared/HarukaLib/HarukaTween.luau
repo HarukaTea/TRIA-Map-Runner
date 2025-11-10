@@ -1,3 +1,4 @@
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
@@ -71,7 +72,7 @@ DATA_TYPES.NumberRange = function(a, b, t)
 end
 
 
-return function (object: Instance, style: TweenInfo, goal: { any }, needSignal: boolean)
+return function (object: Instance, style: TweenInfo, goal: { [string]: any }, needSignal: boolean?)
 	local properties = {}
 	local tweenSignal = nil
 

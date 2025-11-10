@@ -1,4 +1,3 @@
---!nocheck
 
 -- Copyright (C) 2025 Tria
 -- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -74,6 +73,10 @@ function MapLib:ChangeMusic(musicId: number, volume: number?, startTick: number?
 
     elseif isServer then
         local music = workspace.Map.MapMusic :: Sound
+
+        musicId = musicId or ""
+        volume = volume or 0.5
+        startTick = startTick or 0
 
         music.SoundId = if tonumber(musicId) then "rbxassetid://"..musicId else musicId
         music.Volume = volume

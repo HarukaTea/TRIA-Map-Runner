@@ -1,15 +1,23 @@
---!nocheck
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+
+local HarukaLib = require(ReplicatedStorage.HarukaShared.Shared.HarukaLib)
 
 local plr = Players.LocalPlayer
 local plrGui = plr.PlayerGui
 
-local camera = workspace.CurrentCamera
-local normalUIStrokes = {}
-local billboardUIStrokes = {}
 
-local DESIGN_VP_SIZE = Vector2.new(1172.8, 464)
+type StrokedObject = Path2D | UIStroke
+type StrokeInfo = { Thickness: number, UIScale: UIScale? }
+
+
+local camera = workspace.CurrentCamera
+local normalUIStrokes: { [StrokedObject]: StrokeInfo } = {}
+local billboardUIStrokes: { [StrokedObject]: StrokeInfo } = {}
+
+local DESIGN_VP_SIZE = Vector2.new(1172, 462.4)
 
 
 --// Helper functions
@@ -18,7 +26,10 @@ local function _calScreenRatio() : number
 	local x = camera.ViewportSize.X / DESIGN_VP_SIZE.X
 	local y = camera.ViewportSize.Y / DESIGN_VP_SIZE.Y
 
-	return (x + y) / 2
+	local ratio = (x + y) / 2
+	workspace:SetAttribute("UIStrokeScreenRatio", ratio)
+
+	return ratio
 end
 local function _getInstancePosition(instance: Instance): Vector3
 	if instance == nil then
@@ -38,7 +49,7 @@ local function _getInstancePosition(instance: Instance): Vector3
 
 	return Vector3.zero
 end
-local function _updateStroke(stroke: UIStroke, belongTo: "Billboard" | "Normal", info: {
+local function _updateStroke(stroke: StrokedObject, belongTo: "Billboard" | "Normal", info: {
 	Thickness: number,
 	UIScale: UIScale?
 })
@@ -65,14 +76,14 @@ local function _updateStroke(stroke: UIStroke, belongTo: "Billboard" | "Normal",
     stroke.Thickness = finalThickness
 end
 local function _updateSize()
-	for stroke: UIStroke, info: { any } in normalUIStrokes do
+	for stroke, info in normalUIStrokes do
 		if not stroke.Parent then
 			normalUIStrokes[stroke] = nil
 		else
 			_updateStroke(stroke, "Normal", info)
 		end
 	end
-	for stroke: UIStroke, info: { any } in billboardUIStrokes do
+	for stroke, info in billboardUIStrokes do
 		if not stroke.Parent then
 			billboardUIStrokes[stroke] = nil
 		else
@@ -113,3 +124,4 @@ for _, child: Instance in plrGui:GetDescendants() do
 end
 plrGui.DescendantAdded:Connect(_strokeAdded)
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(_updateSize)
+HarukaLib.Clock(3, _updateSize, true)

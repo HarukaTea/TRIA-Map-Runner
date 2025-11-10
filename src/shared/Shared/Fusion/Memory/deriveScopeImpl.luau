@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -25,11 +23,11 @@ local function deriveScopeImpl<T>(
 	if methods ~= nil then
 		metatable = table.clone(metatable)
 		metatable.__index = merge(
-			true, {}, 
-			metatable.__index, 
+			true, {},
+			metatable.__index,
 			merge(
 				false, {},
-				methods, 
+				methods,
 				...
 			)
 		)

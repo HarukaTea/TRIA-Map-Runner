@@ -1,4 +1,3 @@
---!nocheck
 
 local CollectionService = game:GetService("CollectionService")
 local CAS = game:GetService("ContextActionService")

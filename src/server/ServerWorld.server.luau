@@ -1,5 +1,3 @@
---!nocheck
-
 
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")

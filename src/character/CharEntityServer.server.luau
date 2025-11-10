@@ -1,4 +1,3 @@
---!nocheck
 
 repeat task.wait() until workspace:GetAttribute("Haruka_MapPreloadRun")
 

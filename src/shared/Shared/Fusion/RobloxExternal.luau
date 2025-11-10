@@ -1,6 +1,3 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
 
 --[[
 	Roblox implementation for Fusion's abstract provider layer.

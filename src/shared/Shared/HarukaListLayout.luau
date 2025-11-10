@@ -1,10 +1,20 @@
---!nocheck
 
 local RepS = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
-local TS = game:GetService("TweenService")
 
 local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
+
+
+export type HarukaLayout = {
+    __index: HarukaLayout,
+
+    new: (listLayout: UIListLayout) -> HarukaLayout,
+    Enable: (self: HarukaLayout) -> nil,
+    Disable: (self: HarukaLayout) -> nil,
+    Destroy: (self: HarukaLayout) -> nil,
+
+    _Refresh: (self: HarukaLayout) -> nil,
+}
 
 
 local HarukaListLayout = {}
@@ -13,13 +23,13 @@ HarukaListLayout.__index = HarukaListLayout
 
 
 --// Constructor
-function HarukaListLayout.new(listLayout: UIListLayout)
+function HarukaListLayout.new(listLayout: UIListLayout) : HarukaLayout
     local self = setmetatable({}, HarukaListLayout)
 
     self.Add, self.Empty = HarukaLib.Bin()
 
-    self.Layout = listLayout
-    self.Container = self.Layout.Parent :: GuiObject
+    self.UIListLayout = listLayout
+    self.Container = self.UIListLayout.Parent :: GuiObject
 
     self.Enabled = false
 
@@ -31,7 +41,7 @@ function HarukaListLayout:Enable()
     if self.Enabled then return end
 
     self.Enabled = true
-    self.Layout.Parent = ServerStorage
+    self.UIListLayout.Parent = ServerStorage
 
 
     self.Add(self.Container.ChildAdded:Connect(function(child: GuiObject)
@@ -54,7 +64,7 @@ end
 
 
 function HarukaListLayout:Disable()
-    self.Layout.Parent = self.Container
+    self.UIListLayout.Parent = self.Container
     self.Empty()
 
     self.Enabled = false
@@ -72,7 +82,7 @@ end
 
 
 function HarukaListLayout:_Refresh()
-    local listLayout = self.Layout :: UIListLayout
+    local listLayout = self.UIListLayout :: UIListLayout
     local container = self.Container :: GuiObject
 
 
@@ -150,7 +160,7 @@ function HarukaListLayout:_Refresh()
             offsetY = ( (i - 1) - (#elements - 1) / 2 ) * (paddingY + absSize.Y)
         end
 
-        if element:GetAttribute("OldElement") then
+        if element:GetAttribute("HarukaLL_OldElement") then
             local goalPos = UDim2.new(X, offsetX, Y, offsetY)
 
             if element.Position ~= goalPos then
@@ -158,7 +168,7 @@ function HarukaListLayout:_Refresh()
             end
         else
             element.Position = UDim2.new(X, offsetX, Y, offsetY)
-            element:SetAttribute("OldElement", true)
+            element:SetAttribute("HarukaLL_OldElement", true)
         end
 
         if fillDirection == Enum.FillDirection.Horizontal then
@@ -187,4 +197,4 @@ function HarukaListLayout:_Refresh()
 end
 
 
-return HarukaListLayout
+return HarukaListLayout :: HarukaLayout

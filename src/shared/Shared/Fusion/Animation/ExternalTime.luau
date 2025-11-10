@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -41,7 +39,7 @@ local function ExternalTime(
 			lastChange = nil,
 			scope = scope,
 			validity = "invalid"
-		}, 
+		},
 		METATABLE
 	) :: any
 	local destroy = function()

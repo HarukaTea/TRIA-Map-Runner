@@ -1,4 +1,3 @@
---!nocheck
 
 local Debris = game:GetService("Debris")
 local KSP = game:GetService("KeyframeSequenceProvider")

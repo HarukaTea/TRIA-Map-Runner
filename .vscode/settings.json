@@ -20,9 +20,5 @@
         "src/RbxCharacterSounds.client.luau": true,
         "src/Runtime.luau": true,
         "src/shared/Library/Runtime.luau": true
-    },
-    "stylua.targetReleaseVersion": "latest",
-    "robloxLsp.diagnostics.globals": [
-        "Path2DControlPoint"
-    ],
+    }
 }

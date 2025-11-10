@@ -1,4 +1,3 @@
---!nocheck
 
 local SSS = game:GetService("ServerScriptService")
 local SS = game:GetService("ServerStorage")

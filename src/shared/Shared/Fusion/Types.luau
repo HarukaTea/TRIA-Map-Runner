@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -39,10 +37,9 @@ export type Animatable =
 -- A task which can be accepted for cleanup.
 export type Task =
 	Instance |
+	thread |
 	RBXScriptConnection |
 	() -> () |
-	{destroy: (unknown) -> ()} |
-	{Destroy: (unknown) -> ()} |
 	{Task}
 
 -- A scope of tasks to clean up.
@@ -160,19 +157,6 @@ export type TweenConstructor = <T>(
 	tweenInfo: UsedAs<TweenInfo>?
 ) -> Tween<T>
 
--- A state object which follows another state object using spring simulation.
-export type Spring<T> = StateObject<T>  & {
-	kind: "Spring",
-	setPosition: (Spring<T>, newPosition: T) -> (),
-	setVelocity: (Spring<T>, newVelocity: T) -> (),
-	addVelocity: (Spring<T>, deltaVelocity: T) -> ()
-}
-export type SpringConstructor = <T>(
-	scope: Scope<unknown>,
-	goalState: UsedAs<T>,
-	speed: UsedAs<number>?,
-	damping: UsedAs<number>?
-) -> Spring<T>
 
 -- Denotes children instances in an instance or component's property table.
 export type SpecialKey = {
@@ -186,9 +170,6 @@ export type SpecialKey = {
 		applyTo: Instance
 	) -> ()
 }
-
--- A collection of instances that may be parented to another instance.
-export type Child = Instance | StateObject<Child> | {[unknown]: Child}
 
 -- A table that defines an instance's properties, handlers and children.
 export type PropertyTable = {[string | SpecialKey]: unknown}
@@ -236,46 +217,31 @@ export type ScopedConstructor = (() -> Scope<{}>)
 
 export type ContextualConstructor = <T>(defaultValue: T) -> Contextual<T>
 
-export type Safe = <Success, Fail>(
-	callbacks: {
-		try: () -> Success,
-		fallback: (err: unknown) -> Fail
-	}
-) -> Success | Fail
-
 export type Fusion = {
 	version: Version,
 	Contextual: ContextualConstructor,
-	Safe: Safe,
 
 	doCleanup: (Task) -> (),
 	scoped: ScopedConstructor,
 	deriveScope: DeriveScopeConstructor,
 	innerScope: DeriveScopeConstructor,
-	insert: <Tasks...>(scope: Scope<unknown>, Tasks...) -> Tasks...,
 
 	peek: Use,
 	Value: ValueConstructor,
 	Computed: ComputedConstructor,
 	ForPairs: ForPairsConstructor,
-	ForKeys: ForKeysConstructor,
 	ForValues: ForValuesConstructor,
 	Observer: ObserverConstructor,
 
 	Tween: TweenConstructor,
-	Spring: SpringConstructor,
 
 	New: NewConstructor,
-	Hydrate: HydrateConstructor,
 
-	Child: ({Child}) -> Child,
 	Children: SpecialKey,
 	Out: (propertyName: string) -> SpecialKey,
 	OnEvent: (eventName: string) -> SpecialKey,
 	OnChange: (propertyName: string) -> SpecialKey,
-	Attribute: (attributeName: string) -> SpecialKey,
-	AttributeChange: (attributeName: string) -> SpecialKey,
-	AttributeOut: (attributeName: string) -> SpecialKey,
+	Attribute: (attributeName: string) -> SpecialKey
 }
 
 export type ExternalProvider = {

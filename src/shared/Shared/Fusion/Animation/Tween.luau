@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -135,7 +133,7 @@ function class._evaluate<T>(
 	local tweenInfo = peek(self._tweenInfo) :: TweenInfo
 	-- Restart animation when the goal changes, or if the tween info changes
 	-- partway through another animation.
-	if 
+	if
 		self._activeTo ~= newTweenTo or
 		(self._activeElapsed < self._activeDuration and self._activeTweenInfo ~= tweenInfo)
 	then

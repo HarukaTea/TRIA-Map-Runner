@@ -1,21 +1,27 @@
---!optimize 2
---!nocheck
---!native
 
-export type Connection<U...> = {
+export type Connection = {
 	Connected: boolean,
+	Disconnect: (self: Connection) -> (),
+	Destroy: (self: Connection) -> (),
 
-	Disconnect: (self: Connection<U...>) -> (),
-	Destroy: (self: Connection<U...>) -> (),
+	__index: Connection,
+	_head: Connection,
+	_fn: (...any) -> (),
+	_next: Connection,
+	_prev: boolean,
+	_signal: SignalClass,
+	_varargs: { any } | boolean
 }
 
-export type Signal<T...> = {
-	Connect: <U...>(self: Signal<T...>, fn: (...any) -> (), U...) -> Connection<U...>,
-	Once: <U...>(self: Signal<T...>, fn: (...any) -> (), U...) -> Connection<U...>,
-	Wait: (self: Signal<T...>) -> T...,
-	Fire: (self: Signal<T...>, T...) -> (),
-	DisconnectAll: (self: Signal<T...>) -> (),
-	Destroy: (self: Signal<T...>) -> (),
+export type SignalClass = {
+	Connect: (self: SignalClass, fn: (...any) -> ()) -> Connection,
+	Once: (self: SignalClass, fn: (...any) -> ()) -> Connection,
+	Wait: (self: SignalClass) -> any,
+	Fire: (self: SignalClass, ...any) -> (),
+	DisconnectAll: (self: SignalClass) -> (),
+	Destroy: (self: SignalClass) -> (),
+
+	_head: boolean | Connection
 }
 
 local freeThreads: { thread } = {}
@@ -34,7 +40,7 @@ end
 local Connection = {}
 Connection.__index = Connection
 
-local function disconnect<U...>(self: Connection<U...>)
+local function disconnect(self: Connection)
 	if not self.Connected then
 		return
 	end
@@ -62,8 +68,9 @@ local Signal = {}
 Signal.__index = Signal
 
 
-local function connect<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: U...): Connection<U...>
+local function connect(self: SignalClass, fn: (...any) -> (), ...: any?): Connection
 	local head = self._head
+
 	local cn = setmetatable({
 		Connected = true,
 		_signal = self,
@@ -86,115 +93,66 @@ local function connect<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: 
 	return cn
 end
 
-local function once<T..., U...>(self: Signal<T...>, fn: (...any) -> (), ...: U...)
+local function once(self: SignalClass, fn: (...any) -> (), ...: any?) : Connection
 	local cn
+
 	cn = connect(self, function(...)
 		disconnect(cn)
 		fn(...)
 	end, ...)
+
 	return cn
 end
 
-local wait = if task
-	then function<T...>(self: Signal<T...>): ...any
-		local thread = coroutine.running()
-		local cn
-		cn = connect(self, function(...)
-			disconnect(cn)
-			if coroutine.status(thread) == "suspended" then
-				task.spawn(thread, ...)
-			end
-		end)
-		return coroutine.yield()
-	end
-	else function<T...>(self: Signal<T...>): ...any
-		local thread = coroutine.running()
-		local cn
-		cn = connect(self, function(...)
-			disconnect(cn)
-			local passed, message = coroutine.resume(thread, ...)
-			if not passed then
-				error(message, 0)
-			end
-		end)
-		return coroutine.yield()
-	end
+local function wait(self: SignalClass): unknown
+	local thread = coroutine.running()
 
-local fire = if task
-	then function<T...>(self: Signal<T...>, ...: any)
-		local cn = self._head
-		while cn do
-			local thread
-			if #freeThreads > 0 then
-				thread = freeThreads[#freeThreads]
-				freeThreads[#freeThreads] = nil
-			else
-				thread = coroutine.create(yielder)
-				coroutine.resume(thread)
-			end
-
-			if not cn._varargs then
-				task.spawn(thread, cn._fn, thread, ...)
-			else
-				local args = cn._varargs
-				local len = #args
-				local count = len
-				for _, value in { ... } do
-					count += 1
-					args[count] = value
-				end
-
-				task.spawn(thread, cn._fn, thread, table.unpack(args))
-
-				for i = count, len + 1, -1 do
-					args[i] = nil
-				end
-			end
-
-			cn = cn._next
+	local cn
+	cn = connect(self, function(...)
+		disconnect(cn)
+		if coroutine.status(thread) == "suspended" then
+			task.spawn(thread, ...)
 		end
-	end
-	else function<T...>(self: Signal<T...>, ...: any)
-		local cn = self._head
-		while cn do
-			local thread
-			if #freeThreads > 0 then
-				thread = freeThreads[#freeThreads]
-				freeThreads[#freeThreads] = nil
-			else
-				thread = coroutine.create(yielder)
-				coroutine.resume(thread)
-			end
+	end)
 
-			if not cn._varargs then
-				local passed, message = coroutine.resume(thread, cn._fn, thread, ...)
-				if not passed then
-					print(string.format("%s\nstacktrace:\n%s", message, debug.traceback()))
-				end
-			else
-				local args = cn._varargs
-				local len = #args
-				local count = len
-				for _, value in { ... } do
-					count += 1
-					args[count] = value
-				end
+	return coroutine.yield()
+end
 
-				local passed, message = coroutine.resume(thread, cn._fn, thread, table.unpack(args))
-				if not passed then
-					print(string.format("%s\nstacktrace:\n%s", message, debug.traceback()))
-				end
+local function fire(self: SignalClass, ...: any)
+	local cn = self._head
 
-				for i = count, len + 1, -1 do
-					args[i] = nil
-				end
-			end
-
-			cn = cn._next
+	while cn do
+		local thread
+		if #freeThreads > 0 then
+			thread = freeThreads[#freeThreads]
+			freeThreads[#freeThreads] = nil
+		else
+			thread = coroutine.create(yielder)
+			coroutine.resume(thread)
 		end
-	end
 
-local function disconnectAll<T...>(self: Signal<T...>)
+		if not cn._varargs then
+			task.spawn(thread, cn._fn, thread, ...)
+		else
+			local args = cn._varargs
+			local len = #args
+			local count = len
+			for _, value in { ... } do
+				count += 1
+				args[count] = value
+			end
+
+			task.spawn(thread, cn._fn, thread, table.unpack(args))
+
+			for i = count, len + 1, -1 do
+				args[i] = nil
+			end
+		end
+		cn = cn._next
+	end
+end
+
+local function disconnectAll(self: SignalClass)
 	local cn = self._head
 	while cn do
 		disconnect(cn)
@@ -202,12 +160,12 @@ local function disconnectAll<T...>(self: Signal<T...>)
 	end
 end
 
-local function destroy<T...>(self: Signal<T...>)
+local function destroy(self: SignalClass)
 	disconnectAll(self)
 end
 
---\\ Constructors
-function Signal.new<T...>(): Signal<T...>
+
+function Signal.new()
 	return setmetatable({ _head = false }, Signal)
 end
 
@@ -220,4 +178,6 @@ Signal.Fire = fire
 Signal.DisconnectAll = disconnectAll
 Signal.Destroy = destroy
 
-return { new = Signal.new }
+return { new = Signal.new } :: {
+	new: () -> SignalClass
+}

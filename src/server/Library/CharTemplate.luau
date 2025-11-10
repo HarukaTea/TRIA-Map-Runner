@@ -1,4 +1,3 @@
---!nocheck
 
 return {
     SelfOxygen = 100,

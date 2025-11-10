@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -38,8 +36,6 @@ local function doCleanup(
 		local task = (task :: any) :: {Destroy: (...unknown) -> (...unknown)?, destroy: (...unknown) -> (...unknown)?}
 
 		if task[1] ~= nil then
-			local task = task :: {Types.Task}
-
 			-- It is important to iterate backwards through the table, since
 			-- objects are added in order of construction.
 			for index = #task, 1, -1 do

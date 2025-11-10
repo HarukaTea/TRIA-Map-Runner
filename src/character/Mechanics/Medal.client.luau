@@ -1,4 +1,3 @@
---!nocheck
 
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")

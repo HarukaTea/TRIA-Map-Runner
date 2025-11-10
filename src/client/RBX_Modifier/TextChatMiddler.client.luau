@@ -1,4 +1,3 @@
---!nocheck
 
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")

@@ -1,4 +1,3 @@
---!nocheck
 
 local CAS = game:GetService("ContextActionService")
 local KSP = game:GetService("KeyframeSequenceProvider")

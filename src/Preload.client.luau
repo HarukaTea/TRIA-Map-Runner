@@ -1,4 +1,3 @@
---!nocheck
 
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")

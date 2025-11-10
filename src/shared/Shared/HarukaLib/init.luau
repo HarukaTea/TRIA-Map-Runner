@@ -1,4 +1,3 @@
---!nocheck
 
 local CAS = game:GetService("ContextActionService")
 local Debris = game:GetService("Debris")
@@ -7,6 +6,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 
@@ -16,7 +16,6 @@ local Signal = require(RepS.HarukaShared.Shared.Signal)
 local Tween = require(script.HarukaTween)
 local TableUtils = require(script.HarukaTableUtils)
 
-local wait = task.wait
 
 local HarukaLib = {}
 
@@ -25,10 +24,10 @@ local HarukaLib = {}
 
     **Example:**
     ``````lua
-    HarukaLib:NumberConvertToCurrencyString(1000, 2) --- 1.00K
+    HarukaLib:ShortifyNumber(1000, 2) --- 1.00K
     ``````
 ]]
-function HarukaLib:NumberConvertToCurrencyString(number: number, decimalPlaces: number) : string
+function HarukaLib:ShortifyNumber(number: number, decimalPlaces: number) : string
 	local prefixes = { "", "K", "M", "B", "T", "Q", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", "Dd" }
 	local abbrFactor = math.floor(math.floor(math.log10(number)) / 3)
 
@@ -107,7 +106,8 @@ function HarukaLib:AddAttr(obj: Instance, attribute: string, val: number)
 		return
 	end
 
-	obj:SetAttribute(attribute, obj:GetAttribute(attribute) + val)
+	local attrVal = obj:GetAttribute(attribute) :: number
+	obj:SetAttribute(attribute, attrVal + val)
 end
 
 
@@ -121,6 +121,7 @@ function HarukaLib:ClearAllAttributes(obj: Instance)
 end
 
 
+local abs = math.abs
 --[[
 	Detect if the given position is inside any of the given regions.
 ]]
@@ -128,13 +129,15 @@ function HarukaLib:IsInRegion(position: Vector3, regions: { BasePart }) : BasePa
 	local region: BasePart = nil
 
 	for _, child: BasePart in regions do
+		if child == nil then continue end
 		if not child:IsA("BasePart") then continue end
 
 		local point = child.CFrame:PointToObjectSpace(position)
+		local size = child.Size
 
-		if math.abs(point.X) < child.Size.X / 2
-			and math.abs(point.Y) < child.Size.Y / 2
-			and math.abs(point.Z) < child.Size.Z / 2 then
+		if abs(point.X) < size.X / 2
+			and abs(point.Y) < size.Y / 2
+			and abs(point.Z) < size.Z / 2 then
 
 			region = child
 			break
@@ -172,7 +175,7 @@ local COLOR_LIST = {
 	["</pink>"] = [[</font>]],
 	["</gray>"] = [[</font>]],
 	["</grey>"] = [[</font>]],
-}
+} :: { [string]: string }
 
 
 --[[
@@ -216,8 +219,8 @@ function HarukaLib:PackData(method: "Pack" | "Unpack", val: any) : any
 
 	elseif method == "Unpack" then
 		if valType ~= "table" then return val end
-		valType = val[1] :: string
 
+		local valType: string = val[1]
 		if valType == "CFrame" then
 			return CFrame.new(unpack(val, 2, #val))
 
@@ -241,7 +244,7 @@ end
 
 	Return a function to destroy the tracker.
 ]]
-function HarukaLib:Hydrate(obj: Instance, props: { any })
+function HarukaLib:Hydrate(obj: Instance, props: { [string]: (val: any) -> nil }) : () -> nil
 	local Add, Empty = HarukaLib.Bin()
 
 	for prop: string, func: (val: any) -> nil in props do
@@ -278,7 +281,7 @@ end
 
 
 --[[
-	Inspired by `Maid`, and `Fusion.doCleanup`, you can add anything to the bin.
+	Inspired by `Janitor`, and `Fusion.doCleanup`, you can add anything to the bin.
 
 	Return a function to destroy the items inside the bin, bin can reused.
 ]]
@@ -341,9 +344,13 @@ end
 --[[
 	Inspired by `Timer`, just like `window.setInterval` in javascript
 ]]
-function HarukaLib.Clock(tickTime: number, func: () -> ())
+function HarukaLib.Clock(tickTime: number, func: () -> (), runInstantly: boolean?)
 	local nowTime = 0
 	local dropTime = tickTime * 10
+
+	if runInstantly then
+		func()
+	end
 
 	local connection = RunService.Heartbeat:Connect(function(deltaTime)
 		nowTime += deltaTime
@@ -370,7 +377,7 @@ end
 
 	Return a signal class, it will fire when the tween is completed.
 ]]
-function HarukaLib:Tween(obj: Instance, style: { any }, goal: any, needSignal: boolean)
+function HarukaLib:Tween(obj: Instance, style: TweenInfo, goal: { [string]: any }, needSignal: boolean?) : Signal.SignalClass
 	return Tween(obj, style, goal, needSignal)
 end
 
@@ -378,11 +385,15 @@ end
 --[[
 	Inspired by `t`, it can typecheck any value in runtime
 ]]
-function HarukaLib:TypeCheck(checkTask: "Integer" | "Min" | "Max" | "MinMax", val: any, props: {
+function HarukaLib:TypeCheck(checkTask: string, val: any, props: {
 	Min: number?,
 	Max: number?
-}) : boolean
+}?) : boolean
 
+	local props = props or {
+		Min = 0,
+		Max = 0
+	}
 	local success = pcall(function()
 		if checkTask == "Integer" then
 			assert(type(val) == "number")
@@ -422,7 +433,7 @@ end
 	return a tuple of `(item, weight, entry)`
 ]]
 function HarukaLib:RollLoot(loots: { [string]: number }, luck: number?) : (string, number, number)
-	luck = luck or 1
+	local luck = luck or 1
 
 	local lowestBound = 1e-3
 	local weightAdjustment = 1e9
@@ -458,8 +469,9 @@ function HarukaLib:RollLoot(loots: { [string]: number }, luck: number?) : (strin
 	end
 
 	--// roll
+	local RNG = Random.new()
 	local bestScore, bestItem, entry = math.huge, nil, nil
-	local value = math.max(lowestBound, totalWeight - math.floor(totalWeight * math.random() ^ luck))
+	local value = math.max(lowestBound, totalWeight - math.floor(totalWeight * RNG:NextNumber() ^ luck))
 	local upperBound = 0
 
 	for index = #items, 1, -1 do
@@ -543,7 +555,7 @@ end
 ]]
 function HarukaLib:CalculateStrokeThickness(thickness: number, scale: number) : number
 	local VPSize = workspace.CurrentCamera.ViewportSize
-	local DESIGN_VP_SIZE = Vector2.new(1172, 471.2)
+	local DESIGN_VP_SIZE = Vector2.new(1172, 462.4)
 
 	local function _calScreenRatio() : number
 		local x = VPSize.X / DESIGN_VP_SIZE.X
@@ -580,10 +592,12 @@ end
 --[[
 	Helper function to set the collision group of an object and its children
 ]]
-function HarukaLib:SetCollisionGroup(obj: Instance, group: string)
+function HarukaLib:SetCollisionGroup(obj: any, group: string)
 	if HarukaLib:IsBasePartType(obj) then obj.CollisionGroup = group end
 
-	for _, child: Instance in obj:GetChildren() do HarukaLib:SetCollisionGroup(child, group) end
+	for _, child in obj:GetChildren() do
+		HarukaLib:SetCollisionGroup(child, group)
+	end
 end
 
 
@@ -655,13 +669,22 @@ function HarukaLib:UITween(ui: GuiObject, style: "In" | "Out", props: {
 
 	SetOriPropsWhenOut: boolean?,
 	FollowOriPropsWhenIn: boolean?,
-	TweenCallback: (clonedTweenOutUI: GuiObject) -> nil?,
+	TweenCallback: nil | (clonedTweenOutUI: GuiObject) -> nil,
 
-	PosTweenStyle: "FromB2T" | "FromT2B" | "FromL2R" | "FromR2L"?,
+	PosTweenStyle: string?,
 	PosTweenBaseElement: GuiObject?,
 	PosTweenOffset: number?
-}?)
-	props = props or {}
+})
+	props = props or {
+		DelayTime = nil,
+		TweenTime = nil,
+		SetOriPropsWhenOut = nil,
+		FollowOriPropsWhenIn = nil,
+		TweenCallback = nil,
+		PosTweenStyle = nil,
+		PosTweenBaseElement = nil,
+		PosTweenOffset = nil
+	}
 
 
 	if props.TweenCallback and style == "Out" then
@@ -685,9 +708,11 @@ function HarukaLib:UITween(ui: GuiObject, style: "In" | "Out", props: {
 		Enum.EasingDirection.Out
 	)
 	local tweenObjs = ui:GetDescendants()
+	local tweenObjs: { GuiObject } = tweenObjs
+
 	table.insert(tweenObjs, ui)
 
-	local function _tweenGoal(obj: GuiObject, attr: string, tweenProps: { any })
+	local function _tweenGoal(obj: GuiObject, attr: string, tweenProps: { [string]: any })
 		if not obj then return end
 		if not obj.Parent then return end
 
@@ -717,7 +742,7 @@ function HarukaLib:UITween(ui: GuiObject, style: "In" | "Out", props: {
 			obj.Interactable = false
 		end)
 	end
-	local function _startTween(obj: GuiObject, tweenProps: { any })
+	local function _startTween(obj: GuiObject, tweenProps: { [string]: any })
 		if not obj then return end
 		if not obj.Parent then return end
 
@@ -730,7 +755,7 @@ function HarukaLib:UITween(ui: GuiObject, style: "In" | "Out", props: {
 	end
 
 
-	for _, obj: Instance in tweenObjs do
+	for _, obj in tweenObjs do
 		local tweenProps = {}
 
 		if not obj then continue end
@@ -853,18 +878,18 @@ end
 	HarukaLib:CommaifyNumber(123456789) -- "123,456,789"
 	``````
 ]]
-function HarukaLib:CommaifyNumber(num: number | string) : string
+function HarukaLib:CommaifyNumber(num: number) : string
 	if not num then return "" end
 
-	num = tostring(num)
+	local formatted = tostring(math.floor(num))
+	while true do
+		local newFormatted, k = formatted:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		formatted = newFormatted
 
-	local result = ""
-	for i = 1, #num do
-		result ..= string.sub(num, i, i)
-		if (#num - i) % 3 == 0 and i ~= #num then result ..= "," end
+		if k == 0 then break end
 	end
 
-	return result
+	return formatted
 end
 
 
@@ -910,71 +935,21 @@ end
 
 
 --[[
-	Similar with `PartCache`, but a lot simpler and faster.
-
-	Returns:
-	```lua
-	local pool = HarukaLib:CreatePartPool(obj, initialAmount)
-
-	pool:Get()
-	pool:Return(obj)
-	```
-]]
-function HarukaLib:CreatePartPool(obj: Instance, initialAmount: number?, container: Folder?)
-	container = container or Instance.new("Folder")
-	container.Name = "PartPool_"..obj.Name.."_"..HarukaLib:GenerateUUID()
-	container.Parent = workspace
-
-
-	local DISTANT_CF = CFrame.new(Vector3.one * 1599 * 40)
-
-	initialAmount = initialAmount or 1
-	initialAmount = math.ceil(initialAmount)
-
-	obj = obj:Clone()
-	obj.Parent = container
-
-	local pool = {
-		Object = obj,
-		Available = {},
-	}
-	for _ = 1, initialAmount do
-		local clone = pool.Object:Clone()
-		clone.Parent = container
-
-		table.insert(pool.Available, clone)
-	end
-
-	function pool:Get()
-		local i = #pool.Available
-		local finalObj = pool.Available[i]
-		if finalObj then
-			finalObj = table.remove(pool.Available, i)
-			return finalObj
-		else
-			local newObj = pool.Object:Clone()
-			newObj.Parent = container
-
-			return newObj
-		end
-	end
-	function pool:Return(object: Instance)
-		object.CFrame = DISTANT_CF
-
-		table.insert(pool.Available, object)
-	end
-	function pool:Destroy()
-		container:Destroy()
-	end
-
-	return pool
-end
-
-
---[[
 	A simple function of Queue
 ]]
-function HarukaLib.Queue()
+export type HarukaQueue = {
+	IsEmpty: (self: HarukaQueue) -> boolean,
+	GetItemsInQueue: (self: HarukaQueue) -> number,
+	SetLockState: (self: HarukaQueue, state: boolean) -> nil,
+	IsLocked: (self: HarukaQueue) -> boolean,
+
+	Push: (self: HarukaQueue, value: any) -> nil,
+	Pop: (self: HarukaQueue) -> any?,
+	Destroy: (self: HarukaQueue) -> nil,
+
+	ElementAdded: Signal.SignalClass
+}
+function HarukaLib.Queue() : HarukaQueue
 	local Queue = {}
 	Queue.__index = Queue
 
@@ -1049,13 +1024,13 @@ HarukaLib.TableUtils = TableUtils
 ]]
 function HarukaLib:EmitParticles(obj: Instance, childrenOnly: boolean?)
 	if childrenOnly then
-		for _, child: ParticleEmitter in obj:GetChildren() do
+		for _, child in obj:GetChildren() do
 			if not child:IsA("ParticleEmitter") then continue end
 
 			child:Emit(child:GetAttribute("EmitCount") or 0)
 		end
 	else
-		for _, child: ParticleEmitter in obj:GetDescendants() do
+		for _, child in obj:GetDescendants() do
 			if not child:IsA("ParticleEmitter") then continue end
 
 			child:Emit(child:GetAttribute("EmitCount") or 0)
@@ -1114,13 +1089,13 @@ end
 ]]
 function HarukaLib:SetParticleState(obj: Instance, state: boolean, childrenOnly: boolean?)
 	if childrenOnly then
-		for _, child: ParticleEmitter in obj:GetChildren() do
+		for _, child in obj:GetChildren() do
 			if not child:IsA("ParticleEmitter") then continue end
 
 			child.Enabled = state
 		end
 	else
-		for _, child: ParticleEmitter in obj:GetDescendants() do
+		for _, child in obj:GetDescendants() do
 			if not child:IsA("ParticleEmitter") then continue end
 
 			child.Enabled = state
@@ -1186,7 +1161,113 @@ function HarukaLib:ZonitoToggleParticles(instance: Instance, val: boolean, rever
 end
 
 
-HarukaLib.RichTextFormatter = if script:FindFirstChild("HarukaRichTextFormatter") then require(script.HarukaRichTextFormatter) else nil
+function HarukaLib.RichTextFormatter() : {
+	Stroke: (text: string, color: string, thickness: number?, joinMode: string?, transparency: number?) -> string,
+	Highlight: (text: string, color: string, transparency: number) -> string
+}
+	local HarukaRichTextFormatter = {}
+
+	function HarukaRichTextFormatter.Stroke(
+		text: string,
+		color: string,
+		thickness: number?,
+		joinMode: string?,
+		transparency: number?
+	): string
+		return '<stroke color="'
+			.. "#"..color
+			.. '" joins="'
+			.. string.lower(joinMode or "Miter")
+			.. '" thickness="'
+			.. tostring(thickness or 1)
+			.. '" transparency="'
+			.. tostring(transparency or 0)
+			.. '">'
+			.. text
+			.. "</stroke>"
+	end
+
+	function HarukaRichTextFormatter.Highlight(text: string, color: string, transparency: number): string
+		local transparencyAttribute = ' transparency="' .. (transparency or 0) .. '"'
+
+		local fontStart, fontEnd = string.find(text, "^<font.->")
+		local fontCloseStart = string.find(text, "</font>")
+
+		if fontStart and fontCloseStart then
+			local fontOpen = string.sub(text, fontStart, fontEnd)
+			local innerText = string.sub(text, fontEnd + 1, fontCloseStart - 1)
+			local fontClose = "</font>"
+
+			local marked = '<mark color="'
+				.. "#"..color
+				.. '"'
+				.. transparencyAttribute
+				.. ">"
+				.. innerText
+				.. "</mark>"
+			return fontOpen .. marked .. fontClose
+		else
+			return '<mark color="' .. "#"..color .. '"' .. transparencyAttribute .. ">" .. text .. "</mark>"
+		end
+	end
+
+	return HarukaRichTextFormatter
+end
+
+
+-- Note: Yields
+function HarukaLib.TryUntil(pCallback: (...any) -> (boolean, any), waitTime: number, successCallback: nil | (pcallResult: any) -> nil) : any
+	local result = nil
+
+	for _ = 1, math.huge do
+		local success, pcallResult = pcall(pCallback)
+		if success then
+			if successCallback then successCallback(pcallResult) end
+
+			result = pcallResult
+			break
+		else
+			if RunService:IsStudio() then
+				warn(pcallResult)
+			end
+		end
+
+		task.wait(waitTime)
+	end
+
+	return result
+end
+
+
+--// teleport the character, and face the cframe, snippet code
+function HarukaLib:TeleportPlayer(char: Model, target: CFrame)
+	char:PivotTo(target)
+
+
+	local sharedEvents = nil
+	if RunService:IsClient() then
+		sharedEvents = require(RepS.HarukaShared.Library.Bindables)
+
+	elseif RunService:IsServer() then
+		sharedEvents = require(ServerScriptService.HarukaServer.Library.ServerEvents)
+	end
+
+	target = CFrame.fromOrientation(
+		-math.pi / 4,
+		(select(2, char.PrimaryPart.CFrame:ToOrientation())),
+		0
+	) + target.Position
+
+	if sharedEvents then
+		if RunService:IsServer() then
+			local player = Players:GetPlayerFromCharacter(char)
+			sharedEvents.UpdateCameraCFrame.Fire(player, target)
+
+		elseif RunService:IsClient() then
+			sharedEvents.UpdateCameraCFrame:Fire(target)
+		end
+	end
+end
 
 
 return HarukaLib

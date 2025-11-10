@@ -1,4 +1,3 @@
---!nocheck
 
 export type BezierPoint = {
 	Type: string;

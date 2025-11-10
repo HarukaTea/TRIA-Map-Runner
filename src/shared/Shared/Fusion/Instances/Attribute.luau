@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -36,7 +34,6 @@ local function Attribute(
 				applyTo: Instance
 			)
 				if castToState(value) then
-					local value = value :: Types.StateObject<unknown>
 					checkLifetime.bOutlivesA(
 						scope, applyTo,
 						value.scope, value.oldestTask,

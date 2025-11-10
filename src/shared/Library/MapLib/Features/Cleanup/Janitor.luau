@@ -1,4 +1,3 @@
---!nocheck
 
 local RS = game:GetService("RunService")
 local RepS = game:GetService("ReplicatedStorage")

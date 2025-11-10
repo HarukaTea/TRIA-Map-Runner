@@ -1,4 +1,3 @@
---!nocheck
 
 local MapDataBook = {}
 

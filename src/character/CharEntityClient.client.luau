@@ -1,3 +1,4 @@
+
 repeat task.wait() until workspace:GetAttribute("Haruka_PlayerClientInited")
 
 

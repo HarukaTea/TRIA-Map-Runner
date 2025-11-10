@@ -1,4 +1,3 @@
---!nocheck
 
 local TextChatService = game:GetService("TextChatService")
 local RepS = game:GetService("ReplicatedStorage")

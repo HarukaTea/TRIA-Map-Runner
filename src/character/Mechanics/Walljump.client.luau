@@ -1,4 +1,3 @@
---!nocheck
 
 local KSP = game:GetService("KeyframeSequenceProvider")
 local RepS = game:GetService("ReplicatedStorage")

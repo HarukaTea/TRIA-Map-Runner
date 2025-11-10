@@ -1,4 +1,3 @@
---!nocheck
 
 local Players = game:GetService("Players")
 local RepS = game:GetService("ReplicatedStorage")

@@ -1,6 +1,4 @@
---!strict
---!nolint LocalUnused
---!nolint LocalShadow
+
 local task = nil -- Disable usage of Roblox's task scheduler
 
 --[[
@@ -53,8 +51,6 @@ return {
 
 				if childType == "Instance" then
 					-- case 1; single instance
-					local child = child :: Instance
-	
 					newParented[child] = true
 					if oldParented[child] == nil then
 						-- wasn't previously present
@@ -72,8 +68,6 @@ return {
 
 				elseif castToState(child) then
 					-- case 2; state object
-					local child = child :: Types.StateObject<unknown>
-
 					local value = peek(child)
 					-- allow nil to represent the absence of a child
 					if value ~= nil then
@@ -95,17 +89,13 @@ return {
 
 				elseif childType == "table" then
 					-- case 3; table of objects
-					local child = child :: {[unknown]: unknown}
-
 					for key, subChild in pairs(child) do
 						local keyType = typeof(key)
 						local subAutoName: string? = nil
 
 						if keyType == "string" then
-							local key = key :: string
 							subAutoName = key
 						elseif keyType == "number" and autoName ~= nil then
-							local key = key :: number
 							subAutoName = autoName .. "_" .. key
 						end
 

@@ -1,4 +1,3 @@
---!nocheck
 
 local CS = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,4 +27,3 @@ for _, marker in CS:GetTagged("ButtonMarker") do
     Promise.try(locatorFX, marker)
 end
 CS:GetInstanceAddedSignal("ButtonMarker"):Connect(locatorFX)
-
