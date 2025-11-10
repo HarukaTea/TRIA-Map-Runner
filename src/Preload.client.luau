@@ -92,8 +92,8 @@ do
 
     local Children = Fusion.Children
 
-    local scope = Fusion.scoped({})
-    local function Value(val: any)
+    local scope = Fusion.scoped()
+    local function Value<T>(val: T): Fusion.Value<T>
         return Fusion.Value(scope, val)
     end
 

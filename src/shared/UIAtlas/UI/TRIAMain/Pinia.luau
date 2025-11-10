@@ -6,11 +6,27 @@ local HarukaLib = require(RepS.HarukaShared.Shared.HarukaLib)
 
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
-return function (self: table)
-    self.scope = Fusion.scoped({})
+
+export type Self = {
+    plr: Player,
+    char: Model,
+    scope: Fusion.Scope<any>,
+
+    Oxygen: Fusion.Value<number>,
+    TankOxygen: Fusion.Value<number>,
+    MaxOxygen: Fusion.Value<number>,
+
+    IsSurvived: Fusion.Value<boolean>,
+    CurrentTime: Fusion.Value<number>,
+}
+
+
+
+return function (self: Self)
+    self.scope = Fusion.scoped()
     local scope = self.scope :: Fusion.Scope
 
-    local function Value(val: any)
+    local function Value<T>(val: T): Fusion.Value<T>
         return Fusion.Value(scope, val)
     end
 

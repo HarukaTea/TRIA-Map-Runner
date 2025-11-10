@@ -13,15 +13,18 @@ local udNew = UDim.new
 local fromScale = UDim2.fromScale
 
 
+local Pinia = require(script.Pinia)
+
+
 return function(plr: Player)
-	local self = {}
-	local scope = Fusion.scoped({})
+	local self = {} :: Pinia.Self
+	local scope = Fusion.scoped()
 
 	self.plr = plr
 	self.char = plr.Character or plr.CharacterAdded:Wait()
 
 
-	require(script.Pinia)(self)
+	Pinia(self)
 
 
 	local UI = Components.HarukaScreenGui(scope, {
@@ -45,7 +48,7 @@ return function(plr: Player)
 							VerticalAlignment = Enum.VerticalAlignment.Bottom,
 						}),
 
-						Fusion.ForValues(scope, self.HintList, function(_, scope: Fusion.Scope, hint: StringValue)
+						Fusion.ForValues(scope, self.HintList, function(_, scope: Fusion.Scope<any>, hint: StringValue)
 							local label = Components.TextLabel(scope, {
 								Name = "Hint",
 								Size = UDim2.fromScale(1, 0.5),

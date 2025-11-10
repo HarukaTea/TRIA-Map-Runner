@@ -10,9 +10,19 @@ local TwilightTheme = require(RepS.HarukaShared.Library.TwilightTheme)
 local Fusion = require(RepS.HarukaShared.Shared.Fusion)
 
 
-return function (self: table)
-    self.scope = Fusion.scoped({})
-    local scope = self.scope :: Fusion.Scope
+
+export type Self = {
+	plr: Player,
+	char: Model,
+	scope: Fusion.Scope<any>,
+
+	HintList: Fusion.Value<{ StringValue }>,
+}
+
+
+return function (self: Self)
+    self.scope = Fusion.scoped()
+    local scope = self.scope :: Fusion.Scope<any>
 
 
     local hintsFolder = Instance.new("Folder")

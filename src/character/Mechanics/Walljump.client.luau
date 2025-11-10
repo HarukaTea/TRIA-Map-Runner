@@ -34,7 +34,7 @@ Add(char.Humanoid.Touched:Connect(function()
 
         if hit
             and (hit:GetAttribute("_action") == "WallJump" or hit:FindFirstChild("_WallJump"))
-            and tick() - lastJumped > 0.07 then
+            and tick() - lastJumped > 0.05 then
 
             if hit:GetAttribute("UseFrontOnly") then
                 local frontNormal = hit.CFrame.LookVector * 1

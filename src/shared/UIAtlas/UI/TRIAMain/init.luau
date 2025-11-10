@@ -14,8 +14,13 @@ local v2New = Vector2.new
 local fromScale = UDim2.fromScale
 local fromRGB = Color3.fromRGB
 
+
+local Pinia = require(script.Pinia)
+
+
+
 return function (plr: Player)
-    local self = {}
+    local self = {} :: Pinia.Self
 
     self.plr = plr
     self.char = plr.Character or plr.CharacterAdded:Wait()
@@ -23,10 +28,10 @@ return function (plr: Player)
     repeat task.wait() until self.char:GetAttribute("_CharDataLoaded")
 
 
-    require(script.Pinia)(self)
+    Pinia(self)
 
 
-    local scope = self.scope :: Fusion.Scope
+    local scope = self.scope :: Fusion.Scope<any>
     Components.HarukaScreenGui(scope, {
         Name = "TRIAMain",
         Parent = plr.PlayerGui,
@@ -55,8 +60,8 @@ return function (plr: Player)
                             Padding = UDim.new(0.1, 0)
                         }),
 
-                        Fusion.ForPairs(scope, { "Spectate", "Folder", "Settings" }, function(_, localScope: Fusion.Scope, index: number, selection: string)
-                            return index, Components.ImageLabel(localScope, {
+                        Fusion.ForPairs(scope, { "Spectate", "Folder", "Settings" }, function(_, scope: Fusion.Scope<any>, index: number, selection: string)
+                            return index, Components.ImageLabel(scope, {
                                 Name = selection,
                                 SizeConstraint = Enum.SizeConstraint.RelativeYY,
                                 Image = MapDataBook.SelectionIcons[selection],
